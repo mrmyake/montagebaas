@@ -6,6 +6,8 @@ import { Footer } from "@/components/layout/Footer";
 import { MobileCtaBar } from "@/components/layout/MobileCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Analytics } from "@/components/analytics/Analytics";
+import { ConsentBanner } from "@/components/analytics/ConsentBanner";
+import { CtaClickTracker } from "@/components/analytics/CtaClickTracker";
 import { localBusinessSchema, websiteSchema } from "@/lib/schema";
 import { site } from "@/lib/site";
 
@@ -61,6 +63,8 @@ export default function RootLayout({
         <Footer />
         <MobileCtaBar />
         <Analytics />
+        <ConsentBanner />
+        <CtaClickTracker />
       </body>
     </html>
   );

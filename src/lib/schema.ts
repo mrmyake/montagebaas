@@ -10,7 +10,46 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
  * zodra er echte, verifieerbare reviews zijn — nep-ratings zijn misleidend en SEO-riskant.
  */
 
-export function localBusinessSchema(opts?: { areaServed?: string; naamSuffix?: string }) {
+export function aggregateRating(opts: {
+  ratingValue: number | string;
+  reviewCount: number;
+  bestRating?: number;
+  worstRating?: number;
+}) {
+  return {
+    "@type": "AggregateRating",
+    ratingValue: String(opts.ratingValue),
+    reviewCount: opts.reviewCount,
+    bestRating: String(opts.bestRating ?? 5),
+    worstRating: String(opts.worstRating ?? 1),
+  };
+}
+
+export function review(opts: {
+  author: string;
+  rating: number;
+  body: string;
+  datePublished?: string;
+}) {
+  return {
+    "@type": "Review",
+    author: { "@type": "Person", name: opts.author },
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: opts.rating,
+      bestRating: 5,
+    },
+    reviewBody: opts.body,
+    ...(opts.datePublished ? { datePublished: opts.datePublished } : {}),
+  };
+}
+
+export function localBusinessSchema(opts?: {
+  areaServed?: string;
+  naamSuffix?: string;
+  aggregateRating?: ReturnType<typeof aggregateRating>;
+  review?: ReturnType<typeof review>[];
+}) {
   return {
     "@context": "https://schema.org",
     "@type": "HomeAndConstructionBusiness",
@@ -25,13 +64,17 @@ export function localBusinessSchema(opts?: { areaServed?: string; naamSuffix?: s
     email: site.email,
     address: {
       "@type": "PostalAddress",
+      streetAddress: site.straat,
+      postalCode: site.postcode,
+      addressLocality: site.plaats,
       addressCountry: "NL",
-      addressRegion: site.vestigingsplaats,
     },
     // identifier: KvK — vul in via site.kvk zodra bekend
     ...(site.kvk && site.kvk !== "TODO_EIGENAAR"
       ? { identifier: { "@type": "PropertyValue", name: "KvK", value: site.kvk } }
       : {}),
+    ...(opts?.aggregateRating ? { aggregateRating: opts.aggregateRating } : {}),
+    ...(opts?.review && opts.review.length ? { review: opts.review } : {}),
   };
 }
 

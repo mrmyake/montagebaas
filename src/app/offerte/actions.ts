@@ -4,6 +4,8 @@ import { berekenPrijs, type Extras, type Grootte, type Opstelling } from "@/lib/
 import { isGeldigePostcode, regioUitPostcode, type TypeKlus } from "@/lib/configurator";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stuurLeadNotificatie } from "@/lib/notify";
+import { stuurNtfy } from "@/lib/ntfy";
+import { euro } from "@/lib/pricing";
 import type { AanvraagInsert } from "@/lib/db.types";
 
 export interface AanvraagPayload {
@@ -101,6 +103,29 @@ export async function verstuurAanvraag(
       error: "Er ging iets mis. Probeer het opnieuw of neem telefonisch contact op.",
     };
   }
+
+  // Realtime push (ntfy) — owner ziet de lead meteen op z'n telefoon.
+  // Best-effort, mag de aanvraag niet laten falen.
+  const ntfyBody = [
+    naam,
+    `Tel: ${telefoon}`,
+    `Email: ${email}`,
+    `Postcode: ${insert.postcode}${regio ? ` (${regio})` : ""}`,
+    "",
+    `Klus: ${payload.type_klus}`,
+    `Grootte: ${payload.grootte} · ${payload.opstelling}`,
+    `Extra's: ${extrasLijst.length ? extrasLijst.join(", ") : "geen"}`,
+    `Periode: ${payload.gewenste_periode}`,
+    `Indicatie: ${euro(range.min)} – ${euro(range.max)}`,
+    "",
+    insert.toelichting || "Geen toelichting",
+  ].join("\n");
+  await stuurNtfy({
+    title: `Nieuwe offerte: ${naam} - ${insert.postcode}${regio ? ` (${regio})` : ""}`,
+    body: ntfyBody,
+    tags: "house,hammer",
+    priority: "high",
+  });
 
   // Notificatie — mag de aanvraag niet laten falen
   await stuurLeadNotificatie({

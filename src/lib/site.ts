@@ -15,20 +15,23 @@ export const site = {
   tagline: "Je IKEA-keuken vakkundig geplaatst",
   belofte: "Vaste prijs vooraf, geen verrassingen, offerte binnen 24 uur. In heel Nederland.",
 
-  // Contact — PLACEHOLDERS, eigenaar invullen
-  telefoonWeergave: "TODO_EIGENAAR (bv. 085 - 123 45 67)",
-  telefoonLink: "tel:+3185TODO", // TODO_EIGENAAR: internationaal, bv. tel:+31851234567
-  whatsappNummer: "31600000000", // TODO_EIGENAAR: internationaal zonder +, bv. 31612345678
-  email: "offerte@montagebaas.com", // TODO_EIGENAAR
+  // Contact
+  telefoonWeergave: "06 - 2917 3468",
+  telefoonLink: "tel:+31629173468", // internationaal formaat voor de tel:-deeplink
+  whatsappNummer: "31629173468", // internationaal zonder +
+  email: "info@montagebaas.com",
 
-  // Bedrijfsgegevens — PLACEHOLDERS voor footer + schema.org
+  // Bedrijfsgegevens — voor footer + schema.org
   kvk: "TODO_EIGENAAR", // KvK-nummer
-  vestigingsplaats: "Nederland",
+  straat: "Tjalk 68",
+  postcode: "1231 TX",
+  plaats: "Loosdrecht",
+  vestigingsplaats: "Loosdrecht",
   land: "NL",
 
-  // Reviews — pas aan zodra er ECHTE, verifieerbare reviews zijn.
-  // Laat hasReviews op false tot dat zo is; dan géén AggregateRating-schema tonen.
-  hasReviews: false,
+  // Reviews — echte data leeft in `src/lib/testimonials.ts` (Werkspot + Google).
+  // De profiel-URL's voor verificatie:
+  werkspotUrl: "https://www.werkspot.nl/bedrijven/hout-en-nieuw",
 } as const;
 
 export const whatsappUrl = (bericht?: string) => {

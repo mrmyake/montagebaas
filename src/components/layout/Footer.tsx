@@ -50,8 +50,13 @@ export function Footer() {
                 <Mail size={15} /> {site.email}
               </a>
             </li>
-            <li className="inline-flex items-center gap-2">
-              <MapPin size={15} /> Heel Nederland
+            <li className="flex items-start gap-2">
+              <MapPin size={15} className="mt-0.5 shrink-0" />
+              <span>
+                {site.straat}, {site.postcode} {site.plaats}
+                <br />
+                <span className="text-white/60">Werkgebied: heel Nederland</span>
+              </span>
             </li>
           </ul>
         </div>
