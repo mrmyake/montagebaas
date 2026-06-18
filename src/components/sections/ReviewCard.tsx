@@ -15,7 +15,7 @@ export function ReviewCard({ name, location, quote, rating, date, source, projec
   return (
     <figure className="flex h-full flex-col rounded-2xl border border-line bg-paper p-6 shadow-card">
       <div className="flex items-center justify-between">
-        <div className="flex" aria-label={`${rating} van 5 sterren`}>
+        <div className="flex" role="img" aria-label={`${rating} van 5 sterren`}>
           {Array.from({ length: 5 }).map((_, s) => (
             <Star
               key={s}

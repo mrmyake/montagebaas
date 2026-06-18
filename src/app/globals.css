@@ -15,9 +15,11 @@
   --color-line: #e7e3da;
   --color-line-strong: #d6d1c4;
 
-  /* Accent — signaal-oranje (CTA, nadruk) */
-  --color-accent: #e8590c;
-  --color-accent-hover: #c2410c;
+  /* Accent — signaal-oranje (CTA, nadruk).
+     #c2410c haalt WCAG AA: 5.2:1 met wit (knoppen) én 5.2:1 als tekst op wit/paper,
+     waar het oude #e8590c maar 3.58:1 haalde. */
+  --color-accent: #c2410c;
+  --color-accent-hover: #9a3412;
   --color-accent-soft: #fdeee3;
 
   /* Vertrouwen — groen (checks, garanties) */
