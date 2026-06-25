@@ -43,6 +43,7 @@ export function Configurator() {
   const [email, setEmail] = useState("");
   const [periode, setPeriode] = useState<string>(gewensteePeriodeOpties[0].value);
   const [toelichting, setToelichting] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot — moet leeg blijven
 
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState<string | null>(null);
@@ -103,6 +104,7 @@ export function Configurator() {
       email,
       gewenste_periode: periode,
       toelichting,
+      website, // honeypot
     });
     if (res.ok) {
       // Markeer een ECHTE verzending zodat de bedankpagina het conversie-event
@@ -296,6 +298,21 @@ export function Configurator() {
                 <textarea className={inputClass} value={toelichting} onChange={(e) => setToelichting(e.target.value)} rows={3} placeholder="Bijzonderheden, tegelwerk, planning, etc." />
               </Field>
             </div>
+          </div>
+
+          {/* Honeypot: onzichtbaar voor mensen (offscreen, geen tab/a11y), bots vullen 'm vaak in. */}
+          <div aria-hidden="true" className="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden">
+            <label>
+              Vul dit veld niet in
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
+            </label>
           </div>
 
           {fout && (

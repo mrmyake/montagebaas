@@ -1,10 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { berekenPrijs, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { isGeldigePostcode, regioUitPostcode, type TypeKlus } from "@/lib/configurator";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stuurLeadNotificatie, stuurKlantBevestiging } from "@/lib/notify";
 import { stuurNtfy } from "@/lib/ntfy";
+import { rateLimit } from "@/lib/rate-limit";
 import { euro } from "@/lib/pricing";
 import type { AanvraagInsert } from "@/lib/db.types";
 
@@ -19,6 +21,7 @@ export interface AanvraagPayload {
   email: string;
   gewenste_periode: string;
   toelichting?: string;
+  website?: string; // honeypot — moet leeg zijn
 }
 
 export type AanvraagResultaat =
@@ -39,6 +42,24 @@ function extrasNaarLijst(extras: Extras): string[] {
 export async function verstuurAanvraag(
   payload: AanvraagPayload
 ): Promise<AanvraagResultaat> {
+  // Honeypot: alleen bots vullen dit verborgen veld. Stil afwijzen — niet opslaan,
+  // niet notificeren, geen redirect/conversie. Echte bezoekers zien dit nooit.
+  if (payload.website && payload.website.trim() !== "") {
+    console.warn("[aanvraag] Honeypot gevuld — als spam genegeerd.");
+    return { ok: false, error: "Er ging iets mis. Probeer het opnieuw of bel ons." };
+  }
+
+  // Rate-limit per IP (best-effort) — remt bot-bursts op betaald verkeer.
+  const ip =
+    (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "onbekend";
+  const limit = rateLimit(`offerte:${ip}`, 5, 60_000);
+  if (!limit.allowed) {
+    return {
+      ok: false,
+      error: "Je hebt net al een aanvraag verstuurd. Wacht even of bel ons direct.",
+    };
+  }
+
   // Server-side validatie (vertrouw de client niet)
   const naam = payload.naam?.trim();
   const telefoon = payload.telefoon?.trim();
