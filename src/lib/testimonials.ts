@@ -21,6 +21,17 @@ export type Testimonial = {
 };
 
 export const TESTIMONIALS: Testimonial[] = [
+  // ─── Keuken-/kookeiland-montage (meest relevant voor keukenmontage) ─────────
+  {
+    name: "Stephan van den Hoek",
+    location: "Nijkerk",
+    quote:
+      "Fantastische service door Ilja! Hij heeft een kookeiland voor ons geïnstalleerd en het ziet er top uit. Denkt met je mee en gaat voor kwaliteit en een tevreden klant. Top, volgende keer huren wij hem zeker weer in.",
+    rating: 5,
+    date: "2026-06-18",
+    source: "werkspot",
+    project_type: "Kookeiland (de)monteren en plaatsen",
+  },
   // ─── IKEA-ombouw + algemeen vakmanschap (meest relevant voor keukenmontage) ─
   {
     name: "Evelien",
@@ -181,14 +192,14 @@ export const TESTIMONIALS: Testimonial[] = [
 ];
 
 // Aggregaten zoals ze op de profielen staan — de échte, business-brede scores van
-// dezelfde onderneming. Werkspot 4.8/5 uit 24, Google 5.0/5 uit 12.
+// dezelfde onderneming. Werkspot 4.8/5 uit 27, Google 5.0/5 uit 24.
 export const REVIEW_AGGREGATES = {
   werkspot: {
     rating: 4.8,
-    count: 24,
-    profileUrl: "https://www.werkspot.nl/bedrijven/hout-en-nieuw",
+    count: 27,
+    profileUrl: "https://www.werkspot.nl/profiel/hout-nieuw/reviews",
   },
-  google: { rating: 5.0, count: 12 },
+  google: { rating: 5.0, count: 24 },
 } as const;
 
 export const TOTAL_REVIEW_COUNT =

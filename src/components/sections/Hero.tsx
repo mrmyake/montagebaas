@@ -70,15 +70,15 @@ export function Hero({
                   <Star key={i} size={20} className="fill-accent text-accent" />
                 ))}
               </div>
-              <span className="text-sm font-semibold text-ink">Vaste prijs vooraf</span>
+              <span className="text-sm font-semibold text-ink">5 van 5 op Werkspot</span>
             </div>
             <p className="mt-4 text-lg font-medium leading-relaxed text-ink">
-              &ldquo;Eén aanspreekpunt, een nette monteur uit de buurt, en precies de prijs die was
-              afgesproken.&rdquo;
+              &ldquo;Fantastische service door Ilja! Hij heeft een kookeiland voor ons
+              geïnstalleerd en het ziet er top uit. Denkt met je mee en gaat voor kwaliteit en een
+              tevreden klant.&rdquo;
             </p>
             <p className="mt-3 text-sm text-muted">
-              {/* TODO_EIGENAAR: vervang door een echte review zodra beschikbaar */}
-              Voorbeeldcitaat — vervang door een echte klantreview.
+              Stephan van den Hoek, Nijkerk — kookeiland geïnstalleerd
             </p>
 
             <div className="mt-6 grid grid-cols-3 gap-3 border-t border-line pt-6 text-center">
