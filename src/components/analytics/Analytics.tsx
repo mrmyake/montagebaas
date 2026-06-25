@@ -9,6 +9,7 @@ import { GtagLoader } from "@/components/analytics/GtagLoader";
  */
 export function Analytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const adsId = process.env.NEXT_PUBLIC_ADS_ID;
   if (!gaId) return null;
 
   const debug = process.env.NODE_ENV === "development";
@@ -34,6 +35,7 @@ export function Analytics() {
           gtag('set', 'ads_data_redaction', true);
           gtag('js', new Date());
           gtag('config', '${gaId}', { send_page_view: true${debug ? ", debug_mode: true" : ""} });
+          ${adsId ? `gtag('config', '${adsId}');` : ""}
         `}
       </Script>
       <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />

@@ -69,8 +69,8 @@ export function localBusinessSchema(opts?: {
       addressLocality: site.plaats,
       addressCountry: "NL",
     },
-    // identifier: KvK — vul in via site.kvk zodra bekend
-    ...(site.kvk && site.kvk !== "TODO_EIGENAAR"
+    // identifier: KvK uit site.kvk
+    ...(site.kvk
       ? { identifier: { "@type": "PropertyValue", name: "KvK", value: site.kvk } }
       : {}),
     ...(opts?.aggregateRating ? { aggregateRating: opts.aggregateRating } : {}),

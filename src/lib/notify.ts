@@ -1,14 +1,14 @@
 import { euro } from "@/lib/pricing";
+import { site, whatsappDefault } from "@/lib/site";
 
 /**
- * Stuurt een lead-notificatie per e-mail via MailerSend (https://www.mailersend.com).
- * Bewust via fetch i.p.v. een SDK zodat het optioneel en licht is. Als de keys ontbreken
+ * Stuurt een lead-notificatie per e-mail via Resend (https://resend.com).
+ * Bewust via fetch i.p.v. de SDK zodat het optioneel en licht is. Als de key ontbreekt
  * of de call faalt, wordt dit gelogd maar NOOIT gegooid — de lead is al opgeslagen en mag
- * niet verloren gaan.
+ * niet verloren gaan (ntfy-push gaat sowieso door).
  *
- * ⚠️ EIGENAAR: MailerSend vereist een geverifieerd afzenderdomein. Zet MAILERSEND_FROM_EMAIL
- * op een adres binnen dat domein. (NB: de andere sites gebruiken Resend — wil je dat hier ook,
- * dan is dit bestand het enige dat hoeft te wijzigen.)
+ * Eigen Resend-account voor montagebaas; afzenderdomein montagebaas.com is geverifieerd.
+ * reply_to = het e-mailadres van de lead, zodat je direct kunt antwoorden.
  */
 
 interface LeadNotificatie {
@@ -29,14 +29,13 @@ interface LeadNotificatie {
 }
 
 export async function stuurLeadNotificatie(lead: LeadNotificatie): Promise<void> {
-  const apiKey = process.env.MAILERSEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.LEAD_NOTIFY_TO;
-  const fromEmail = process.env.MAILERSEND_FROM_EMAIL;
-  const fromName = process.env.MAILERSEND_FROM_NAME ?? "Montagebaas";
+  const from = process.env.RESEND_FROM_EMAIL;
 
-  if (!apiKey || !to || !fromEmail) {
+  if (!apiKey || !to || !from) {
     console.warn(
-      `[lead] Geen e-mailnotificatie verstuurd (MAILERSEND_API_KEY, LEAD_NOTIFY_TO of MAILERSEND_FROM_EMAIL ontbreekt). Lead ${lead.id} staat wel in de database.`
+      `[lead] Geen e-mailnotificatie verstuurd (RESEND_API_KEY, LEAD_NOTIFY_TO of RESEND_FROM_EMAIL ontbreekt). Lead ${lead.id} staat wel in de database.`
     );
     return;
   }
@@ -78,26 +77,125 @@ export async function stuurLeadNotificatie(lead: LeadNotificatie): Promise<void>
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.mailersend.com/v1/email", {
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
       },
       body: JSON.stringify({
-        from: { email: fromEmail, name: fromName },
-        to: [{ email: to }],
-        reply_to: { email: lead.email, name: lead.naam },
+        from,
+        to: [to],
+        reply_to: lead.email,
         subject: `Nieuwe offerteaanvraag — ${lead.naam} (${lead.postcode})`,
         html,
         text,
       }),
     });
     if (!res.ok) {
-      console.error(`[lead] MailerSend gaf status ${res.status}: ${await res.text()}`);
+      console.error(`[lead] Resend gaf status ${res.status}: ${await res.text()}`);
     }
   } catch (err) {
     console.error("[lead] E-mailnotificatie mislukt:", err);
+  }
+}
+
+/**
+ * Stuurt de KLANT een vriendelijke bevestiging van zijn offerteaanvraag.
+ * Best-effort, identiek aan de owner-notificatie: faalt nooit hard.
+ * reply_to wijst naar de eigenaar (LEAD_NOTIFY_TO) zodat klantreacties bij jou komen.
+ */
+export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
+
+  if (!apiKey || !from || !lead.email) {
+    console.warn(
+      `[lead] Geen klantbevestiging verstuurd (RESEND_API_KEY/RESEND_FROM_EMAIL/e-mail ontbreekt). Lead ${lead.id} staat wel in de database.`
+    );
+    return;
+  }
+
+  const voornaam = lead.naam.split(/\s+/)[0] || lead.naam;
+
+  const rij = (label: string, waarde: string) =>
+    `<tr><td style="padding:4px 16px 4px 0;color:#6b7178">${label}</td><td style="padding:4px 0;font-weight:600">${waarde}</td></tr>`;
+
+  const html = `
+    <div style="font-family:Inter,Arial,sans-serif;color:#1a1c20;max-width:560px">
+      <h2 style="margin:0 0 4px">Bedankt voor je aanvraag, ${voornaam}!</h2>
+      <p style="margin:0 0 16px;color:#3a3f47;line-height:1.5">
+        We hebben je aanvraag voor het plaatsen van je IKEA-keuken goed ontvangen.
+        Je hoort <strong>binnen 24 uur</strong> van ons met een exacte offerte op maat.
+      </p>
+      <p style="margin:0 0 8px;font-weight:600">Je aanvraag in het kort</p>
+      <table style="border-collapse:collapse;font-size:14px;margin-bottom:16px">
+        ${rij("Type klus", lead.type_klus)}
+        ${rij("Grootte", lead.aantal_kasten_range)}
+        ${rij("Opstelling", lead.opstelling)}
+        ${rij("Extra's", lead.extras.length ? lead.extras.join(", ") : "geen")}
+        ${rij("Gewenste periode", lead.gewenste_periode)}
+        ${rij("Locatie", `${lead.postcode}${lead.regio ? ` (${lead.regio})` : ""}`)}
+      </table>
+      <p style="margin:0 0 4px;color:#6b7178;font-size:14px">Voorlopige prijsindicatie</p>
+      <p style="margin:0 0 4px;font-size:20px;font-weight:700">
+        ${euro(lead.prijs_indicatie_min)} – ${euro(lead.prijs_indicatie_max)}
+      </p>
+      <p style="margin:0 0 20px;color:#6b7178;font-size:13px">
+        Dit is een indicatie op basis van je keuzes. Je definitieve offerte op maat volgt binnen 24 uur.
+      </p>
+      <p style="margin:0 0 8px;line-height:1.6">
+        Liever direct contact? Bel <a href="${site.telefoonLink}" style="color:#1a1c20;font-weight:600">${site.telefoonWeergave}</a>
+        of <a href="${whatsappDefault}" style="color:#1a1c20;font-weight:600">app ons via WhatsApp</a>.
+      </p>
+      <p style="margin:20px 0 0;color:#6b7178;font-size:13px">
+        Met vriendelijke groet,<br/>${site.naam}
+      </p>
+    </div>`;
+
+  const text = [
+    `Bedankt voor je aanvraag, ${voornaam}!`,
+    "",
+    "We hebben je aanvraag voor het plaatsen van je IKEA-keuken ontvangen.",
+    "Je hoort binnen 24 uur van ons met een exacte offerte op maat.",
+    "",
+    "Je aanvraag in het kort:",
+    `- Type klus: ${lead.type_klus}`,
+    `- Grootte: ${lead.aantal_kasten_range}`,
+    `- Opstelling: ${lead.opstelling}`,
+    `- Extra's: ${lead.extras.length ? lead.extras.join(", ") : "geen"}`,
+    `- Gewenste periode: ${lead.gewenste_periode}`,
+    `- Locatie: ${lead.postcode}${lead.regio ? ` (${lead.regio})` : ""}`,
+    "",
+    `Voorlopige prijsindicatie: ${euro(lead.prijs_indicatie_min)} – ${euro(lead.prijs_indicatie_max)}`,
+    "Dit is een indicatie; je definitieve offerte volgt binnen 24 uur.",
+    "",
+    `Liever direct contact? Bel ${site.telefoonWeergave} of app ons via WhatsApp.`,
+    "",
+    `Met vriendelijke groet, ${site.naam}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [lead.email],
+        reply_to: replyTo,
+        subject: `Bedankt voor je aanvraag bij ${site.naam}`,
+        html,
+        text,
+      }),
+    });
+    if (!res.ok) {
+      console.error(`[lead] Resend (klantbevestiging) gaf status ${res.status}: ${await res.text()}`);
+    }
+  } catch (err) {
+    console.error("[lead] Klantbevestiging mislukt:", err);
   }
 }

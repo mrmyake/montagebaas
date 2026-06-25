@@ -3,7 +3,7 @@
 import { berekenPrijs, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { isGeldigePostcode, regioUitPostcode, type TypeKlus } from "@/lib/configurator";
 import { supabaseAdmin } from "@/lib/supabase";
-import { stuurLeadNotificatie } from "@/lib/notify";
+import { stuurLeadNotificatie, stuurKlantBevestiging } from "@/lib/notify";
 import { stuurNtfy } from "@/lib/ntfy";
 import { euro } from "@/lib/pricing";
 import type { AanvraagInsert } from "@/lib/db.types";
@@ -127,8 +127,8 @@ export async function verstuurAanvraag(
     priority: "high",
   });
 
-  // Notificatie — mag de aanvraag niet laten falen
-  await stuurLeadNotificatie({
+  // Notificaties — best-effort, mogen de aanvraag niet laten falen.
+  const leadData = {
     id,
     naam,
     telefoon,
@@ -143,7 +143,11 @@ export async function verstuurAanvraag(
     regio,
     gewenste_periode: payload.gewenste_periode,
     toelichting: insert.toelichting,
-  });
+  };
+  await Promise.allSettled([
+    stuurLeadNotificatie(leadData), // interne notificatie naar de eigenaar
+    stuurKlantBevestiging(leadData), // bevestiging naar de klant
+  ]);
 
   return { ok: true, id };
 }

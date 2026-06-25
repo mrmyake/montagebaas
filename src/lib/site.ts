@@ -22,7 +22,7 @@ export const site = {
   email: "info@montagebaas.com",
 
   // Bedrijfsgegevens — voor footer + schema.org
-  kvk: "TODO_EIGENAAR", // KvK-nummer
+  kvk: "74579320", // KvK-nummer
   straat: "Tjalk 68",
   postcode: "1231 TX",
   plaats: "Loosdrecht",
@@ -31,7 +31,7 @@ export const site = {
 
   // Reviews — echte data leeft in `src/lib/testimonials.ts` (Werkspot + Google).
   // De profiel-URL's voor verificatie:
-  werkspotUrl: "https://www.werkspot.nl/bedrijven/hout-en-nieuw",
+  werkspotUrl: "https://www.werkspot.nl/profiel/hout-nieuw/reviews",
 } as const;
 
 export const whatsappUrl = (bericht?: string) => {
