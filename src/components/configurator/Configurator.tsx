@@ -24,6 +24,7 @@ import {
 } from "@/lib/configurator";
 import { berekenPrijs, euro, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { verstuurAanvraag } from "@/app/offerte/actions";
+import { OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
 
 const TOTAAL = 6;
 
@@ -104,6 +105,13 @@ export function Configurator() {
       toelichting,
     });
     if (res.ok) {
+      // Markeer een ECHTE verzending zodat de bedankpagina het conversie-event
+      // (offerte_aanvraag) één keer afvuurt — niet bij direct bezoek of refresh.
+      try {
+        window.sessionStorage.setItem(OFFERTE_VERZONDEN_KEY, "1");
+      } catch {
+        // sessionStorage onbereikbaar — conversie valt dan terug op niets, lead is wél opgeslagen
+      }
       router.push("/bedankt");
     } else {
       setFout(res.error);
