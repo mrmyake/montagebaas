@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stuurNtfy } from "@/lib/ntfy";
@@ -7,6 +7,7 @@ import {
   stuurTekeningKlantBevestiging,
 } from "@/lib/notify";
 import { rateLimit } from "@/lib/rate-limit";
+import { verwerkTekening } from "@/lib/tekening-verwerker";
 
 /**
  * Upload-pad van /offerte: ontvangt een IKEA-tekening + minimale contactgegevens,
@@ -113,6 +114,10 @@ export async function POST(req: Request) {
     stuurTekeningLeadNotificatie({ id, naam, email, telefoon, bestandsnaam: file.name, pad }),
     stuurTekeningKlantBevestiging({ naam, email }),
   ]);
+
+  // Schakel 1 → 2: lezen + rekenen draait ONTKOPPELD ná de respons (Opus 4.8 kan
+  // seconden duren). Upload-pad heeft geen postcode → regio null → landelijke tarieven.
+  after(() => verwerkTekening(id, pad, null));
 
   return NextResponse.json({ ok: true, id });
 }
