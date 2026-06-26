@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Clock, MapPin, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Configurator } from "@/components/configurator/Configurator";
+import { TekeningUpload } from "@/components/configurator/TekeningUpload";
 
 export const metadata: Metadata = {
   title: "Offerte aanvragen — prijs in 1 minuut",
@@ -38,7 +39,25 @@ export default function OffertePage() {
           </ul>
         </div>
 
+        {/* De snelweg: tekening-upload bovenaan */}
+        <TekeningUpload />
+
+        {/* Scheiding naar het hoofdpad (formulier) */}
+        <div className="my-8 flex items-center gap-4">
+          <span className="h-px flex-1 bg-line" />
+          <span className="shrink-0 text-sm font-medium text-muted">
+            of beantwoord een paar korte vragen
+          </span>
+          <span className="h-px flex-1 bg-line" />
+        </div>
+
         <Configurator />
+
+        {/* Zachte nudge terug naar de upload */}
+        <p className="mt-6 text-center text-sm text-muted">
+          Heb je toch een IKEA-plan? Stuur het hierboven mee voor een exacte vaste prijs in
+          plaats van een indicatie.
+        </p>
       </Container>
     </section>
   );

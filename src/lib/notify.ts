@@ -199,3 +199,117 @@ export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void
     console.error("[lead] Klantbevestiging mislukt:", err);
   }
 }
+
+interface TekeningLead {
+  id: string;
+  naam: string;
+  email: string;
+  telefoon: string;
+  bestandsnaam: string;
+  pad: string;
+}
+
+/** Interne notificatie naar de eigenaar voor een aanvraag VIA tekening-upload. */
+export async function stuurTekeningLeadNotificatie(lead: TekeningLead): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const to = process.env.LEAD_NOTIFY_TO;
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!apiKey || !to || !from) {
+    console.warn(`[lead] Geen e-mail (tekening) verstuurd; lead ${lead.id} staat wel in de database.`);
+    return;
+  }
+
+  const rij = (label: string, waarde: string) =>
+    `<tr><td style="padding:4px 12px 4px 0;color:#6b7178">${label}</td><td style="padding:4px 0;font-weight:600">${waarde}</td></tr>`;
+  const html = `
+    <div style="font-family:Inter,Arial,sans-serif;color:#1a1c20">
+      <h2 style="margin:0 0 4px">Nieuwe aanvraag — mét IKEA-tekening</h2>
+      <p style="margin:0 0 16px;color:#6b7178">Lead-ID: ${lead.id}</p>
+      <table style="border-collapse:collapse;font-size:14px">
+        ${rij("Naam", lead.naam)}
+        ${rij("Telefoon", lead.telefoon)}
+        ${rij("E-mail", lead.email)}
+        ${rij("Tekening", lead.bestandsnaam)}
+      </table>
+      <p style="margin:16px 0 0;font-size:14px;color:#6b7178">
+        Bestand in Supabase Storage (bucket <strong>offerte-tekeningen</strong>):<br/>
+        <code>${lead.pad}</code>
+      </p>
+    </div>`;
+  const text = [
+    `Nieuwe aanvraag MET tekening (lead ${lead.id})`,
+    `Naam: ${lead.naam}`,
+    `Telefoon: ${lead.telefoon}`,
+    `E-mail: ${lead.email}`,
+    `Tekening: ${lead.bestandsnaam}`,
+    `Pad: offerte-tekeningen/${lead.pad}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        reply_to: lead.email,
+        subject: `Nieuwe aanvraag mét tekening — ${lead.naam}`,
+        html,
+        text,
+      }),
+    });
+    if (!res.ok) console.error(`[lead] Resend (tekening) status ${res.status}: ${await res.text()}`);
+  } catch (err) {
+    console.error("[lead] E-mail (tekening) mislukt:", err);
+  }
+}
+
+/** Bevestiging naar de klant voor een aanvraag via tekening-upload (geen prijs). */
+export async function stuurTekeningKlantBevestiging(klant: { naam: string; email: string }): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
+  if (!apiKey || !from || !klant.email) return;
+
+  const voornaam = klant.naam.split(/\s+/)[0] || klant.naam;
+  const html = `
+    <div style="font-family:Inter,Arial,sans-serif;color:#1a1c20;max-width:560px">
+      <h2 style="margin:0 0 4px">Plan ontvangen, ${voornaam} ✅</h2>
+      <p style="margin:0 0 16px;color:#3a3f47;line-height:1.5">
+        Bedankt! We hebben je IKEA-tekening goed ontvangen. Je krijgt
+        <strong>binnen 24 uur</strong> een exacte vaste prijs op maat.
+      </p>
+      <p style="margin:0 0 8px;line-height:1.6">
+        Liever direct contact? Bel <a href="${site.telefoonLink}" style="color:#1a1c20;font-weight:600">${site.telefoonWeergave}</a>
+        of <a href="${whatsappDefault}" style="color:#1a1c20;font-weight:600">app ons via WhatsApp</a>.
+      </p>
+      <p style="margin:20px 0 0;color:#6b7178;font-size:13px">Met vriendelijke groet,<br/>${site.naam}</p>
+    </div>`;
+  const text = [
+    `Plan ontvangen, ${voornaam}!`,
+    "",
+    "We hebben je IKEA-tekening ontvangen. Je krijgt binnen 24 uur een exacte vaste prijs op maat.",
+    "",
+    `Liever direct contact? Bel ${site.telefoonWeergave} of app ons via WhatsApp.`,
+    "",
+    `Met vriendelijke groet, ${site.naam}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: [klant.email],
+        reply_to: replyTo,
+        subject: `Plan ontvangen — je vaste prijs volgt binnen 24 uur`,
+        html,
+        text,
+      }),
+    });
+    if (!res.ok) console.error(`[lead] Resend (tekening-klant) status ${res.status}: ${await res.text()}`);
+  } catch (err) {
+    console.error("[lead] Klantbevestiging (tekening) mislukt:", err);
+  }
+}

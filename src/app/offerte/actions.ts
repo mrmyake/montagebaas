@@ -84,6 +84,8 @@ export async function verstuurAanvraag(
 
   const regio = regioUitPostcode(payload.postcode);
   const extrasLijst = extrasNaarLijst(payload.extras);
+  const postcodeNet = payload.postcode.trim().toUpperCase();
+  const toelichting = payload.toelichting?.trim() || null;
 
   const insert: AanvraagInsert = {
     type_klus: payload.type_klus,
@@ -92,13 +94,13 @@ export async function verstuurAanvraag(
     extras: extrasLijst,
     prijs_indicatie_min: range.min,
     prijs_indicatie_max: range.max,
-    postcode: payload.postcode.trim().toUpperCase(),
+    postcode: postcodeNet,
     regio,
     naam,
     telefoon,
     email,
     gewenste_periode: payload.gewenste_periode,
-    toelichting: payload.toelichting?.trim() || null,
+    toelichting,
   };
 
   let id: string;
@@ -131,7 +133,7 @@ export async function verstuurAanvraag(
     naam,
     `Tel: ${telefoon}`,
     `Email: ${email}`,
-    `Postcode: ${insert.postcode}${regio ? ` (${regio})` : ""}`,
+    `Postcode: ${postcodeNet}${regio ? ` (${regio})` : ""}`,
     "",
     `Klus: ${payload.type_klus}`,
     `Grootte: ${payload.grootte} · ${payload.opstelling}`,
@@ -139,10 +141,10 @@ export async function verstuurAanvraag(
     `Periode: ${payload.gewenste_periode}`,
     `Indicatie: ${euro(range.min)} – ${euro(range.max)}`,
     "",
-    insert.toelichting || "Geen toelichting",
+    toelichting || "Geen toelichting",
   ].join("\n");
   await stuurNtfy({
-    title: `Nieuwe offerte: ${naam} - ${insert.postcode}${regio ? ` (${regio})` : ""}`,
+    title: `Nieuwe offerte: ${naam} - ${postcodeNet}${regio ? ` (${regio})` : ""}`,
     body: ntfyBody,
     tags: "house,hammer",
     priority: "high",
@@ -160,10 +162,10 @@ export async function verstuurAanvraag(
     extras: extrasLijst,
     prijs_indicatie_min: range.min,
     prijs_indicatie_max: range.max,
-    postcode: insert.postcode,
+    postcode: postcodeNet,
     regio,
     gewenste_periode: payload.gewenste_periode,
-    toelichting: insert.toelichting,
+    toelichting,
   };
   await Promise.allSettled([
     stuurLeadNotificatie(leadData), // interne notificatie naar de eigenaar
