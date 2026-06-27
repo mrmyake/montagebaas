@@ -80,7 +80,7 @@ export async function verwerkTekening(
         title: hoog
           ? `Tekening: prijs berekend (hoog vertrouwen)`
           : `Tekening: indicatie (vertrouwen ${telling.vertrouwen})`,
-        body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${telling.aannames.join("\n- ")}\nControleer en stuur de exacte offerte.`,
+        body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${telling.aannames.join("\n- ")}\n${hoog ? "Controleer en stuur de exacte offerte." : "→ Klant is per mail gevraagd de IKEA-artikellijst te sturen voor een exacte prijs."}`,
         tags: hoog ? "house,heavy_check_mark" : "house,warning",
         priority: "high",
       });

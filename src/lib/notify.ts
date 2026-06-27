@@ -1,5 +1,5 @@
 import { euro } from "@/lib/pricing";
-import { site, whatsappDefault } from "@/lib/site";
+import { site, whatsappDefault, whatsappUrl } from "@/lib/site";
 
 /**
  * Stuurt een lead-notificatie per e-mail via Resend (https://resend.com).
@@ -282,22 +282,39 @@ export async function stuurTekeningKlantBevestiging(klant: {
 
   const voornaam = klant.naam.split(/\s+/)[0] || klant.naam;
   const p = klant.prijs;
+  const artikellijstWa = whatsappUrl(
+    "Hoi Montagebaas, hier is mijn IKEA-artikellijst voor mijn keuken-offerte."
+  );
+
   const disclaimer = p?.ruw
-    ? "Let op: je hebt alleen een tekening geüpload en die was lastig automatisch te lezen. We kennen nog niet precies alle elementen, dus dit is een rúwe indicatie — de definitieve prijs kan afwijken."
-    : "Let op: deze prijs is een indicatie op basis van je geüploade tekening. We kennen nog niet alle exacte elementen, dus de definitieve prijs kan afwijken.";
+    ? "Dit is een rúwe indicatie: je hebt alleen een tekening geüpload en die was lastig automatisch te lezen, dus we kennen nog niet alle exacte elementen."
+    : "Dit is een indicatie op basis van je geüploade tekening; we kennen nog niet alle exacte elementen, dus de definitieve prijs kan afwijken.";
 
   const prijsBlokHtml = p
-    ? `<div style="margin:0 0 16px;padding:14px 16px;background:#f4f1ea;border-radius:12px">
+    ? `<div style="margin:0 0 12px;padding:14px 16px;background:#f4f1ea;border-radius:12px">
          <div style="font-size:13px;color:#6b7178">Indicatie op basis van je tekening</div>
          <div style="font-size:22px;font-weight:700;margin-top:2px">${euro(p.min)} – ${euro(p.max)}</div>
        </div>
-       <p style="margin:0 0 16px;color:#6b7178;font-size:13px;line-height:1.5">${disclaimer} Je krijgt <strong>binnen 24 uur</strong> een exacte vaste prijs op maat.</p>`
-    : `<p style="margin:0 0 16px;color:#3a3f47;line-height:1.5">Bedankt! We hebben je IKEA-tekening goed ontvangen. Je krijgt <strong>binnen 24 uur</strong> een exacte vaste prijs op maat.</p>`;
+       <p style="margin:0 0 16px;color:#6b7178;font-size:13px;line-height:1.5">${disclaimer}</p>`
+    : `<p style="margin:0 0 16px;color:#3a3f47;line-height:1.5">Bedankt! We hebben je IKEA-tekening goed ontvangen.</p>`;
+
+  // Voor beide gevallen dezelfde, eerlijke belofte — geen huiswerk voor de klant.
+  const beloofteHtml = `<p style="margin:0 0 16px;color:#1a1c20;line-height:1.6">We nemen <strong>binnen 24 uur</strong> contact met je op voor je exacte vaste prijs op maat.</p>`;
+
+  // Alleen bij lage zekerheid: optionele versneller (niet verplicht).
+  const versnellerHtml = p?.ruw
+    ? `<div style="margin:0 0 16px;padding:14px 16px;background:#fbf7ee;border:1px solid #ece3cf;border-radius:12px">
+         <p style="margin:0 0 6px;font-weight:600">Sneller een exacte prijs?</p>
+         <p style="margin:0;font-size:14px;line-height:1.5;color:#3a3f47">Stuur ons je <strong>IKEA-artikellijst</strong> (de lijst met artikelnummers uit de Keukenplanner) en eventueel een paar foto&apos;s van de ruimte — dan maken we de prijs op de euro nauwkeurig. Reageer op deze mail of <a href="${artikellijstWa}" style="color:#1a1c20;font-weight:600">stuur 'm via WhatsApp</a>.</p>
+       </div>`
+    : "";
 
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;color:#1a1c20;max-width:560px">
       <h2 style="margin:0 0 12px">Plan ontvangen, ${voornaam} ✅</h2>
       ${prijsBlokHtml}
+      ${beloofteHtml}
+      ${versnellerHtml}
       <p style="margin:0 0 8px;line-height:1.6">
         Liever direct contact? Bel <a href="${site.telefoonLink}" style="color:#1a1c20;font-weight:600">${site.telefoonWeergave}</a>
         of <a href="${whatsappDefault}" style="color:#1a1c20;font-weight:600">app ons via WhatsApp</a>.
@@ -312,7 +329,10 @@ export async function stuurTekeningKlantBevestiging(klant: {
       ? `Indicatie op basis van je tekening: ${euro(p.min)} – ${euro(p.max)}`
       : "We hebben je IKEA-tekening ontvangen.",
     p ? disclaimer : "",
-    "Je krijgt binnen 24 uur een exacte vaste prijs op maat.",
+    "We nemen binnen 24 uur contact met je op voor je exacte vaste prijs op maat.",
+    p?.ruw
+      ? "Sneller een exacte prijs? Stuur je IKEA-artikellijst (lijst met artikelnummers) + eventueel een paar foto's — reageer op deze mail of app ons via WhatsApp."
+      : "",
     "",
     `Liever direct contact? Bel ${site.telefoonWeergave} of app ons via WhatsApp.`,
     "",

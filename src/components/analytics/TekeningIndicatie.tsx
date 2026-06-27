@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2, Info } from "lucide-react";
 import { euro } from "@/lib/pricing";
+import { whatsappUrl } from "@/lib/site";
+import { WhatsappIcon } from "@/components/brand/WhatsappIcon";
 
 /**
  * Toont op /bedankt de indicatieve prijs van het upload-pad. De tekening wordt
@@ -91,8 +93,12 @@ export function TekeningIndicatie() {
     );
   }
 
+  const artikellijstWa = whatsappUrl(
+    "Hoi Montagebaas, hier is mijn IKEA-artikellijst voor mijn keuken-offerte."
+  );
+
   return (
-    <div className="mx-auto mt-6 max-w-md rounded-2xl bg-accent-soft/50 px-5 py-4 ring-1 ring-accent/30">
+    <div className="mx-auto mt-6 max-w-md rounded-2xl bg-accent-soft/50 px-5 py-4 text-left ring-1 ring-accent/30">
       <p className="text-sm font-medium text-ink-soft">Indicatie op basis van je tekening</p>
       <p className="mt-1 text-2xl font-bold text-ink">
         {euro(state.min)} – {euro(state.max)}
@@ -100,9 +106,19 @@ export function TekeningIndicatie() {
       <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-muted">
         <Info size={14} className="mt-0.5 shrink-0" />
         {state.ruw
-          ? "Ruwe indicatie — je tekening was lastig automatisch te lezen, dus de definitieve prijs kan afwijken. Je exacte vaste prijs volgt binnen 24 uur."
-          : "Indicatie op basis van je tekening. Je exacte vaste prijs op maat volgt binnen 24 uur."}
+          ? "Ruwe indicatie — je tekening was lastig automatisch te lezen, dus de definitieve prijs kan afwijken. We nemen binnen 24 uur contact met je op."
+          : "Indicatie op basis van je tekening. We nemen binnen 24 uur contact met je op voor je exacte vaste prijs."}
       </p>
+      {state.ruw && (
+        <a
+          href={artikellijstWa}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-2 rounded-xl bg-trust px-4 py-2.5 text-sm font-semibold text-white hover:brightness-95"
+        >
+          <WhatsappIcon size={16} /> Sneller exact? Stuur je artikellijst
+        </a>
+      )}
     </div>
   );
 }
