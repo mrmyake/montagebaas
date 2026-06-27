@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { CheckCircle2, Phone } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { ButtonLink } from "@/components/ui/Button";
 import { WhatsappIcon } from "@/components/brand/WhatsappIcon";
 import { site, whatsappDefault } from "@/lib/site";
 import { ConversionTracker } from "@/components/analytics/ConversionTracker";
+import { TekeningIndicatie } from "@/components/analytics/TekeningIndicatie";
 
 export const metadata: Metadata = {
   title: "Bedankt voor je aanvraag",
@@ -26,7 +28,13 @@ export default function BedanktPage() {
           Bedankt! We bekijken je aanvraag en je hoort <strong>binnen 24 uur</strong> van ons met
           een exacte offerte op maat.
         </p>
-        <p className="mt-2 text-ink-soft">
+
+        {/* Indicatieprijs uit het tekening-upload-pad (rendert niets op het formulier-pad) */}
+        <Suspense fallback={null}>
+          <TekeningIndicatie />
+        </Suspense>
+
+        <p className="mt-6 text-ink-soft">
           Liever direct contact? Bel of app ons gerust.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

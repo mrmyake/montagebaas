@@ -83,7 +83,7 @@ export default async function StadPage({
           </ul>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <ButtonLink href="/offerte" size="lg">
-              Bereken je prijs &amp; vraag offerte aan
+              Bereken je prijs
             </ButtonLink>
             <ButtonLink href="/kosten" size="lg" variant="secondary">
               Bekijk de prijzen

@@ -9,7 +9,7 @@ import { steden } from "@/lib/steden";
 export const metadata: Metadata = {
   title: "Werkgebied — keukenmonteur in heel Nederland",
   description:
-    "Montagebaas plaatst IKEA-keukens door heel Nederland via een netwerk van gescreende monteurs. Bekijk de plaatsen waar we werkzaam zijn en vraag je offerte aan.",
+    "Montagebaas plaatst IKEA-keukens door heel Nederland via een netwerk van gescreende monteurs. Bekijk de plaatsen waar we werkzaam zijn en bereken je prijs.",
   alternates: { canonical: "/werkgebied" },
 };
 

@@ -17,7 +17,7 @@ export function SlotCta({
         <p className="mx-auto mt-4 max-w-xl text-lg text-white/70">{intro}</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <ButtonLink href="/offerte" size="lg">
-            Vraag je offerte aan
+            Bereken je prijs
           </ButtonLink>
           <ButtonLink href={site.telefoonLink} size="lg" variant="secondary" className="!bg-transparent !text-white !border-white/30 hover:!bg-white/10">
             <Phone size={18} /> {site.telefoonWeergave}

@@ -267,7 +267,7 @@ export function Configurator() {
           <StepHeading
             stap={6}
             totaal={TOTAAL}
-            titel="Vraag je offerte aan"
+            titel="Bereken je prijs"
             sub="We bellen of mailen je binnen 24 uur met een exacte offerte."
           />
           {range && (

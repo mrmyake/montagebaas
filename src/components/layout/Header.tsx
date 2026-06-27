@@ -36,7 +36,7 @@ export function Header() {
             <Phone size={16} />
             <span>{site.telefoonWeergave}</span>
           </a>
-          <ButtonLink href="/offerte">Offerte aanvragen</ButtonLink>
+          <ButtonLink href="/offerte">Bereken je prijs</ButtonLink>
         </div>
 
         <button
@@ -65,7 +65,7 @@ export function Header() {
             ))}
             <div className="mt-3 flex flex-col gap-3">
               <ButtonLink href="/offerte" size="lg" onClick={() => setOpen(false)}>
-                Offerte aanvragen
+                Bereken je prijs
               </ButtonLink>
               <a
                 href={site.telefoonLink}

@@ -49,33 +49,47 @@ export interface LeesResultaat {
   ruw: unknown; // wat het model gaf — voor logging/debug
 }
 
-/** Leest het al-geüploade bestand (pad uit tekening_pad) en geeft de telling terug. */
-export async function leesTekening(pad: string): Promise<LeesResultaat> {
+/**
+ * Leest de al-geüploade tekening(en) en geeft de telling terug.
+ * `tekening_pad` is óf één pad, óf een JSON-array van paden (multi-upload). Alle
+ * bestanden gaan samen in één call zodat het model ze als ÉÉN keuken combineert.
+ */
+export async function leesTekening(tekeningPad: string): Promise<LeesResultaat> {
   const db = supabaseAdmin();
-  const { data, error } = await db.storage.from(BUCKET).download(pad);
-  if (error || !data) {
-    throw new Error(`Tekening niet gevonden in bucket (${pad}): ${error?.message ?? "leeg"}`);
-  }
 
-  const mediaType = data.type || "application/pdf";
-  const bytes = new Uint8Array(await data.arrayBuffer());
-  const bestandsdeel = mediaType.startsWith("image/")
-    ? ({ type: "image", image: bytes, mediaType } as const)
-    : ({ type: "file", data: bytes, mediaType } as const);
+  let paden: string[];
+  try {
+    const parsed = JSON.parse(tekeningPad);
+    paden = Array.isArray(parsed) ? parsed.map(String) : [tekeningPad];
+  } catch {
+    paden = [tekeningPad]; // backwards-compat: enkel pad
+  }
+  if (paden.length === 0) throw new Error("Geen tekening-paden in tekening_pad");
+
+  const delen = await Promise.all(
+    paden.map(async (p) => {
+      const { data, error } = await db.storage.from(BUCKET).download(p);
+      if (error || !data) {
+        throw new Error(`Tekening niet gevonden in bucket (${p}): ${error?.message ?? "leeg"}`);
+      }
+      const mediaType = data.type || "application/pdf";
+      const bytes = new Uint8Array(await data.arrayBuffer());
+      return mediaType.startsWith("image/")
+        ? ({ type: "image", image: bytes, mediaType } as const)
+        : ({ type: "file", data: bytes, mediaType } as const);
+    })
+  );
+
+  const instructie =
+    paden.length > 1
+      ? `Hieronder staan ${paden.length} bestanden (foto's/PDF's) van ÉÉN keuken. Combineer de informatie uit alle bestanden tot één telling.`
+      : "Lees deze IKEA-keukentekening en vul de telling in volgens je instructies.";
 
   const { object } = await generateObject({
     model: anthropic("claude-opus-4-8"),
     schema: tellingSchema,
     system: LEZER_SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "text", text: "Lees deze IKEA-keukentekening en vul de telling in volgens je instructies." },
-          bestandsdeel,
-        ],
-      },
-    ],
+    messages: [{ role: "user", content: [{ type: "text", text: instructie }, ...delen] }],
   });
 
   // valideerTelling is de autoriteit (Zod vormt alleen de output).

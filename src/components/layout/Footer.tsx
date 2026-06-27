@@ -22,7 +22,7 @@ export function Footer() {
           <h3 className="text-sm font-semibold text-white">Navigatie</h3>
           <ul className="mt-4 space-y-2.5 text-sm">
             <li>
-              <Link href="/offerte" className="hover:text-accent">Offerte aanvragen</Link>
+              <Link href="/offerte" className="hover:text-accent">Bereken je prijs</Link>
             </li>
             {nav.map((item) => (
               <li key={item.href}>

@@ -44,7 +44,7 @@ export function Hero({
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <ButtonLink href="/offerte" size="lg">
-              Bereken je prijs &amp; vraag offerte aan
+              Bereken je prijs
             </ButtonLink>
             <ButtonLink href="/kosten" size="lg" variant="secondary">
               Wat kost het?

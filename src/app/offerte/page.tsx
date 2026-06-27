@@ -5,9 +5,9 @@ import { Configurator } from "@/components/configurator/Configurator";
 import { TekeningUpload } from "@/components/configurator/TekeningUpload";
 
 export const metadata: Metadata = {
-  title: "Offerte aanvragen — prijs in 1 minuut",
+  title: "Bereken je prijs — IKEA-keuken laten plaatsen",
   description:
-    "Bereken in een minuut wat het plaatsen van je IKEA-keuken kost en vraag een offerte aan. Vaste prijs vooraf, antwoord binnen 24 uur. Geen foto's nodig.",
+    "Bereken in een minuut wat het plaatsen van je IKEA-keuken kost, of upload je IKEA Keukenplanner-ontwerp voor een directe indicatie. Vaste prijs vooraf, antwoord binnen 24 uur.",
   alternates: { canonical: "/offerte" },
 };
 
@@ -23,7 +23,7 @@ export default function OffertePage() {
       <Container className="max-w-2xl">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-ink sm:text-4xl">
-            Bereken je prijs &amp; vraag een offerte aan
+            Bereken je prijs
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-ink-soft">
             Beantwoord een paar korte vragen. Je ziet meteen een prijsindicatie en ontvangt
@@ -55,8 +55,8 @@ export default function OffertePage() {
 
         {/* Zachte nudge terug naar de upload */}
         <p className="mt-6 text-center text-sm text-muted">
-          Heb je toch een IKEA-plan? Stuur het hierboven mee voor een exacte vaste prijs in
-          plaats van een indicatie.
+          Heb je een ontwerp uit de IKEA Keukenplanner? Stuur het hierboven mee voor een
+          directe prijsindicatie op basis van je eigen plan.
         </p>
       </Container>
     </section>
