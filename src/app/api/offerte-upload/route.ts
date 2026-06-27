@@ -2,10 +2,7 @@ import { NextResponse, after } from "next/server";
 import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stuurNtfy } from "@/lib/ntfy";
-import {
-  stuurTekeningLeadNotificatie,
-  stuurTekeningKlantBevestiging,
-} from "@/lib/notify";
+import { stuurTekeningLeadNotificatie } from "@/lib/notify";
 import { rateLimit } from "@/lib/rate-limit";
 import { verwerkTekening } from "@/lib/tekening-verwerker";
 
@@ -118,12 +115,12 @@ export async function POST(req: Request) {
       priority: "high",
     }),
     stuurTekeningLeadNotificatie({ id, naam, email, telefoon, bestandsnaam: bestandsnamen, pad: tekeningPad }),
-    stuurTekeningKlantBevestiging({ naam, email }),
   ]);
 
   // Schakel 1 → 2: lezen + rekenen draait ONTKOPPELD ná de respons (Opus 4.8 kan
-  // seconden duren). Upload-pad heeft geen postcode → regio null → landelijke tarieven.
-  after(() => verwerkTekening(id, tekeningPad, null));
+  // seconden duren). De klant-mail (mét indicatie + disclaimer) gaat dáárna pas uit.
+  // Upload-pad heeft geen postcode → regio null → landelijke tarieven.
+  after(() => verwerkTekening(id, tekeningPad, null, { naam, email }));
 
   return NextResponse.json({ ok: true, id });
 }

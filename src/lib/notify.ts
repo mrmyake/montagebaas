@@ -264,36 +264,62 @@ export async function stuurTekeningLeadNotificatie(lead: TekeningLead): Promise<
   }
 }
 
-/** Bevestiging naar de klant voor een aanvraag via tekening-upload (geen prijs). */
-export async function stuurTekeningKlantBevestiging(klant: { naam: string; email: string }): Promise<void> {
+/**
+ * Bevestiging naar de klant voor een aanvraag via tekening-upload. Wordt ná de
+ * AI-lezing verstuurd (vanuit de verwerker), zodat de indicatieprijs erin kan.
+ * Met `prijs` → toont de range + disclaimer (sterker bij `ruw`); zonder `prijs`
+ * (lezing mislukt) → "exacte prijs volgt binnen 24 uur", geen bedrag.
+ */
+export async function stuurTekeningKlantBevestiging(klant: {
+  naam: string;
+  email: string;
+  prijs?: { min: number; max: number; ruw: boolean };
+}): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
   if (!apiKey || !from || !klant.email) return;
 
   const voornaam = klant.naam.split(/\s+/)[0] || klant.naam;
+  const p = klant.prijs;
+  const disclaimer = p?.ruw
+    ? "Let op: je hebt alleen een tekening geüpload en die was lastig automatisch te lezen. We kennen nog niet precies alle elementen, dus dit is een rúwe indicatie — de definitieve prijs kan afwijken."
+    : "Let op: deze prijs is een indicatie op basis van je geüploade tekening. We kennen nog niet alle exacte elementen, dus de definitieve prijs kan afwijken.";
+
+  const prijsBlokHtml = p
+    ? `<div style="margin:0 0 16px;padding:14px 16px;background:#f4f1ea;border-radius:12px">
+         <div style="font-size:13px;color:#6b7178">Indicatie op basis van je tekening</div>
+         <div style="font-size:22px;font-weight:700;margin-top:2px">${euro(p.min)} – ${euro(p.max)}</div>
+       </div>
+       <p style="margin:0 0 16px;color:#6b7178;font-size:13px;line-height:1.5">${disclaimer} Je krijgt <strong>binnen 24 uur</strong> een exacte vaste prijs op maat.</p>`
+    : `<p style="margin:0 0 16px;color:#3a3f47;line-height:1.5">Bedankt! We hebben je IKEA-tekening goed ontvangen. Je krijgt <strong>binnen 24 uur</strong> een exacte vaste prijs op maat.</p>`;
+
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;color:#1a1c20;max-width:560px">
-      <h2 style="margin:0 0 4px">Plan ontvangen, ${voornaam} ✅</h2>
-      <p style="margin:0 0 16px;color:#3a3f47;line-height:1.5">
-        Bedankt! We hebben je IKEA-tekening goed ontvangen. Je krijgt
-        <strong>binnen 24 uur</strong> een exacte vaste prijs op maat.
-      </p>
+      <h2 style="margin:0 0 12px">Plan ontvangen, ${voornaam} ✅</h2>
+      ${prijsBlokHtml}
       <p style="margin:0 0 8px;line-height:1.6">
         Liever direct contact? Bel <a href="${site.telefoonLink}" style="color:#1a1c20;font-weight:600">${site.telefoonWeergave}</a>
         of <a href="${whatsappDefault}" style="color:#1a1c20;font-weight:600">app ons via WhatsApp</a>.
       </p>
       <p style="margin:20px 0 0;color:#6b7178;font-size:13px">Met vriendelijke groet,<br/>${site.naam}</p>
     </div>`;
+
   const text = [
     `Plan ontvangen, ${voornaam}!`,
     "",
-    "We hebben je IKEA-tekening ontvangen. Je krijgt binnen 24 uur een exacte vaste prijs op maat.",
+    p
+      ? `Indicatie op basis van je tekening: ${euro(p.min)} – ${euro(p.max)}`
+      : "We hebben je IKEA-tekening ontvangen.",
+    p ? disclaimer : "",
+    "Je krijgt binnen 24 uur een exacte vaste prijs op maat.",
     "",
     `Liever direct contact? Bel ${site.telefoonWeergave} of app ons via WhatsApp.`,
     "",
     `Met vriendelijke groet, ${site.naam}`,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -303,7 +329,9 @@ export async function stuurTekeningKlantBevestiging(klant: { naam: string; email
         from,
         to: [klant.email],
         reply_to: replyTo,
-        subject: `Plan ontvangen — je vaste prijs volgt binnen 24 uur`,
+        subject: p
+          ? `Je prijsindicatie voor je IKEA-keuken`
+          : `Plan ontvangen — je vaste prijs volgt binnen 24 uur`,
         html,
         text,
       }),

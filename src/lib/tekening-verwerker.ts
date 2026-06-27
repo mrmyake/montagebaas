@@ -3,6 +3,7 @@ import { leesTekening } from "@/lib/tekening-lezer";
 import { laadTarieven } from "@/lib/tarieven";
 import { berekenPrijsUitTelling } from "@/lib/rekenen";
 import { stuurNtfy } from "@/lib/ntfy";
+import { stuurTekeningKlantBevestiging } from "@/lib/notify";
 import { euro } from "@/lib/pricing";
 
 /**
@@ -27,9 +28,14 @@ const rondAf = (incl: number, naar: number) => Math.round(incl / naar) * naar;
 export async function verwerkTekening(
   aanvraagId: string,
   pad: string,
-  regio: string | null
+  regio: string | null,
+  klant: { naam: string; email: string }
 ): Promise<void> {
   const db = supabaseAdmin();
+  // Wordt gevuld als er een geldige lezing + prijs is; bepaalt of de klant-mail
+  // een bedrag bevat.
+  let prijsVoorKlant: { min: number; max: number; ruw: boolean } | undefined;
+
   try {
     const { validatie, ruw } = await leesTekening(pad);
 
@@ -44,40 +50,41 @@ export async function verwerkTekening(
         body: `Lead ${aanvraagId}: telling onvolledig (${validatie.ontbrekend.join(", ")}). Geen indicatie getoond; beoordeel de tekening zelf.`,
         tags: "warning",
       });
-      return;
+    } else {
+      const telling = validatie.telling;
+      const hoog = telling.vertrouwen === "hoog";
+
+      const { id: tarievenId, tarieven } = await laadTarieven(regio);
+      const prijs = berekenPrijsUitTelling(telling, tarieven);
+
+      const min = hoog
+        ? Math.round(prijs.montageklaar.incl)
+        : rondAf(prijs.montageklaar.incl, 50);
+      const max = hoog
+        ? Math.round(prijs.compleet.incl)
+        : rondAf(prijs.compleet.incl * MARGE_LAAG_MAX, 50);
+
+      await db
+        .from("aanvragen")
+        .update({
+          prijs_indicatie_min: min, // montageklaar = ondergrens
+          prijs_indicatie_max: max, // compleet (bij laag vertrouwen + marge) = bovengrens
+          tarieven_id: tarievenId,
+          status: hoog ? "prijs_berekend" : "prijs_indicatie",
+        })
+        .eq("id", aanvraagId);
+
+      prijsVoorKlant = { min, max, ruw: !hoog };
+
+      await stuurNtfy({
+        title: hoog
+          ? `Tekening: prijs berekend (hoog vertrouwen)`
+          : `Tekening: indicatie (vertrouwen ${telling.vertrouwen})`,
+        body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${telling.aannames.join("\n- ")}\nControleer en stuur de exacte offerte.`,
+        tags: hoog ? "house,heavy_check_mark" : "house,warning",
+        priority: "high",
+      });
     }
-
-    const telling = validatie.telling;
-    const hoog = telling.vertrouwen === "hoog";
-
-    const { id: tarievenId, tarieven } = await laadTarieven(regio);
-    const prijs = berekenPrijsUitTelling(telling, tarieven);
-
-    const min = hoog
-      ? Math.round(prijs.montageklaar.incl)
-      : rondAf(prijs.montageklaar.incl, 50);
-    const max = hoog
-      ? Math.round(prijs.compleet.incl)
-      : rondAf(prijs.compleet.incl * MARGE_LAAG_MAX, 50);
-
-    await db
-      .from("aanvragen")
-      .update({
-        prijs_indicatie_min: min, // montageklaar = ondergrens
-        prijs_indicatie_max: max, // compleet (bij laag vertrouwen + marge) = bovengrens
-        tarieven_id: tarievenId,
-        status: hoog ? "prijs_berekend" : "prijs_indicatie",
-      })
-      .eq("id", aanvraagId);
-
-    await stuurNtfy({
-      title: hoog
-        ? `Tekening: prijs berekend (hoog vertrouwen)`
-        : `Tekening: indicatie (vertrouwen ${telling.vertrouwen})`,
-      body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${telling.aannames.join("\n- ")}\nControleer en stuur de exacte offerte.`,
-      tags: hoog ? "house,heavy_check_mark" : "house,warning",
-      priority: "high",
-    });
   } catch (err) {
     console.error(`[tekening] Verwerking mislukt (${aanvraagId}):`, err);
     try {
@@ -86,4 +93,8 @@ export async function verwerkTekening(
       // laatste redmiddel — niets meer te doen
     }
   }
+
+  // Klant-mail ALTIJD versturen (best-effort), mét prijs+disclaimer indien bekend,
+  // anders "exacte prijs volgt binnen 24 uur" zonder bedrag.
+  await stuurTekeningKlantBevestiging({ naam: klant.naam, email: klant.email, prijs: prijsVoorKlant });
 }
