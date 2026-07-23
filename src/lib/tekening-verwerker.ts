@@ -25,16 +25,29 @@ import { euro } from "@/lib/pricing";
 const MARGE_LAAG_MAX = 1.3;
 const rondAf = (incl: number, naar: number) => Math.round(incl / naar) * naar;
 
+// Resend limiteert een mail (incl. bijlagen) op 40 MB; base64 kost ~33% extra.
+// Boven deze grens laten we de bijlage(n) weg (de mail toont dan het Storage-pad
+// als fallback), zodat de mail zelf nooit faalt door een te grote bijlage.
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+
 export async function verwerkTekening(
   aanvraagId: string,
   pad: string,
   regio: string | null,
-  klant: { naam: string; email: string }
+  klant: { naam: string; email: string; telefoon: string },
+  bestanden: { naam: string; buffer: Buffer }[]
 ): Promise<void> {
   const db = supabaseAdmin();
   // Wordt gevuld als er een geldige lezing + prijs is; bepaalt of de klant-mail
   // een bedrag bevat.
   let prijsVoorKlant: { min: number; max: number; ruw: boolean } | undefined;
+
+  const bestandsnaam = bestanden.map((b) => b.naam).join(", ");
+  const totaalBytes = bestanden.reduce((n, b) => n + b.buffer.byteLength, 0);
+  const attachments =
+    totaalBytes <= MAX_ATTACHMENT_BYTES
+      ? bestanden.map((b) => ({ filename: b.naam, content: b.buffer.toString("base64") }))
+      : undefined;
 
   try {
     const { validatie, ruw } = await leesTekening(pad);
@@ -55,7 +68,11 @@ export async function verwerkTekening(
           status: "controle",
           aanvraagId,
           naam: klant.naam,
+          telefoon: klant.telefoon,
           email: klant.email,
+          bestandsnaam,
+          pad,
+          attachments,
           ontbrekend: validatie.ontbrekend,
         }),
       ]);
@@ -98,7 +115,11 @@ export async function verwerkTekening(
           status: hoog ? "berekend" : "indicatie",
           aanvraagId,
           naam: klant.naam,
+          telefoon: klant.telefoon,
           email: klant.email,
+          bestandsnaam,
+          pad,
+          attachments,
           min,
           max,
           vertrouwen: telling.vertrouwen,

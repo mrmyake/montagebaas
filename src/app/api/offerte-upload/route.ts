@@ -2,7 +2,6 @@ import { NextResponse, after } from "next/server";
 import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stuurNtfy } from "@/lib/ntfy";
-import { stuurTekeningLeadNotificatie } from "@/lib/notify";
 import { rateLimit } from "@/lib/rate-limit";
 import { verwerkTekening } from "@/lib/tekening-verwerker";
 
@@ -69,8 +68,10 @@ export async function POST(req: Request) {
 
   const db = supabaseAdmin();
 
-  // 1. Alle bestanden naar Storage
+  // 1. Alle bestanden naar Storage (buffer bewaren we meteen voor de e-mailbijlage,
+  // zodat we ze niet opnieuw hoeven te downloaden uit Storage)
   const paden: string[] = [];
+  const geuploadeBestanden: { naam: string; buffer: Buffer }[] = [];
   for (const f of files) {
     const ext = EXT_VOOR_TYPE[f.type];
     const veiligeNaam = f.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80) || `tekening.${ext}`;
@@ -82,6 +83,7 @@ export async function POST(req: Request) {
       return fout("Opslaan van je bestand(en) mislukte. Gebruik het formulier hieronder.", 500);
     }
     paden.push(p);
+    geuploadeBestanden.push({ naam: f.name, buffer });
   }
   const tekeningPad = JSON.stringify(paden); // meerdere paden → JSON-array in tekening_pad
   const bestandsnamen = files.map((f) => f.name).join(", ");
@@ -106,21 +108,22 @@ export async function POST(req: Request) {
   }
   const id = data.id as string;
 
-  // 3. Notificaties — best-effort, mogen de aanvraag niet laten falen.
-  await Promise.allSettled([
-    stuurNtfy({
-      title: `Nieuwe aanvraag MET tekening: ${naam}`,
-      body: `${naam}\nTel: ${telefoon}\nEmail: ${email}\nBestanden (${files.length}): ${bestandsnamen}`,
-      tags: "house,paperclip",
-      priority: "high",
-    }),
-    stuurTekeningLeadNotificatie({ id, naam, email, telefoon, bestandsnaam: bestandsnamen, pad: tekeningPad }),
-  ]);
+  // 3. Ntfy-push — instant mobiele melding, best-effort. De owner-mail (mét AI-resultaat
+  // + bijlagen) volgt pas na schakel 2, zie hieronder.
+  await stuurNtfy({
+    title: `Nieuwe aanvraag MET tekening: ${naam}`,
+    body: `${naam}\nTel: ${telefoon}\nEmail: ${email}\nBestanden (${files.length}): ${bestandsnamen}`,
+    tags: "house,paperclip",
+    priority: "high",
+  });
 
   // Schakel 1 → 2: lezen + rekenen draait ONTKOPPELD ná de respons (Opus 4.8 kan
-  // seconden duren). De klant-mail (mét indicatie + disclaimer) gaat dáárna pas uit.
+  // seconden duren). De owner-mail (met AI-resultaat + bijlagen) en de klant-mail
+  // (mét indicatie + disclaimer) gaan dáárna pas uit.
   // Upload-pad heeft geen postcode → regio null → landelijke tarieven.
-  after(() => verwerkTekening(id, tekeningPad, null, { naam, email }));
+  after(() =>
+    verwerkTekening(id, tekeningPad, null, { naam, email, telefoon }, geuploadeBestanden)
+  );
 
   return NextResponse.json({ ok: true, id });
 }

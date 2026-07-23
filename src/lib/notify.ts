@@ -203,7 +203,11 @@ export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void
 interface TekeningIndicatieBasis {
   aanvraagId: string;
   naam: string;
+  telefoon: string;
   email: string;
+  bestandsnaam: string;
+  pad: string; // Storage-pad, als fallback getoond wanneer attachments ontbreekt (te groot)
+  attachments?: { filename: string; content: string }[]; // content = base64
 }
 
 type TekeningIndicatieNotificatie =
@@ -217,9 +221,12 @@ type TekeningIndicatieNotificatie =
     });
 
 /**
- * Interne notificatie naar de eigenaar met het resultaat van de tekening-lezing
- * (schakel 2): prijsindicatie + vertrouwen + aannames, of "handmatige controle nodig"
- * als de lezing/validatie faalde. Mirror van de ntfy-push in tekening-verwerker.ts.
+ * Interne notificatie naar de eigenaar voor een aanvraag via tekening-upload —
+ * gecombineerd: contactgegevens + geüploade bestanden (als bijlage) + het resultaat
+ * van de AI-lezing (prijsindicatie/vertrouwen/aannames), of "handmatige controle
+ * nodig" als de lezing/validatie faalde. Eén mail, verstuurd ná de AI-lezing
+ * (schakel 2) zodat alles er meteen in staat. Mirror van de ntfy-push in
+ * tekening-verwerker.ts.
  */
 export async function stuurTekeningIndicatieNotificatie(
   input: TekeningIndicatieNotificatie
@@ -236,42 +243,68 @@ export async function stuurTekeningIndicatieNotificatie(
     input.status === "controle"
       ? `Tekening: handmatige controle nodig — ${input.naam}`
       : input.status === "berekend"
-        ? `Tekening: prijs berekend (hoog vertrouwen) — ${input.naam}`
-        : `Tekening: indicatie (vertrouwen ${input.vertrouwen}) — ${input.naam}`;
+        ? `Nieuwe aanvraag mét tekening — prijs berekend — ${input.naam}`
+        : `Nieuwe aanvraag mét tekening — indicatie (vertrouwen ${input.vertrouwen}) — ${input.naam}`;
 
+  const rij = (label: string, waarde: string) =>
+    `<tr><td style="padding:4px 12px 4px 0;color:#6b7178">${label}</td><td style="padding:4px 0;font-weight:600">${waarde}</td></tr>`;
+  const contactTabel = `
+    <table style="border-collapse:collapse;font-size:14px;margin-bottom:16px">
+      ${rij("Naam", input.naam)}
+      ${rij("Telefoon", input.telefoon)}
+      ${rij("E-mail", input.email)}
+      ${rij("Tekening", input.bestandsnaam)}
+    </table>`;
   const lijst = (items: string[]) => items.map((a) => `<li>${a}</li>`).join("");
+  // Bijlage ontbreekt alleen als het bestand te groot was (zie MAX_ATTACHMENT_BYTES) —
+  // dan blijft de Storage-locatie als enige manier om erbij te kunnen.
+  const padFallbackHtml = input.attachments?.length
+    ? ""
+    : `<p style="margin:8px 0 0;font-size:13px;color:#6b7178">Bijlage te groot om mee te sturen — bestand in Storage (bucket <strong>offerte-tekeningen</strong>): <code>${input.pad}</code></p>`;
+  const padFallbackText = input.attachments?.length
+    ? []
+    : [`Bijlage te groot om mee te sturen — pad: offerte-tekeningen/${input.pad}`];
 
   const html =
     input.status === "controle"
       ? `<div style="font-family:Inter,Arial,sans-serif;color:#1a1c20">
            <h2 style="margin:0 0 4px">Tekening: handmatige controle nodig</h2>
-           <p style="margin:0 0 4px;color:#6b7178">Lead-ID: ${input.aanvraagId}</p>
-           <p style="margin:0 0 4px">${input.naam} — ${input.email}</p>
-           <p style="margin:12px 0 0">Telling onvolledig, ontbrekend: <strong>${input.ontbrekend.join(", ")}</strong></p>
+           <p style="margin:0 0 16px;color:#6b7178">Lead-ID: ${input.aanvraagId}</p>
+           ${contactTabel}
+           <p style="margin:0">Telling onvolledig, ontbrekend: <strong>${input.ontbrekend.join(", ")}</strong></p>
            <p style="margin:8px 0 0;color:#6b7178">Geen indicatie getoond aan de klant; beoordeel de tekening zelf.</p>
+           ${padFallbackHtml}
          </div>`
       : `<div style="font-family:Inter,Arial,sans-serif;color:#1a1c20">
            <h2 style="margin:0 0 4px">${input.status === "berekend" ? "Prijs berekend (hoog vertrouwen)" : `Indicatie (vertrouwen ${input.vertrouwen})`}</h2>
-           <p style="margin:0 0 4px;color:#6b7178">Lead-ID: ${input.aanvraagId}</p>
-           <p style="margin:0 0 12px">${input.naam} — ${input.email}</p>
+           <p style="margin:0 0 16px;color:#6b7178">Lead-ID: ${input.aanvraagId}</p>
+           ${contactTabel}
            <p style="margin:0 0 4px;font-size:20px;font-weight:700">${euro(input.min)} – ${euro(input.max)}</p>
            <p style="margin:0 0 8px;color:#6b7178">Vertrouwen: ${input.vertrouwen}</p>
            <p style="margin:0 0 4px;font-weight:600">Aannames</p>
            <ul style="margin:0 0 12px;padding-left:18px;font-size:14px;color:#3a3f47">${lijst(input.aannames)}</ul>
            <p style="margin:0;color:#6b7178">${input.status === "berekend" ? "Controleer en stuur de exacte offerte." : "Klant is per mail gevraagd de IKEA-artikellijst te sturen voor een exacte prijs."}</p>
+           ${padFallbackHtml}
          </div>`;
 
   const text =
     input.status === "controle"
       ? [
           `Tekening: handmatige controle nodig (lead ${input.aanvraagId})`,
-          `${input.naam} — ${input.email}`,
+          `Naam: ${input.naam}`,
+          `Telefoon: ${input.telefoon}`,
+          `E-mail: ${input.email}`,
+          `Tekening: ${input.bestandsnaam}`,
           `Ontbrekend: ${input.ontbrekend.join(", ")}`,
           `Geen indicatie getoond aan de klant; beoordeel de tekening zelf.`,
+          ...padFallbackText,
         ].join("\n")
       : [
           `${input.status === "berekend" ? "Prijs berekend (hoog vertrouwen)" : `Indicatie (vertrouwen ${input.vertrouwen})`} — lead ${input.aanvraagId}`,
-          `${input.naam} — ${input.email}`,
+          `Naam: ${input.naam}`,
+          `Telefoon: ${input.telefoon}`,
+          `E-mail: ${input.email}`,
+          `Tekening: ${input.bestandsnaam}`,
           `Indicatie: ${euro(input.min)} – ${euro(input.max)}`,
           `Vertrouwen: ${input.vertrouwen}`,
           `Aannames:`,
@@ -279,64 +312,8 @@ export async function stuurTekeningIndicatieNotificatie(
           input.status === "berekend"
             ? "Controleer en stuur de exacte offerte."
             : "Klant is per mail gevraagd de IKEA-artikellijst te sturen voor een exacte prijs.",
+          ...padFallbackText,
         ].join("\n");
-
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [to], subject, html, text }),
-    });
-    if (!res.ok) console.error(`[lead] Resend (tekening-indicatie) status ${res.status}: ${await res.text()}`);
-  } catch (err) {
-    console.error("[lead] Indicatie-e-mail mislukt:", err);
-  }
-}
-
-interface TekeningLead {
-  id: string;
-  naam: string;
-  email: string;
-  telefoon: string;
-  bestandsnaam: string;
-  pad: string;
-}
-
-/** Interne notificatie naar de eigenaar voor een aanvraag VIA tekening-upload. */
-export async function stuurTekeningLeadNotificatie(lead: TekeningLead): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.LEAD_NOTIFY_TO;
-  const from = process.env.RESEND_FROM_EMAIL;
-  if (!apiKey || !to || !from) {
-    console.warn(`[lead] Geen e-mail (tekening) verstuurd; lead ${lead.id} staat wel in de database.`);
-    return;
-  }
-
-  const rij = (label: string, waarde: string) =>
-    `<tr><td style="padding:4px 12px 4px 0;color:#6b7178">${label}</td><td style="padding:4px 0;font-weight:600">${waarde}</td></tr>`;
-  const html = `
-    <div style="font-family:Inter,Arial,sans-serif;color:#1a1c20">
-      <h2 style="margin:0 0 4px">Nieuwe aanvraag — mét IKEA-tekening</h2>
-      <p style="margin:0 0 16px;color:#6b7178">Lead-ID: ${lead.id}</p>
-      <table style="border-collapse:collapse;font-size:14px">
-        ${rij("Naam", lead.naam)}
-        ${rij("Telefoon", lead.telefoon)}
-        ${rij("E-mail", lead.email)}
-        ${rij("Tekening", lead.bestandsnaam)}
-      </table>
-      <p style="margin:16px 0 0;font-size:14px;color:#6b7178">
-        Bestand in Supabase Storage (bucket <strong>offerte-tekeningen</strong>):<br/>
-        <code>${lead.pad}</code>
-      </p>
-    </div>`;
-  const text = [
-    `Nieuwe aanvraag MET tekening (lead ${lead.id})`,
-    `Naam: ${lead.naam}`,
-    `Telefoon: ${lead.telefoon}`,
-    `E-mail: ${lead.email}`,
-    `Tekening: ${lead.bestandsnaam}`,
-    `Pad: offerte-tekeningen/${lead.pad}`,
-  ].join("\n");
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -345,15 +322,16 @@ export async function stuurTekeningLeadNotificatie(lead: TekeningLead): Promise<
       body: JSON.stringify({
         from,
         to: [to],
-        reply_to: lead.email,
-        subject: `Nieuwe aanvraag mét tekening — ${lead.naam}`,
+        reply_to: input.email,
+        ...(input.attachments?.length ? { attachments: input.attachments } : {}),
+        subject,
         html,
         text,
       }),
     });
-    if (!res.ok) console.error(`[lead] Resend (tekening) status ${res.status}: ${await res.text()}`);
+    if (!res.ok) console.error(`[lead] Resend (tekening-indicatie) status ${res.status}: ${await res.text()}`);
   } catch (err) {
-    console.error("[lead] E-mail (tekening) mislukt:", err);
+    console.error("[lead] Indicatie-e-mail mislukt:", err);
   }
 }
 
