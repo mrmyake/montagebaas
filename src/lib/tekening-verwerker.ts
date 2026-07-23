@@ -3,7 +3,7 @@ import { leesTekening } from "@/lib/tekening-lezer";
 import { laadTarieven } from "@/lib/tarieven";
 import { berekenPrijsUitTelling } from "@/lib/rekenen";
 import { stuurNtfy } from "@/lib/ntfy";
-import { stuurTekeningKlantBevestiging } from "@/lib/notify";
+import { stuurTekeningIndicatieNotificatie, stuurTekeningKlantBevestiging } from "@/lib/notify";
 import { euro } from "@/lib/pricing";
 
 /**
@@ -45,11 +45,20 @@ export async function verwerkTekening(
         `[tekening] Validatie faalde (${aanvraagId}); ontbrekend: ${validatie.ontbrekend.join(", ")}`,
         ruw
       );
-      await stuurNtfy({
-        title: `Tekening: handmatige controle nodig`,
-        body: `Lead ${aanvraagId}: telling onvolledig (${validatie.ontbrekend.join(", ")}). Geen indicatie getoond; beoordeel de tekening zelf.`,
-        tags: "warning",
-      });
+      await Promise.allSettled([
+        stuurNtfy({
+          title: `Tekening: handmatige controle nodig`,
+          body: `Lead ${aanvraagId}: telling onvolledig (${validatie.ontbrekend.join(", ")}). Geen indicatie getoond; beoordeel de tekening zelf.`,
+          tags: "warning",
+        }),
+        stuurTekeningIndicatieNotificatie({
+          status: "controle",
+          aanvraagId,
+          naam: klant.naam,
+          email: klant.email,
+          ontbrekend: validatie.ontbrekend,
+        }),
+      ]);
     } else {
       const telling = validatie.telling;
       const hoog = telling.vertrouwen === "hoog";
@@ -76,14 +85,26 @@ export async function verwerkTekening(
 
       prijsVoorKlant = { min, max, ruw: !hoog };
 
-      await stuurNtfy({
-        title: hoog
-          ? `Tekening: prijs berekend (hoog vertrouwen)`
-          : `Tekening: indicatie (vertrouwen ${telling.vertrouwen})`,
-        body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${telling.aannames.join("\n- ")}\n${hoog ? "Controleer en stuur de exacte offerte." : "→ Klant is per mail gevraagd de IKEA-artikellijst te sturen voor een exacte prijs."}`,
-        tags: hoog ? "house,heavy_check_mark" : "house,warning",
-        priority: "high",
-      });
+      await Promise.allSettled([
+        stuurNtfy({
+          title: hoog
+            ? `Tekening: prijs berekend (hoog vertrouwen)`
+            : `Tekening: indicatie (vertrouwen ${telling.vertrouwen})`,
+          body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${telling.aannames.join("\n- ")}\n${hoog ? "Controleer en stuur de exacte offerte." : "→ Klant is per mail gevraagd de IKEA-artikellijst te sturen voor een exacte prijs."}`,
+          tags: hoog ? "house,heavy_check_mark" : "house,warning",
+          priority: "high",
+        }),
+        stuurTekeningIndicatieNotificatie({
+          status: hoog ? "berekend" : "indicatie",
+          aanvraagId,
+          naam: klant.naam,
+          email: klant.email,
+          min,
+          max,
+          vertrouwen: telling.vertrouwen,
+          aannames: telling.aannames,
+        }),
+      ]);
     }
   } catch (err) {
     console.error(`[tekening] Verwerking mislukt (${aanvraagId}):`, err);
