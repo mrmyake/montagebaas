@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { stuurNtfy } from "@/lib/ntfy";
 
 /**
@@ -48,12 +48,17 @@ export async function POST(req: Request) {
   const where = location ? ` (${location})` : "";
   const message = `${LABELS[type as CtaType]} op montagebaas.com${where} - ${time}`;
 
-  await stuurNtfy({
-    title: message,
-    body: message,
-    tags: TAGS[type as CtaType],
-    priority: "default",
-  });
+  // Via after(): de client stuurt dit met sendBeacon tijdens een page-unload en
+  // wacht sowieso niet op het antwoord. Zo houdt een trage ntfy.sh de functie
+  // niet langer open dan nodig.
+  after(() =>
+    stuurNtfy({
+      title: message,
+      body: message,
+      tags: TAGS[type as CtaType],
+      priority: "default",
+    })
+  );
 
   return NextResponse.json({ ok: true });
 }

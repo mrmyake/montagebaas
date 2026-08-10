@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { berekenPrijs, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { isGeldigePostcode, regioUitPostcode, type TypeKlus } from "@/lib/configurator";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -143,12 +144,14 @@ export async function verstuurAanvraag(
     "",
     toelichting || "Geen toelichting",
   ].join("\n");
-  await stuurNtfy({
-    title: `Nieuwe offerte: ${naam} - ${postcodeNet}${regio ? ` (${regio})` : ""}`,
-    body: ntfyBody,
-    tags: "house,hammer",
-    priority: "high",
-  });
+  after(() =>
+    stuurNtfy({
+      title: `Nieuwe offerte: ${naam} - ${postcodeNet}${regio ? ` (${regio})` : ""}`,
+      body: ntfyBody,
+      tags: "house,hammer",
+      priority: "high",
+    })
+  );
 
   // Notificaties — best-effort, mogen de aanvraag niet laten falen.
   const leadData = {
@@ -167,10 +170,15 @@ export async function verstuurAanvraag(
     gewenste_periode: payload.gewenste_periode,
     toelichting,
   };
-  await Promise.allSettled([
-    stuurLeadNotificatie(leadData), // interne notificatie naar de eigenaar
-    stuurKlantBevestiging(leadData), // bevestiging naar de klant
-  ]);
+  // Ook deze twee via after(): het zijn Resend-calls zonder eigen timeout, en ze
+  // stonden vóór de return — de bezoeker wachtte dus op twee e-mails die hem niet
+  // hoeven op te houden. De lead staat op dit punt al vast in de database.
+  after(() =>
+    Promise.allSettled([
+      stuurLeadNotificatie(leadData), // interne notificatie naar de eigenaar
+      stuurKlantBevestiging(leadData), // bevestiging naar de klant
+    ])
+  );
 
   return { ok: true, id };
 }

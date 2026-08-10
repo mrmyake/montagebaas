@@ -110,12 +110,19 @@ export async function POST(req: Request) {
 
   // 3. Ntfy-push — instant mobiele melding, best-effort. De owner-mail (mét AI-resultaat
   // + bijlagen) volgt pas na schakel 2, zie hieronder.
-  await stuurNtfy({
-    title: `Nieuwe aanvraag MET tekening: ${naam}`,
-    body: `${naam}\nTel: ${telefoon}\nEmail: ${email}\nBestanden (${files.length}): ${bestandsnamen}`,
-    tags: "house,paperclip",
-    priority: "high",
-  });
+  //
+  // Bewust via after(): de lead staat hierboven al in de database, dus de bezoeker
+  // mag niet wachten op een push die hem niet aangaat. Stond dit eerder wél in het
+  // antwoordpad, dan bleef bij een trage ntfy.sh de redirect naar /bedankt uit —
+  // aanvraag binnen, maar geen bevestiging voor de klant en geen conversie.
+  after(() =>
+    stuurNtfy({
+      title: `Nieuwe aanvraag MET tekening: ${naam}`,
+      body: `${naam}\nTel: ${telefoon}\nEmail: ${email}\nBestanden (${files.length}): ${bestandsnamen}`,
+      tags: "house,paperclip",
+      priority: "high",
+    })
+  );
 
   // Schakel 1 → 2: lezen + rekenen draait ONTKOPPELD ná de respons (Opus 4.8 kan
   // seconden duren). De owner-mail (met AI-resultaat + bijlagen) en de klant-mail
