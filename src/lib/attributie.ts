@@ -1,9 +1,9 @@
 /**
  * Attributie: waar kwam deze bezoeker vandaan?
  *
- * Bewust ZONDER enige Google-afhankelijkheid. De gclid staat in de URL — niet in
- * een cookie van Google — en we bewaren hem in een eigen first-party cookie via
- * document.cookie. Adblockers en privacybrowsers blokkeren het script van
+ * Bewust ZONDER enige Google-afhankelijkheid. De klik-identifier staat in de URL
+ * — niet in een cookie van Google — en we bewaren hem in een eigen first-party
+ * cookie via document.cookie. Adblockers en privacybrowsers blokkeren het script van
  * googletagmanager.com, niet je eigen cookie. Juist de bezoekers die in GA4
  * volledig onzichtbaar zijn (geen enkele paginaweergave) blijven zo
  * attribueerbaar; dat was 7 van de 8 ontbrekende conversies in de meting over
@@ -25,6 +25,8 @@ const MAX_LENGTE = 200;
 
 export interface Attributie {
   gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
@@ -36,6 +38,8 @@ export interface Attributie {
 
 const LEEG: Attributie = {
   gclid: null,
+  gbraid: null,
+  wbraid: null,
   utm_source: null,
   utm_medium: null,
   utm_campaign: null,
@@ -44,6 +48,14 @@ const LEEG: Attributie = {
   landing_page: null,
   referrer: null,
 };
+
+/**
+ * De drie klik-identifiers van Google Ads. Google stuurt er per klik altijd
+ * precies één mee: `gclid` normaal, `gbraid`/`wbraid` bij iOS-verkeer waar
+ * app-naar-web niet met een gclid te volgen is. Ze zijn dus alternatieven van
+ * elkaar, geen aanvullingen — zie de invariant bij `leesUitUrl`.
+ */
+const KLIK_VELDEN = ["gclid", "gbraid", "wbraid"] as const;
 
 const UTM_VELDEN = [
   "utm_source",
@@ -66,6 +78,14 @@ function schoon(waarde: string | null | undefined): string | null {
  * het belangrijkste onderscheid van deze module: een direct bezoek, een
  * organische terugkeer of een interne navigatie levert niets op, en mag dus
  * ook niets overschrijven.
+ *
+ * INVARIANT — één klik-identifier per opgeslagen record. Deze functie bouwt het
+ * record altijd op vanaf `LEEG`, dus elk veld dat niet in de huidige URL staat
+ * wordt `null`. In combinatie met `volgendeCookieWaarde`, dat de cookie in zijn
+ * geheel vervangt in plaats van veld voor veld te mengen, kan een record dus
+ * nooit een gclid uit bezoek 1 én een gbraid uit bezoek 2 bevatten: het laatste
+ * geparameteriseerde bezoek wint volledig. Dat is precies wat je wilt bij een
+ * offline conversion import, waar per conversie één identifier hoort.
  */
 export function leesUitUrl(href: string, referrer?: string | null): Attributie | null {
   let url: URL;
@@ -76,17 +96,16 @@ export function leesUitUrl(href: string, referrer?: string | null): Attributie |
   }
 
   const p = url.searchParams;
-  const gclid = schoon(p.get("gclid"));
-  const utm: Partial<Attributie> = {};
-  for (const veld of UTM_VELDEN) utm[veld] = schoon(p.get(veld));
+  const velden: Partial<Attributie> = {};
+  for (const veld of KLIK_VELDEN) velden[veld] = schoon(p.get(veld));
+  for (const veld of UTM_VELDEN) velden[veld] = schoon(p.get(veld));
 
-  const heeftAttributie = Boolean(gclid) || UTM_VELDEN.some((v) => utm[v]);
+  const heeftAttributie = [...KLIK_VELDEN, ...UTM_VELDEN].some((v) => velden[v]);
   if (!heeftAttributie) return null;
 
   return {
     ...LEEG,
-    ...utm,
-    gclid,
+    ...velden,
     landing_page: schoon(url.pathname + url.search),
     referrer: schoon(referrer),
   };
@@ -99,7 +118,8 @@ export function leesUitUrl(href: string, referrer?: string | null): Attributie |
  * De regel: een URL zónder attributieparameters laat de bestaande waarde staan.
  * Zonder dat zou elk direct bezoek of elke organische terugkeer de herkomst van
  * een eerdere advertentieklik wissen, en dat is precies wat we willen bewaren.
- * Een URL mét parameters wint wél — inclusief een nieuwe gclid over een oude.
+ * Een URL mét parameters wint wél — inclusief een nieuwe klik-identifier over
+ * een oude, ook als dat een andere soort is (gbraid over gclid).
  *
  * Dat is last-non-direct-touch: hetzelfde model dat GA4 zelf hanteert, zodat
  * onze cijfers en GA4 dezelfde kant op wijzen bij het reconciliëren.

@@ -110,6 +110,44 @@ test("een nieuwe gclid wint wel van een oude", () => {
   assert.equal(attr.landing_page, "/offerte?gclid=KLIK_TWEE");
 });
 
+test("gbraid en wbraid worden net zo afgevangen als gclid", () => {
+  const metGbraid = new NepCookieJar();
+  paginaLading(metGbraid, "https://montagebaas.com/offerte?gbraid=BRAID_A");
+  assert.equal(attributieVoorInsert(metGbraid).gbraid, "BRAID_A");
+
+  const metWbraid = new NepCookieJar();
+  paginaLading(metWbraid, "https://montagebaas.com/offerte?wbraid=BRAID_W");
+  assert.equal(attributieVoorInsert(metWbraid).wbraid, "BRAID_W");
+
+  // En ze overleven een navigatie zonder parameters, net als gclid.
+  paginaLading(metGbraid, "https://montagebaas.com/offerte");
+  assert.equal(attributieVoorInsert(metGbraid).gbraid, "BRAID_A");
+});
+
+test("er staat nooit meer dan één klik-identifier in het record", () => {
+  const jar = new NepCookieJar();
+
+  // Bezoek 1: gewone Search-klik.
+  paginaLading(jar, "https://montagebaas.com/?gclid=KLIK_EEN");
+  // Bezoek 2: iOS-klik, die een gbraid meestuurt in plaats van een gclid.
+  paginaLading(jar, "https://montagebaas.com/?gbraid=BRAID_A");
+
+  const attr = attributieVoorInsert(jar);
+  assert.equal(attr.gbraid, "BRAID_A");
+  assert.equal(
+    attr.gclid,
+    null,
+    "de cookie wordt in zijn geheel vervangen, dus de oude gclid blijft niet naast de gbraid staan"
+  );
+  assert.equal(attr.wbraid, null);
+
+  // Andersom net zo: een nieuwe gclid wist de gbraid.
+  paginaLading(jar, "https://montagebaas.com/?gclid=KLIK_TWEE");
+  const na = attributieVoorInsert(jar);
+  assert.equal(na.gclid, "KLIK_TWEE");
+  assert.equal(na.gbraid, null);
+});
+
 test("een utm-bezoek zonder gclid telt als nieuwe herkomst", () => {
   const jar = new NepCookieJar();
   paginaLading(jar, "https://montagebaas.com/?gclid=KLIK_EEN");
@@ -127,6 +165,8 @@ test("zonder cookie levert de insert overal null op, niet undefined", () => {
   const attr = attributieVoorInsert(new NepCookieJar());
   assert.deepEqual(attr, {
     gclid: null,
+    gbraid: null,
+    wbraid: null,
     utm_source: null,
     utm_medium: null,
     utm_campaign: null,

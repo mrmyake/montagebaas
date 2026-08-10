@@ -25,8 +25,13 @@ export interface AanvraagRow {
   // Tekening-upload-pad (0002).
   tekening_geupload: boolean;
   tekening_pad: string | null;
+  // Tarieven-versie waarmee de prijs is berekend (0003).
+  tarieven_id: string | null;
   // Attributie (0004) — uit onze eigen first-party cookie, zie lib/attributie.ts.
+  // gclid/gbraid/wbraid zijn alternatieven: er is er altijd hooguit één gevuld.
   gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
