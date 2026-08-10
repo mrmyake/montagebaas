@@ -1,6 +1,7 @@
 import { NextResponse, after } from "next/server";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
+import { attributieVoorInsert } from "@/lib/attributie";
 import { stuurNtfy } from "@/lib/ntfy";
 import { rateLimit } from "@/lib/rate-limit";
 import { verwerkTekening } from "@/lib/tekening-verwerker";
@@ -88,10 +89,13 @@ export async function POST(req: Request) {
   const tekeningPad = JSON.stringify(paden); // meerdere paden → JSON-array in tekening_pad
   const bestandsnamen = files.map((f) => f.name).join(", ");
 
-  // 2. Lead wegschrijven (zelfde tabel)
+  // 2. Lead wegschrijven (zelfde tabel). Attributie komt uit onze eigen cookie,
+  // die de browser automatisch meestuurt — de FormData bevat hier niets voor.
+  const attributie = attributieVoorInsert(await cookies());
   const { data, error } = await db
     .from("aanvragen")
     .insert({
+      ...attributie,
       naam,
       telefoon,
       email,

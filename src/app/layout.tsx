@@ -8,6 +8,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { Analytics } from "@/components/analytics/Analytics";
 import { ConsentBanner } from "@/components/analytics/ConsentBanner";
 import { CtaClickTracker } from "@/components/analytics/CtaClickTracker";
+import { AttributieCapture } from "@/components/analytics/AttributieCapture";
 import { localBusinessSchema, websiteSchema } from "@/lib/schema";
 import { site } from "@/lib/site";
 
@@ -62,6 +63,8 @@ export default function RootLayout({
         <main className="flex-1 pb-20 lg:pb-0">{children}</main>
         <Footer />
         <MobileCtaBar />
+        {/* Vóór Analytics: werkt los van gtag.js en moet ook draaien als dat geblokkeerd is. */}
+        <AttributieCapture />
         <Analytics />
         <ConsentBanner />
         <CtaClickTracker />

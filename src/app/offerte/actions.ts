@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { after } from "next/server";
 import { berekenPrijs, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { isGeldigePostcode, regioUitPostcode, type TypeKlus } from "@/lib/configurator";
@@ -9,6 +9,7 @@ import { stuurLeadNotificatie, stuurKlantBevestiging } from "@/lib/notify";
 import { stuurNtfy } from "@/lib/ntfy";
 import { rateLimit } from "@/lib/rate-limit";
 import { euro } from "@/lib/pricing";
+import { attributieVoorInsert } from "@/lib/attributie";
 import type { AanvraagInsert } from "@/lib/db.types";
 
 export interface AanvraagPayload {
@@ -88,7 +89,12 @@ export async function verstuurAanvraag(
   const postcodeNet = payload.postcode.trim().toUpperCase();
   const toelichting = payload.toelichting?.trim() || null;
 
+  // Attributie reist mee in onze eigen cookie, dus AanvraagPayload hoeft niet
+  // uitgebreid te worden — de client stuurt hier niets voor mee.
+  const attributie = attributieVoorInsert(await cookies());
+
   const insert: AanvraagInsert = {
+    ...attributie,
     type_klus: payload.type_klus,
     aantal_kasten_range: payload.grootte,
     opstelling: payload.opstelling,

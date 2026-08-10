@@ -25,6 +25,18 @@ export interface AanvraagRow {
   // Tekening-upload-pad (0002).
   tekening_geupload: boolean;
   tekening_pad: string | null;
+  // Attributie (0004) — uit onze eigen first-party cookie, zie lib/attributie.ts.
+  gclid: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_term: string | null;
+  utm_content: string | null;
+  landing_page: string | null;
+  referrer: string | null;
+  // Alleen gevuld als gtag.js daadwerkelijk draaide (de _ga-cookie bestond).
+  // Blijft bewust null bij bezoekers die tracking blokkeren — niets verzinnen.
+  ga_client_id: string | null;
 }
 
 // Insert: contact is verplicht; al het overige is optioneel zodat zowel het
