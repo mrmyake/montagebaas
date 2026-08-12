@@ -42,7 +42,98 @@ export interface AanvraagRow {
   // Alleen gevuld als gtag.js daadwerkelijk draaide (de _ga-cookie bestond).
   // Blijft bewust null bij bezoekers die tracking blokkeren — niets verzinnen.
   ga_client_id: string | null;
+  // Sales-pipeline (0005) — LET OP: `status` hierboven is een ander concept
+  // (tekening-verwerkingspad, zie tekening-verwerker.ts). Deze twee kolommen
+  // bestaan naast elkaar met opzet.
+  lead_status: LeadStatus;
+  lead_status_gewijzigd_op: string;
+  bron: LeadBron;
+  offerte_bedrag: number | null;
+  gefactureerd_bedrag: number | null; // alleen gevuld bij lead_status 'gewonnen' of 'uitgevoerd' (db check constraint)
+  reden_verloren: string | null;
+  notitie: string | null;
 }
+
+export type LeadStatus =
+  | "nieuw"
+  | "contact_gelegd"
+  | "offerte_verstuurd"
+  | "wacht_op_klant"
+  | "gewonnen"
+  | "uitgevoerd"
+  | "verloren"
+  | "geen_reactie"
+  | "niet_passend";
+
+export const LEAD_STATUSSEN: LeadStatus[] = [
+  "nieuw",
+  "contact_gelegd",
+  "offerte_verstuurd",
+  "wacht_op_klant",
+  "gewonnen",
+  "uitgevoerd",
+  "verloren",
+  "geen_reactie",
+  "niet_passend",
+];
+
+// Statussen waarbij een gefactureerd_bedrag is toegestaan (db check constraint).
+export const LEAD_STATUSSEN_MET_FACTUUR: LeadStatus[] = ["gewonnen", "uitgevoerd"];
+
+export type LeadBron = "website" | "werkspot" | "doorverwijzing" | "overig";
+
+export const LEAD_BRONNEN: LeadBron[] = ["website", "werkspot", "doorverwijzing", "overig"];
+
+// Spiegelt montagebaas.lead_overzicht (0005_lead_status.sql).
+export interface LeadOverzichtRow {
+  id: string;
+  created_at: string;
+  naam: string;
+  email: string;
+  telefoon: string;
+  lead_status: LeadStatus;
+  lead_status_gewijzigd_op: string;
+  bron: LeadBron;
+  offerte_bedrag: number | null;
+  gefactureerd_bedrag: number | null;
+  reden_verloren: string | null;
+  betaalde_klik: boolean;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  landing_page: string | null;
+  lead_maand: string;
+  stil_sinds: string; // Postgres interval, komt via PostgREST als "HH:MM:SS" of "N days HH:MM:SS"
+}
+
+// Spiegelt montagebaas.roi_per_maand (0005_lead_status.sql).
+export interface RoiPerMaandRow {
+  maand: string;
+  kanaal: "werkspot" | "google_ads" | "organisch_of_onbekend";
+  aanvragen: number;
+  gewonnen: number;
+  verloren: number;
+  geen_reactie: number;
+  conversie_pct: number | null;
+  omzet: number;
+  kosten: number | null;
+  kosten_per_lead: number | null;
+  kosten_per_klus: number | null;
+  roas: number | null;
+}
+
+// Spiegelt montagebaas.advertentiekosten (0005_lead_status.sql).
+export interface AdvertentiekostenRow {
+  id: number;
+  maand: string; // altijd de eerste van de maand
+  kanaal: string;
+  campagne: string | null;
+  kosten: number;
+  ingevoerd_op: string;
+}
+
+export type AdvertentiekostenInsert = Pick<AdvertentiekostenRow, "maand" | "kanaal" | "kosten"> &
+  Partial<Pick<AdvertentiekostenRow, "campagne">>;
 
 // Insert: contact is verplicht; al het overige is optioneel zodat zowel het
 // formulier-pad (volledige config) als het upload-pad (alleen bestand + contact) past.
