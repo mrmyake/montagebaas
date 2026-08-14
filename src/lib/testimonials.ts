@@ -23,24 +23,6 @@ export type Testimonial = {
 export const TESTIMONIALS: Testimonial[] = [
   // ─── Keuken-/kookeiland-montage (meest relevant voor keukenmontage) ─────────
   {
-    name: "Chris van der Maaten",
-    location: "Utrecht",
-    quote: "",
-    rating: 5,
-    date: "2026-08-07",
-    source: "werkspot",
-    project_type: "L-vormige keuken (de)monteren en plaatsen",
-  },
-  {
-    name: "Werkspot-gebruiker",
-    location: "Hoogland",
-    quote: "Vakwerk!",
-    rating: 5,
-    date: "2026-07-15",
-    source: "werkspot",
-    project_type: "Keuken installeren",
-  },
-  {
     name: "Koen",
     location: "Nederhorst den Berg",
     quote:
@@ -60,7 +42,6 @@ export const TESTIMONIALS: Testimonial[] = [
     source: "werkspot",
     project_type: "Kookeiland (de)monteren en plaatsen",
   },
-  // ─── IKEA-ombouw + algemeen vakmanschap (meest relevant voor keukenmontage) ─
   {
     name: "Evelien",
     location: "Amstelveen",
@@ -71,6 +52,16 @@ export const TESTIMONIALS: Testimonial[] = [
     source: "werkspot",
     project_type: "IKEA-kasten ombouw",
   },
+  {
+    name: "Chris van der Maaten",
+    location: "Utrecht",
+    quote: "",
+    rating: 5,
+    date: "2026-08-07",
+    source: "werkspot",
+    project_type: "L-vormige keuken (de)monteren en plaatsen",
+  },
+  // ─── IKEA-ombouw + algemeen vakmanschap (meest relevant voor keukenmontage) ─
   {
     name: "Werkspot-gebruiker",
     location: "Voorhout",
