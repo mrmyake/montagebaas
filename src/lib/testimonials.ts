@@ -23,6 +23,34 @@ export type Testimonial = {
 export const TESTIMONIALS: Testimonial[] = [
   // ─── Keuken-/kookeiland-montage (meest relevant voor keukenmontage) ─────────
   {
+    name: "Chris van der Maaten",
+    location: "Utrecht",
+    quote: "",
+    rating: 5,
+    date: "2026-08-07",
+    source: "werkspot",
+    project_type: "L-vormige keuken (de)monteren en plaatsen",
+  },
+  {
+    name: "Werkspot-gebruiker",
+    location: "Hoogland",
+    quote: "Vakwerk!",
+    rating: 5,
+    date: "2026-07-15",
+    source: "werkspot",
+    project_type: "Keuken installeren",
+  },
+  {
+    name: "Koen",
+    location: "Nederhorst den Berg",
+    quote:
+      "Ilja heeft mijn keuken gemonteerd. Het was meten en passen, maar Ilja bleef flexibel en ging door tot het goed was. Zeer tevreden.",
+    rating: 5,
+    date: "2026-06-30",
+    source: "werkspot",
+    project_type: "U-vormige keuken (de)monteren en plaatsen",
+  },
+  {
     name: "Stephan van den Hoek",
     location: "Nijkerk",
     quote:
@@ -192,11 +220,11 @@ export const TESTIMONIALS: Testimonial[] = [
 ];
 
 // Aggregaten zoals ze op de profielen staan — de échte, business-brede scores van
-// dezelfde onderneming. Werkspot 4.8/5 uit 27, Google 5.0/5 uit 24.
+// dezelfde onderneming. Werkspot 4.8/5 uit 31, Google 5.0/5 uit 24.
 export const REVIEW_AGGREGATES = {
   werkspot: {
     rating: 4.8,
-    count: 27,
+    count: 31,
     profileUrl: "https://www.werkspot.nl/profiel/hout-nieuw/reviews",
   },
   google: { rating: 5.0, count: 24 },
