@@ -1,8 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { startTransition, useActionState, useRef, useState } from "react";
 import { updateLead } from "./actions";
 import { LEAD_STATUSSEN, LEAD_STATUSSEN_MET_FACTUUR, type LeadStatus } from "@/lib/db.types";
+
+// Wachttijd na de laatste toetsaanslag voordat tekst- en bedragvelden opslaan.
+const AUTOSAVE_VERTRAGING_MS = 800;
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   nieuw: "Nieuw",
@@ -33,14 +36,63 @@ export function LeadRowForm({
 }) {
   const [status, setStatus] = useState<LeadStatus>(initieleStatus);
   const magFactuur = LEAD_STATUSSEN_MET_FACTUUR.includes(status);
-  const [result, formAction, pending] = useActionState(updateLead.bind(null, aanvraagId), {});
+  const [result, dispatch, pending] = useActionState(updateLead.bind(null, aanvraagId), {});
+  const formRef = useRef<HTMLFormElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [heeftWijziging, setHeeftWijziging] = useState(false);
+
+  // Bewust geen <form action>: React reset dan na elke save de ongecontroleerde
+  // velden, wat tekst wist die je tijdens het opslaan nog aan het typen bent.
+  // Opeenvolgende dispatches worden door useActionState op volgorde afgehandeld.
+  function verstuur() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+    if (!formRef.current) return;
+    const formData = new FormData(formRef.current);
+    setHeeftWijziging(false);
+    startTransition(() => dispatch(formData));
+  }
+
+  function planOpslaan(vertragingMs: number) {
+    setHeeftWijziging(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(verstuur, vertragingMs);
+  }
+
+  // Bij het verlaten van een veld direct (synchroon) opslaan, zodat een klik op
+  // een link of filter meteen na het typen de wijziging niet laat verdwijnen.
+  function opslaanBijVerlaten() {
+    if (timerRef.current) verstuur();
+  }
+
+  let melding: React.ReactNode = null;
+  if (pending || heeftWijziging) melding = <span className="text-sm text-[var(--color-muted)]">Opslaan…</span>;
+  else if (result?.error) melding = <span className="text-sm text-red-600">{result.error}</span>;
+  else if (result?.opgeslagen) melding = <span className="text-sm text-green-700">Opgeslagen ✓</span>;
 
   return (
-    <form action={formAction} className="flex flex-wrap items-center gap-2">
+    <form
+      ref={formRef}
+      onSubmit={(e) => {
+        e.preventDefault();
+        verstuur();
+      }}
+      onInput={(e) => {
+        if (e.target instanceof HTMLSelectElement) return; // select slaat via onChange direct op
+        planOpslaan(AUTOSAVE_VERTRAGING_MS);
+      }}
+      onBlur={opslaanBijVerlaten}
+      className="flex flex-wrap items-center gap-2"
+    >
       <select
         name="lead_status"
         value={status}
-        onChange={(e) => setStatus(e.target.value as LeadStatus)}
+        onChange={(e) => {
+          setStatus(e.target.value as LeadStatus);
+          // Timeout 0: pas na de re-render opslaan, zodat het factuurveld al
+          // (on)beschikbaar is gemaakt voor de nieuwe status.
+          planOpslaan(0);
+        }}
         className="rounded border border-[var(--color-line-strong)] bg-white px-2 py-1 text-sm"
       >
         {LEAD_STATUSSEN.map((s) => (
@@ -88,15 +140,7 @@ export function LeadRowForm({
         className="w-full rounded border border-[var(--color-line-strong)] px-2 py-1 text-sm"
       />
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded bg-[var(--color-accent)] px-3 py-1 text-sm text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
-      >
-        {pending ? "Opslaan…" : "Opslaan"}
-      </button>
-
-      {result?.error && <span className="text-sm text-red-600">{result.error}</span>}
+      {melding}
     </form>
   );
 }

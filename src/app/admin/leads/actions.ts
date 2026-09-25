@@ -5,7 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { verifieerAdminSessie } from "@/lib/admin-auth";
 import { LEAD_STATUSSEN, LEAD_STATUSSEN_MET_FACTUUR, type LeadStatus } from "@/lib/db.types";
 
-export type UpdateLeadResult = { error?: string };
+export type UpdateLeadResult = { error?: string; opgeslagen?: boolean };
 
 function parseBedrag(raw: FormDataEntryValue | null): number | null {
   if (raw === null) return null;
@@ -57,5 +57,5 @@ export async function updateLead(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/leads");
-  return {};
+  return { opgeslagen: true };
 }
