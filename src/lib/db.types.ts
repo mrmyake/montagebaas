@@ -84,7 +84,7 @@ export type LeadBron = "website" | "werkspot" | "doorverwijzing" | "overig";
 
 export const LEAD_BRONNEN: LeadBron[] = ["website", "werkspot", "doorverwijzing", "overig"];
 
-// Spiegelt montagebaas.lead_overzicht (0005_lead_status.sql).
+// Spiegelt montagebaas.lead_overzicht (0005_lead_status.sql, notitie sinds 0006).
 export interface LeadOverzichtRow {
   id: string;
   created_at: string;
@@ -104,6 +104,7 @@ export interface LeadOverzichtRow {
   landing_page: string | null;
   lead_maand: string;
   stil_sinds: string; // Postgres interval, komt via PostgREST als "HH:MM:SS" of "N days HH:MM:SS"
+  notitie: string | null; // sinds 0006
 }
 
 // Spiegelt montagebaas.roi_per_maand (0005_lead_status.sql).

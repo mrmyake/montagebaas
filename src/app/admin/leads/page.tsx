@@ -138,6 +138,8 @@ export default async function AdminLeadsPage({
                         initieleStatus={row.lead_status}
                         initieelOfferteBedrag={row.offerte_bedrag}
                         initieelGefactureerdBedrag={row.gefactureerd_bedrag}
+                        initieleRedenVerloren={row.reden_verloren}
+                        initieleNotitie={row.notitie}
                       />
                     </td>
                   </tr>

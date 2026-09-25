@@ -15,6 +15,11 @@ function parseBedrag(raw: FormDataEntryValue | null): number | null {
   return Number.isFinite(bedrag) ? bedrag : null;
 }
 
+function parseTekst(raw: FormDataEntryValue | null): string | null {
+  const tekst = raw?.toString().trim() ?? "";
+  return tekst === "" ? null : tekst;
+}
+
 export async function updateLead(
   aanvraagId: string,
   _prevState: UpdateLeadResult,
@@ -34,6 +39,8 @@ export async function updateLead(
   // factuurrecht wordt gefactureerd_bedrag altijd null, ongeacht wat de
   // (uitgeschakelde) client-input meestuurt. Voorkomt de db check-constraint-fout.
   const gefactureerdBedrag = magFactuur ? parseBedrag(formData.get("gefactureerd_bedrag")) : null;
+  const redenVerloren = parseTekst(formData.get("reden_verloren"));
+  const notitie = parseTekst(formData.get("notitie"));
 
   const db = supabaseAdmin();
   const { error } = await db
@@ -42,6 +49,8 @@ export async function updateLead(
       lead_status: leadStatus,
       offerte_bedrag: offerteBedrag,
       gefactureerd_bedrag: gefactureerdBedrag,
+      reden_verloren: redenVerloren,
+      notitie,
     })
     .eq("id", aanvraagId);
 

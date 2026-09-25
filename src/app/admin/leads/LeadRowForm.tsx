@@ -21,11 +21,15 @@ export function LeadRowForm({
   initieleStatus,
   initieelOfferteBedrag,
   initieelGefactureerdBedrag,
+  initieleRedenVerloren,
+  initieleNotitie,
 }: {
   aanvraagId: string;
   initieleStatus: LeadStatus;
   initieelOfferteBedrag: number | null;
   initieelGefactureerdBedrag: number | null;
+  initieleRedenVerloren: string | null;
+  initieleNotitie: string | null;
 }) {
   const [status, setStatus] = useState<LeadStatus>(initieleStatus);
   const magFactuur = LEAD_STATUSSEN_MET_FACTUUR.includes(status);
@@ -66,6 +70,22 @@ export function LeadRowForm({
         defaultValue={magFactuur ? (initieelGefactureerdBedrag ?? "") : ""}
         title={magFactuur ? undefined : "Alleen bij status Gewonnen of Uitgevoerd"}
         className="w-32 rounded border border-[var(--color-line-strong)] px-2 py-1 text-sm disabled:cursor-not-allowed disabled:bg-[var(--color-paper)] disabled:text-[var(--color-muted)]"
+      />
+
+      <input
+        type="text"
+        name="reden_verloren"
+        placeholder="Reden verloren"
+        defaultValue={initieleRedenVerloren ?? ""}
+        className="w-40 rounded border border-[var(--color-line-strong)] px-2 py-1 text-sm"
+      />
+
+      <textarea
+        name="notitie"
+        placeholder="Notitie"
+        rows={1}
+        defaultValue={initieleNotitie ?? ""}
+        className="w-full rounded border border-[var(--color-line-strong)] px-2 py-1 text-sm"
       />
 
       <button
