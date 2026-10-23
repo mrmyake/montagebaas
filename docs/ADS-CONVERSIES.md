@@ -7,7 +7,7 @@ Google Ads via de **Data Manager API** (`events:ingest`). Bron: `montagebaas.aan
 
 | Onderdeel | Waar |
 |---|---|
-| Consent-kolommen, uploadtabel, werkvoorraad-view | `supabase/migrations/0007_ads_conversies.sql`, `0008_ads_aanvraag_ontvangen.sql`, `0010_ads_backfill.sql`, `0011_ads_dedupe.sql` |
+| Consent-kolommen, uploadtabel, werkvoorraad-view | `supabase/migrations/0007_ads_conversies.sql`, `0008_ads_aanvraag_ontvangen.sql`, `0010_ads_backfill.sql`, `0011_ads_dedupe.sql`, `0012_ads_dedupe_e164.sql` |
 | Normaliseren, hashen, beslissen, request bouwen (puur, getest) | `src/lib/ads-conversies.ts` + `.test.ts` |
 | Service-account-token (JWT → access token) | `src/lib/google-auth.ts` |
 | Orkestratie (view → API → `ads_conversie_uploads`) | `src/lib/ads-conversies-job.ts` |
@@ -31,8 +31,9 @@ dedupliceert aan Google's kant én wordt door de `unique`-constraint hier tegeng
 
 Overslaan (status `overgeslagen` + reden): eigen testinzending (`ADS_UITGESLOTEN_CONTACTEN`);
 **duplicaat** (alleen `aanvraag_ontvangen`: een eerdere website-aanvraag binnen 7 dagen met
-hetzelfde e-mailadres, lowercase, of telefoonnummer, alleen cijfers — alleen de eerste gaat
-mee, de rest krijgt reden `duplicaat van <kort id>`; 0011); waarde ontbreekt/0; geen click-ID én geen
+hetzelfde e-mailadres, lowercase, of telefoonnummer in E.164 via `montagebaas.normaliseer_telefoon()`,
+dezelfde regels als `normaliseerTelefoon()` — alleen de eerste gaat mee, de rest krijgt reden
+`duplicaat van <kort id>`; 0011/0012); waarde ontbreekt/0; geen click-ID én geen
 bruikbare e-mail/telefoon; klik ouder dan 90 dagen op het conversiemoment (alleen bij
 click-ID; `created_at` van de aanvraag geldt als benadering van het klikmoment);
 **consent geweigerd** (de bezoeker klikte "Weigeren" — dan gaat er niets naar Google,
