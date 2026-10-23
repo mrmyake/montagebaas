@@ -59,8 +59,8 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <JsonLd data={[localBusinessSchema(), websiteSchema()]} />
         <Header />
-        {/* pb voor de sticky mobiele CTA-balk zodat content niet verstopt raakt */}
-        <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+        {/* pb voor de sticky mobiele CTA-balk (en de cookiebalk zolang die er is) zodat content niet verstopt raakt */}
+        <main className="flex-1 pb-[calc(5rem+var(--consent-bar-h,0px))] lg:pb-[var(--consent-bar-h,0px)]">{children}</main>
         <Footer />
         <MobileCtaBar />
         {/* Vóór Analytics: werkt los van gtag.js en moet ook draaien als dat geblokkeerd is. */}

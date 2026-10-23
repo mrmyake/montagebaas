@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     .from("aanvragen")
     .insert({
       ...attributie,
-      ...consentVoorInsert(form.get("consent")),
+      ...consentVoorInsert(form.get("consent"), form.get("consent_bron")),
       naam,
       telefoon,
       email,

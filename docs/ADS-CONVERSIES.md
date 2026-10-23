@@ -102,6 +102,13 @@ wat daarmee gebeurt:
 - `overslaan`: definitief niet versturen;
 - `unspecified`: versturen met `CONSENT_STATUS_UNSPECIFIED`.
 
+### 5. Consent-bron
+
+`aanvragen.consent_bron` (0009) zegt hoe de keuze tot stand kwam: `banner` (cookiebalk) of
+`formulier` (vooraf aangevinkte checkbox boven de verzendknop, alleen getoond zonder
+bannerkeuze; aangevinkt = accepteren, uitgevinkt = weigeren). De kolom zit ook in de
+werkvoorraad-view, zodat je de formulier-groep later apart kunt behandelen of uitsluiten.
+
 ## Draaien
 
 Cron: dagelijks `13 5 * * *` UTC (06:13 CET, 07:13 CEST; Vercel-crons kennen geen tijdzone).

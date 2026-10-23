@@ -1,114 +1,93 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
-import {
-  CONSENT_CHANGED_EVENT,
-  CONSENT_OPEN_EVENT,
-  CONSENT_STORAGE_KEY,
-  meldConsentGewijzigd,
-  setConsent,
-  type ConsentState,
-} from "@/lib/consent";
+import { useEffect, useRef, useState } from "react";
+import { CONSENT_OPEN_EVENT, bewaarConsentKeuze, setConsent, type ConsentState } from "@/lib/consent";
+import { useConsentKeuze } from "@/components/analytics/useConsentKeuze";
 
-// De opgeslagen keuze als externe store: localStorage + het consent-event.
-// Zo hoeft er geen setState in een effect (en geen hydration-mismatch: op de
-// server en tijdens hydratie geldt "onbekend", pas daarna de echte waarde).
-type Opgeslagen = ConsentState | "geen" | "onbekend";
-
-function abonneer(cb: () => void) {
-  window.addEventListener(CONSENT_CHANGED_EVENT, cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    window.removeEventListener(CONSENT_CHANGED_EVENT, cb);
-    window.removeEventListener("storage", cb);
-  };
-}
-
-function leesOpgeslagen(): Opgeslagen {
-  try {
-    const v = window.localStorage.getItem(CONSENT_STORAGE_KEY);
-    return v === "granted" || v === "denied" ? v : "geen";
-  } catch {
-    return "geen"; // private mode → banner tonen, net als zonder keuze
-  }
-}
-
-const serverSnapshot = (): Opgeslagen => "onbekend";
+/** CSS-variabele op <html> met de hoogte van de balk, zolang die zichtbaar is. */
+export const CONSENT_BAR_HOOGTE_VAR = "--consent-bar-h";
 
 /**
- * AVG-cookiebanner. GA4 en Google Ads staan default op 'denied' (Consent Mode
- * v2, zie Analytics.tsx); deze banner upgradet alle vier de signalen naar
- * 'granted' bij accepteren — inclusief ad_user_data en ad_personalization,
- * omdat de keuze ook meereist met een offerteaanvraag en bepaalt of gehashte
- * contactgegevens naar Google Ads mogen (enhanced conversions for leads, zie
- * docs/ADS-CONVERSIES.md). Ook de eigen attributiecookie (AttributieCapture)
- * wacht op 'granted'. De keuze wordt als window-event gemeld, en de banner
- * gaat opnieuw open via de footerlink "Cookie-instellingen".
+ * Cookiebalk: smalle vaste strook onderaan, geen overlay, geen scroll-lock.
+ * GA4 en Google Ads staan default op 'denied' (Consent Mode v2, Analytics.tsx);
+ * Accepteren zet alle vier de signalen op 'granted' — ook ad_user_data en
+ * ad_personalization, want de keuze reist mee met een offerteaanvraag en
+ * bepaalt of gehashte contactgegevens naar Google Ads mogen (enhanced
+ * conversions, docs/ADS-CONVERSIES.md). De eigen attributiecookie
+ * (AttributieCapture) wacht eveneens op 'granted'.
  *
- * Toont niets als GA4 niet geconfigureerd is of de bezoeker al gekozen heeft.
+ * Verdwijnt na een keuze en komt alleen terug via de footerlink
+ * "Cookie-instellingen". De sticky mobiele CTA-balk schuift omhoog zolang de
+ * balk zichtbaar is (via --consent-bar-h). Toont niets zonder GA-config.
  */
 export function ConsentBanner() {
-  const opgeslagen = useSyncExternalStore(abonneer, leesOpgeslagen, serverSnapshot);
+  const keuze = useConsentKeuze();
   const [heropend, setHeropend] = useState(false);
+  const balkRef = useRef<HTMLDivElement>(null);
 
   // Upgrade gtag op elke page-load bij een eerdere acceptatie; zonder dit
   // blijft Consent Mode op denied.
   useEffect(() => {
-    if (opgeslagen === "granted") setConsent(true);
-  }, [opgeslagen]);
+    if (keuze === "granted") setConsent(true);
+  }, [keuze]);
 
-  // Footerlink "Cookie-instellingen": banner opnieuw tonen, keuze mag opnieuw.
   useEffect(() => {
     const heropen = () => setHeropend(true);
     window.addEventListener(CONSENT_OPEN_EVENT, heropen);
     return () => window.removeEventListener(CONSENT_OPEN_EVENT, heropen);
   }, []);
 
-  if (!process.env.NEXT_PUBLIC_GA_ID) return null;
-  const tonen = opgeslagen === "geen" || heropend;
+  const tonen = Boolean(process.env.NEXT_PUBLIC_GA_ID) && (keuze === "geen" || heropend);
+
+  // Hoogte van de balk doorgeven, zodat de mobiele CTA-balk en de pagina-
+  // onderkant er niet onder verdwijnen.
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = balkRef.current;
+    if (!tonen || !el) {
+      root.style.removeProperty(CONSENT_BAR_HOOGTE_VAR);
+      return;
+    }
+    const zet = () => root.style.setProperty(CONSENT_BAR_HOOGTE_VAR, `${el.offsetHeight}px`);
+    zet();
+    const ro = new ResizeObserver(zet);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty(CONSENT_BAR_HOOGTE_VAR);
+    };
+  }, [tonen]);
+
   if (!tonen) return null;
 
-  function persist(state: ConsentState) {
-    try {
-      window.localStorage.setItem(CONSENT_STORAGE_KEY, state);
-    } catch {
-      // private mode — banner komt na reload toch niet meer terug binnen sessie
-    }
-    setConsent(state === "granted");
+  function kies(state: ConsentState) {
     setHeropend(false);
-    meldConsentGewijzigd(state); // → store-snapshot ververst, AttributieCapture reageert
+    bewaarConsentKeuze(state);
   }
 
   const knop =
-    "flex-1 rounded-xl px-5 py-2.5 text-sm font-semibold transition-colors sm:flex-none";
+    "flex-1 rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-ink sm:flex-none sm:px-4";
 
   return (
     <div
-      role="dialog"
-      aria-label="Cookie-toestemming"
-      className="fixed inset-x-0 bottom-0 z-[60] border-t border-line bg-paper shadow-card lg:bottom-0"
+      ref={balkRef}
+      role="region"
+      aria-label="Cookie-instellingen"
+      className="fixed inset-x-0 bottom-0 z-[60] border-t border-line bg-paper pb-[env(safe-area-inset-bottom)]"
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-8 sm:py-5">
-        <p className="flex-1 text-sm leading-relaxed text-ink-soft">
+      <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-4 py-2 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
+        <p className="min-w-0 flex-1 text-xs leading-snug text-ink-soft sm:truncate sm:text-sm">
           We gebruiken cookies voor advertentiemeting en delen daarvoor gegevens met Google.{" "}
-          <a href="/privacy#cookies" className="text-accent underline">
+          <a href="/privacy#cookies" className="whitespace-nowrap underline hover:text-ink">
             Meer info
           </a>
         </p>
-        <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
-          <button
-            type="button"
-            onClick={() => persist("denied")}
-            className={`${knop} bg-accent text-white shadow-cta hover:bg-accent-hover`}
-          >
-            Weigeren
-          </button>
-          <button
-            type="button"
-            onClick={() => persist("granted")}
-            className={`${knop} bg-accent text-white shadow-cta hover:bg-accent-hover`}
-          >
+        <div className="flex shrink-0 items-center gap-2">
+          <button type="button" onClick={() => kies("granted")} className={knop}>
             Accepteren
+          </button>
+          <button type="button" onClick={() => kies("denied")} className={knop}>
+            Weigeren
           </button>
         </div>
       </div>

@@ -40,6 +40,7 @@ export interface TeVersturenRij {
   consent_ad_user_data: boolean | null;
   consent_ad_personalization: boolean | null;
   upload_status: "wachtend" | "fout" | null;
+  consent_bron: "banner" | "formulier" | null;
 }
 
 /**

@@ -6,7 +6,8 @@ import { UploadCloud, FileCheck2, Loader2, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, inputClass } from "@/components/configurator/parts";
 import { OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
-import { huidigeConsentKeuze } from "@/lib/consent";
+import { bewaarConsentKeuze, huidigeConsentKeuze, type ConsentBron } from "@/lib/consent";
+import { ConsentCheckbox } from "@/components/analytics/ConsentCheckbox";
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB per bestand
 const MAX_FILES = 8;
@@ -36,6 +37,7 @@ export function TekeningUpload() {
   const [email, setEmail] = useState("");
   const [telefoon, setTelefoon] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
+  const [consentVink, setConsentVink] = useState(true); // alleen getoond zonder bannerkeuze; vooraf aangevinkt
   const [sleep, setSleep] = useState(false);
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState<string | null>(null);
@@ -73,6 +75,14 @@ export function TekeningUpload() {
     if (!files.length || !contactGeldig || bezig) return;
     setBezig(true);
     setFout(null);
+    // Geen bannerkeuze? Dan telt de checkbox: aangevinkt = accepteren, uitgevinkt
+    // = weigeren — zelfde update als de bannerknoppen, vóór de fetch zodat de
+    // attributiecookie nog meegaat.
+    let consentBron: ConsentBron = "banner";
+    if (huidigeConsentKeuze() === null) {
+      bewaarConsentKeuze(consentVink ? "granted" : "denied");
+      consentBron = "formulier";
+    }
     try {
       const fd = new FormData();
       for (const f of files) fd.append("file", f);
@@ -81,6 +91,7 @@ export function TekeningUpload() {
       fd.append("telefoon", telefoon.trim());
       fd.append("website", website); // honeypot
       fd.append("consent", huidigeConsentKeuze() ?? "");
+      fd.append("consent_bron", consentBron);
       const res = await fetch("/api/offerte-upload", { method: "POST", body: fd });
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; error?: string; id?: string }
@@ -212,6 +223,7 @@ export function TekeningUpload() {
 
       {files.length > 0 && (
         <div className="mt-5">
+          <ConsentCheckbox checked={consentVink} onChange={setConsentVink} className="mb-4" />
           <Button onClick={verstuur} disabled={!contactGeldig || bezig} className="w-full sm:w-auto">
             {bezig ? (
               <>

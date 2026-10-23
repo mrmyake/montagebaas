@@ -27,6 +27,7 @@ const basis: TeVersturenRij = {
   consent_ad_user_data: true,
   consent_ad_personalization: true,
   upload_status: null,
+  consent_bron: "banner",
 };
 
 test("e-mail: whitespace, lowercase, gmail-punten en +label", () => {

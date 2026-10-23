@@ -56,6 +56,8 @@ export interface AanvraagRow {
   // bekend (banner nog open, of aanvraag van vóór de migratie).
   consent_ad_user_data: boolean | null;
   consent_ad_personalization: boolean | null;
+  // 'banner' (cookiebalk) of 'formulier' (checkbox bij verzenden), null zonder keuze (0009).
+  consent_bron: "banner" | "formulier" | null;
 }
 
 export type LeadStatus =

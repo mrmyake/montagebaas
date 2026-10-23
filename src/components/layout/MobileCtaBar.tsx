@@ -9,7 +9,11 @@ import { site, whatsappDefault } from "@/lib/site";
  */
 export function MobileCtaBar() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur lg:hidden">
+    // Schuift omhoog zolang de cookiebalk zichtbaar is (--consent-bar-h, zie ConsentBanner).
+    <div
+      className="fixed inset-x-0 z-40 border-t border-line bg-surface/95 backdrop-blur transition-[bottom] lg:hidden"
+      style={{ bottom: "var(--consent-bar-h, 0px)" }}
+    >
       <div className="grid grid-cols-3 divide-x divide-line pb-[env(safe-area-inset-bottom)]">
         <a
           href={site.telefoonLink}

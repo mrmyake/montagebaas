@@ -25,7 +25,8 @@ import {
 import { berekenPrijs, euro, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { verstuurAanvraag } from "@/app/offerte/actions";
 import { OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
-import { huidigeConsentKeuze } from "@/lib/consent";
+import { bewaarConsentKeuze, huidigeConsentKeuze, type ConsentBron } from "@/lib/consent";
+import { ConsentCheckbox } from "@/components/analytics/ConsentCheckbox";
 
 const TOTAAL = 6;
 
@@ -45,6 +46,7 @@ export function Configurator() {
   const [periode, setPeriode] = useState<string>(gewensteePeriodeOpties[0].value);
   const [toelichting, setToelichting] = useState("");
   const [website, setWebsite] = useState(""); // honeypot — moet leeg blijven
+  const [consentVink, setConsentVink] = useState(true); // alleen getoond zonder bannerkeuze; vooraf aangevinkt
 
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState<string | null>(null);
@@ -94,6 +96,14 @@ export function Configurator() {
     if (!typeKlus || !grootte || !opstelling) return;
     setBezig(true);
     setFout(null);
+    // Geen bannerkeuze? Dan telt de checkbox: aangevinkt = accepteren, uitgevinkt
+    // = weigeren — zelfde update als de bannerknoppen, vóór de server-call zodat de
+    // attributiecookie (AttributieCapture) nog meegaat met het verzoek.
+    let consentBron: ConsentBron = "banner";
+    if (huidigeConsentKeuze() === null) {
+      bewaarConsentKeuze(consentVink ? "granted" : "denied");
+      consentBron = "formulier";
+    }
     const res = await verstuurAanvraag({
       type_klus: typeKlus,
       grootte,
@@ -107,6 +117,7 @@ export function Configurator() {
       toelichting,
       website, // honeypot
       consent: huidigeConsentKeuze(),
+      consent_bron: consentBron,
     });
     if (res.ok) {
       // Markeer een ECHTE verzending zodat de bedankpagina het conversie-event
@@ -327,6 +338,8 @@ export function Configurator() {
           </p>
         </div>
       )}
+
+      {stap === TOTAAL && <ConsentCheckbox checked={consentVink} onChange={setConsentVink} className="mt-6" />}
 
       {/* Navigatie */}
       <div className="mt-8 flex items-center justify-between gap-3">
