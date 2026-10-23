@@ -5,6 +5,7 @@ import { berekenPrijsUitTelling } from "@/lib/rekenen";
 import { stuurNtfy } from "@/lib/ntfy";
 import { stuurTekeningIndicatieNotificatie, stuurTekeningKlantBevestiging } from "@/lib/notify";
 import { euro } from "@/lib/pricing";
+import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
 
 /**
  * Verwerkt een geüploade tekening NA de lead-capture (schakel 1 → schakel 2, §6).
@@ -101,6 +102,10 @@ export async function verwerkTekening(
         .eq("id", aanvraagId);
 
       prijsVoorKlant = { min, max, ruw: !hoog };
+
+      // Upload-pad heeft pas nú een prijs_indicatie_max; dus pas nu de conversie
+      // 'aanvraag_ontvangen' versturen (best-effort, cron vangt de rest).
+      await verstuurAdsConversieDirect(aanvraagId);
 
       await Promise.allSettled([
         stuurNtfy({

@@ -7,19 +7,24 @@ Google Ads via de **Data Manager API** (`events:ingest`). Bron: `montagebaas.aan
 
 | Onderdeel | Waar |
 |---|---|
-| Consent-kolommen, uploadtabel, werkvoorraad-view | `supabase/migrations/0007_ads_conversies.sql` |
+| Consent-kolommen, uploadtabel, werkvoorraad-view | `supabase/migrations/0007_ads_conversies.sql`, `0008_ads_aanvraag_ontvangen.sql` |
 | Normaliseren, hashen, beslissen, request bouwen (puur, getest) | `src/lib/ads-conversies.ts` + `.test.ts` |
 | Service-account-token (JWT → access token) | `src/lib/google-auth.ts` |
 | Orkestratie (view → API → `ads_conversie_uploads`) | `src/lib/ads-conversies-job.ts` |
 | Cron-ingang | `src/app/api/cron/ads-conversies/route.ts`, schema in `vercel.json` |
 | Admin: bedrag verplicht bij conversiestatus, kolom "Ads" | `src/app/admin/leads/*` |
 
-Twee conversieacties:
+Drie conversieacties:
 
-| Actie | Moment (eerste keer in `lead_status_log`) | Waarde |
+| Actie | Moment | Waarde |
 |---|---|---|
-| `offerte_verstuurd` | `naar_status = 'offerte_verstuurd'` | `offerte_bedrag` |
-| `opdracht_gewonnen` | `naar_status in ('gewonnen','uitgevoerd')` | `coalesce(gefactureerd_bedrag, offerte_bedrag)` |
+| `aanvraag_ontvangen` | `created_at` van de aanvraag (alleen aanvragen vanaf 23-10-2026, geen backfill) | `prijs_indicatie_max` |
+| `offerte_verstuurd` | eerste `lead_status_log.naar_status = 'offerte_verstuurd'` | `offerte_bedrag` |
+| `opdracht_gewonnen` | eerste `naar_status in ('gewonnen','uitgevoerd')` | `coalesce(gefactureerd_bedrag, offerte_bedrag)` |
+
+`aanvraag_ontvangen` wordt direct na de insert verstuurd (`after()`, async, raakt de
+formulierrespons niet; op het upload-pad pas zodra de tekening-verwerker een
+prijsindicatie heeft). Wat daar niet lukt, pakt de dagelijkse cron op.
 
 `transactionId` = `{aanvraag_id}:{actie}`, dus een tweede upload van dezelfde rij
 dedupliceert aan Google's kant én wordt door de `unique`-constraint hier tegengehouden.
@@ -42,10 +47,21 @@ enhanced conversions for leads).
 
 | Naam | Doel | Waarde | Telling | Rol |
 |---|---|---|---|---|
+| `aanvraag_ontvangen` | Lead verzenden (Submit lead form) | Verschillende waarden per conversie, standaard 0, EUR | Eén | **Secundair** |
 | `offerte_verstuurd` | Gekwalificeerde lead | Verschillende waarden per conversie, standaard 0, EUR | Eén | **Secundair** |
 | `opdracht_gewonnen` | Geconverteerde lead | Verschillende waarden per conversie, standaard 0, EUR | Eén | **Secundair** |
 
-Beide secundair laten; `offerte_aanvraag` (tag) blijft primair. Na 4 weken data herzien.
+Alle drie **secundair** aanmaken; `offerte_aanvraag` (tag) blijft voorlopig primair.
+
+**`aanvraag_ontvangen` versus de tag-conversie `offerte_aanvraag`.** Ze meten hetzelfde
+moment, maar via twee wegen (tag in de browser versus API vanuit de database). Het plan:
+
+1. `aanvraag_ontvangen` 2–4 weken secundair laten meelopen.
+2. In Google Ads de aantallen en de attributie vergelijken met `offerte_aanvraag`
+   (Doelen → Conversies → Samenvatting, zelfde periode).
+3. Zijn de cijfers consistent, dan omwisselen: `aanvraag_ontvangen` primair,
+   `offerte_aanvraag` secundair.
+4. **Nooit beide primair** — dan telt elke aanvraag dubbel in de biedstrategie.
 
 Noteer per actie de **conversion action ID** (cijfers; staat in de URL van de
 conversieactie als `ctId=…`, of in de kolom "ID" van het overzicht). Die gaan in
@@ -70,6 +86,7 @@ conversieactie als `ctId=…`, of in de kolom "ID" van het overzicht). Die gaan 
 | `GOOGLE_SA_KEY_JSON` | inhoud van het sleutelbestand, als base64: `base64 -i key.json \| tr -d '\n'` |
 | `ADS_CUSTOMER_ID` | `339-583-6845` (streepjes mogen) |
 | `ADS_LOGIN_CUSTOMER_ID` | alleen bij MCC |
+| `ADS_CONVERSIE_ACTIE_AANVRAAG_ONTVANGEN` | conversion action ID |
 | `ADS_CONVERSIE_ACTIE_OFFERTE_VERSTUURD` | conversion action ID |
 | `ADS_CONVERSIE_ACTIE_OPDRACHT_GEWONNEN` | conversion action ID |
 | `ADS_CONSENT_ONBEKEND` | `wachten` (standaard), `overslaan` of `unspecified` — zie hieronder |

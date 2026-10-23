@@ -209,3 +209,18 @@ export function attributieVoorInsert(store: CookieLezer): Attributie & {
 
   return { ...a, ga_client_id: ga };
 }
+
+/**
+ * Attributie hoort alleen bij een aanvraag als de bezoeker de cookiebanner
+ * heeft geaccepteerd (ad_storage granted). Bij 'denied' of geen keuze gaan alle
+ * velden als null de database in, ook als er (van een eerdere acceptatie, of
+ * van vóór deze regel) nog een cookie staat. De banner belooft dit; de
+ * client-kant (AttributieCapture) zet de cookie sowieso pas na accepteren.
+ */
+export function attributieVoorInsertMetConsent(
+  store: CookieLezer,
+  consent: unknown
+): ReturnType<typeof attributieVoorInsert> {
+  if (consent !== "granted") return { ...LEEG, ga_client_id: null };
+  return attributieVoorInsert(store);
+}

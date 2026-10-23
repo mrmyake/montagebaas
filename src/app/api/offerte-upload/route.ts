@@ -1,7 +1,7 @@
 import { NextResponse, after } from "next/server";
 import { headers, cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
-import { attributieVoorInsert } from "@/lib/attributie";
+import { attributieVoorInsertMetConsent } from "@/lib/attributie";
 import { consentVoorInsert } from "@/lib/consent";
 import { stuurNtfy } from "@/lib/ntfy";
 import { rateLimit } from "@/lib/rate-limit";
@@ -91,8 +91,9 @@ export async function POST(req: Request) {
   const bestandsnamen = files.map((f) => f.name).join(", ");
 
   // 2. Lead wegschrijven (zelfde tabel). Attributie komt uit onze eigen cookie,
-  // die de browser automatisch meestuurt — de FormData bevat hier niets voor.
-  const attributie = attributieVoorInsert(await cookies());
+  // die de browser automatisch meestuurt, en telt alleen bij geaccepteerde
+  // banner — die keuze zit wél in de FormData.
+  const attributie = attributieVoorInsertMetConsent(await cookies(), form.get("consent"));
   const { data, error } = await db
     .from("aanvragen")
     .insert({

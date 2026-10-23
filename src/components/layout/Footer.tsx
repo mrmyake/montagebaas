@@ -4,6 +4,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Container } from "@/components/ui/Container";
 import { WhatsappIcon } from "@/components/brand/WhatsappIcon";
 import { nav, site, whatsappDefault } from "@/lib/site";
+import { CookieInstellingenLink } from "@/components/analytics/CookieInstellingenLink";
 
 export function Footer() {
   return (
@@ -68,6 +69,9 @@ export function Footer() {
             <li>KvK: {site.kvk}</li>
             <li>
               <Link href="/privacy" className="hover:text-accent">Privacyverklaring</Link>
+            </li>
+            <li>
+              <CookieInstellingenLink className="hover:text-accent" />
             </li>
             <li>
               <Link href="/over" className="hover:text-accent">Over ons</Link>

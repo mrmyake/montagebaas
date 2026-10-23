@@ -20,12 +20,6 @@ export default function PrivacyPage() {
       />
       <section className="py-12 sm:py-16">
         <Container className="max-w-3xl space-y-8 text-ink-soft">
-          {/* ⚠️ EIGENAAR: laat deze tekst juridisch controleren en vul bedrijfsgegevens in. */}
-          <p className="rounded-xl bg-accent-soft px-4 py-3 text-sm text-ink">
-            Let op (voor eigenaar): controleer deze tekst juridisch en vul de bedrijfsgegevens
-            (KvK, adres, contact) in voordat de site live gaat.
-          </p>
-
           <div>
             <h2 className="text-xl font-bold text-ink">Wie zijn wij?</h2>
             <p className="mt-2">
@@ -62,8 +56,14 @@ export default function PrivacyPage() {
             </p>
           </div>
 
-          <div>
+          <div id="cookies" className="scroll-mt-24">
             <h2 className="text-xl font-bold text-ink">Cookies en meting (Google Analytics en Google Ads)</h2>
+            <p className="mt-2">
+              <strong>In het kort:</strong> accepteer je de cookies, dan delen we gegevens over je
+              bezoek met Google, en bij een offerteaanvraag ook een gehashte versie van je
+              e-mailadres en telefoonnummer. Weiger je, dan plaatst Google geen cookies en delen we
+              geen contactgegevens met Google.
+            </p>
             <p className="mt-2">
               We gebruiken Google Analytics 4 om het siteverkeer te meten en Google Ads om te zien
               welke advertenties tot een aanvraag leiden. Beide laden via Google Consent Mode: alle
@@ -74,25 +74,34 @@ export default function PrivacyPage() {
               <strong>Accepteer je</strong>, dan plaatst Google analytics- en advertentiecookies en
               delen we gegevens over je bezoek met Google voor advertentiemeting en
               gepersonaliseerde advertenties (de signalen <em>analytics_storage</em>,{" "}
-              <em>ad_storage</em>, <em>ad_user_data</em> en <em>ad_personalization</em>).
+              <em>ad_storage</em>, <em>ad_user_data</em> en <em>ad_personalization</em>). Ook
+              bewaren we dan zelf, in een eigen cookie, via welke advertentie je binnenkwam (zie
+              &lsquo;Herkomst van je bezoek&rsquo;).
             </p>
             <p className="mt-2">
-              <strong>Weiger je</strong>, dan plaatst Google geen cookies. De Google-scripts sturen
-              dan nog wel cookieloze, niet tot een persoon herleidbare meetsignalen (zonder
-              advertentieklik-ID) naar Google, waarmee Google bezoeken en conversies alleen
-              geaggregeerd schat.
+              <strong>Weiger je</strong>, dan plaatst Google geen cookies en bewaren we ook zelf
+              niet via welke advertentie je binnenkwam. De Google-scripts sturen dan nog wel
+              meetsignalen zonder cookies en zonder klik-ID naar Google, waarmee Google bezoeken en
+              conversies alleen geaggregeerd schat.
+            </p>
+            <p className="mt-2">
+              Je keuze wijzigen kan altijd via de link &lsquo;Cookie-instellingen&rsquo; onderaan
+              elke pagina.
             </p>
           </div>
 
           <div>
             <h2 className="text-xl font-bold text-ink">Herkomst van je bezoek</h2>
             <p className="mt-2">
-              Kom je via een advertentie of een link met campagneparameters binnen, dan bewaren
-              we de klik-ID van die advertentie (bijvoorbeeld een <em>gclid</em>) en de
-              campagneparameters in een eigen cookie (<em>mb_attributie</em>, maximaal 90 dagen),
-              los van je cookiekeuze. Deze cookie deelt niets met derden; we gebruiken hem alleen
-              om bij een offerteaanvraag vast te leggen via welke advertentie je ons vond.
-              Die herkomst slaan we samen met je aanvraag op.
+              Alleen als je de cookies hebt geaccepteerd: kom je via een advertentie of een link met
+              campagneparameters binnen, dan bewaren we de klik-ID van die advertentie
+              (bijvoorbeeld een <em>gclid</em>) en de campagneparameters in een eigen cookie
+              (<em>mb_attributie</em>, maximaal 90 dagen). Accepteer je pas later, dan leggen we
+              de herkomst vanaf dat moment vast, zolang die parameters nog in het adres van de
+              pagina staan. Deze cookie deelt zelf niets met derden; we gebruiken hem om bij een
+              offerteaanvraag vast te leggen via welke advertentie je ons vond, en slaan die
+              herkomst samen met je aanvraag op. Weiger je, of heb je nog niet gekozen, dan
+              plaatsen we deze cookie niet en bewaren we geen herkomst bij je aanvraag.
             </p>
           </div>
 
@@ -101,17 +110,13 @@ export default function PrivacyPage() {
               Advertentiemeting met je contactgegevens (enhanced conversions)
             </h2>
             <p className="mt-2">
-              Alleen als je de cookies hebt geaccepteerd: wordt een aanvraag een offerte of een
-              opdracht, dan melden we dat aan Google Ads, samen met de klik-ID van de advertentie
-              en een versleutelde (SHA-256-gehashte) versie van je e-mailadres en telefoonnummer.
-              Google gebruikt die hash om de conversie aan de advertentieklik te koppelen en
-              verwijdert hem daarna; Google kan er je e-mailadres of nummer niet uit herleiden.
-              We doen dit om te meten welke advertenties daadwerkelijk tot opdrachten leiden.
-              Heb je de cookies geweigerd, dan sturen we niets naar Google, ook geen klik-ID.
-            </p>
-            <p className="mt-2">
-              Je kunt je cookiekeuze wijzigen door de opgeslagen sitegegevens van {site.naam} in
-              je browser te wissen; de banner verschijnt dan opnieuw.
+              Alleen als je de cookies hebt geaccepteerd: we melden elke offerteaanvraag aan Google
+              Ads, en later ook of die aanvraag een offerte en een opdracht werd, met het bedrag.
+              Daarbij sturen we de klik-ID van de advertentie en een SHA-256-gehashte versie van je
+              e-mailadres en telefoonnummer mee. Google koppelt die hash aan de advertentieklik, en
+              aan een Google-account als dat bij dat adres of nummer hoort. We doen dit om te
+              meten welke advertenties daadwerkelijk tot aanvragen en opdrachten leiden. Heb je de
+              cookies geweigerd, dan sturen we niets naar Google, ook geen klik-ID.
             </p>
           </div>
 
@@ -122,7 +127,6 @@ export default function PrivacyPage() {
               (Resend), een pushmelding aan onszelf bij een nieuwe aanvraag (ntfy.sh) en, als je een
               keukentekening uploadt, het automatisch uitlezen daarvan (Anthropic). Voor meting en
               advertenties: Google (Google Analytics 4, Google Ads), zoals hierboven beschreven.
-              Met deze partijen zijn verwerkersafspraken van toepassing.
             </p>
           </div>
 

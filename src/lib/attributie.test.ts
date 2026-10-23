@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import {
   ATTRIBUTIE_COOKIE,
   attributieVoorInsert,
+  attributieVoorInsertMetConsent,
   leesUitUrl,
   parseGaClientId,
   volgendeCookieWaarde,
@@ -216,4 +217,20 @@ test("een beschadigde cookie gedraagt zich alsof er niets stond", () => {
   const attr = attributieVoorInsert(jar);
   assert.equal(attr.gclid, null);
   assert.equal(attr.ga_client_id, null);
+});
+
+test("attributie gaat alleen de database in bij geaccepteerde banner", () => {
+  const jar = new NepCookieJar();
+  paginaLading(jar, "https://montagebaas.com/?gclid=Cj0KCQ_TEST123&utm_source=google");
+  jar.schrijf("_ga", "GA1.1.1234567890.1700000000");
+
+  assert.equal(attributieVoorInsertMetConsent(jar, "granted").gclid, "Cj0KCQ_TEST123");
+  assert.equal(attributieVoorInsertMetConsent(jar, "granted").ga_client_id, "1234567890.1700000000");
+
+  for (const keuze of ["denied", null, undefined, "", "iets-anders"]) {
+    const uit = attributieVoorInsertMetConsent(jar, keuze);
+    for (const [veld, waarde] of Object.entries(uit)) {
+      assert.equal(waarde, null, `${veld} moet null zijn bij consent=${String(keuze)}`);
+    }
+  }
 });

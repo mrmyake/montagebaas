@@ -149,3 +149,30 @@ test("request-body: bestemming, HEX-encoding en validateOnly", () => {
   assert.deepEqual(metMcc.destinations[0].loginAccount, { accountType: "GOOGLE_ADS", accountId: "1112223333" });
   assert.equal("validateOnly" in metMcc, false);
 });
+
+test("aanvraag_ontvangen: zelfde regels, transactionId met eigen suffix", () => {
+  const rij: TeVersturenRij = {
+    ...basis,
+    conversie_actie: "aanvraag_ontvangen",
+    event_tijdstip: basis.created_at,
+    waarde: 1850, // prijs_indicatie_max is een geheel getal
+  };
+  const b = beslis(rij, { consentOnbekend: "overslaan" });
+  assert.equal(b.soort, "versturen");
+  if (b.soort !== "versturen") return;
+  assert.equal(b.event.transactionId, `${basis.aanvraag_id}:aanvraag_ontvangen`);
+  assert.equal(b.event.eventTimestamp, "2026-09-20T08:00:00.000Z");
+  assert.equal(b.event.conversionValue, 1850);
+
+  // Geen prijsindicatie (upload-pad vóór verwerking) → overslaan.
+  assert.equal(beslis({ ...rij, waarde: null }, { consentOnbekend: "overslaan" }).soort, "overslaan");
+  // Geen klik-ID en geen contact → overslaan; consent onbekend → beleid.
+  assert.equal(
+    beslis({ ...rij, gclid: null, email: null, telefoon: null }, { consentOnbekend: "overslaan" }).soort,
+    "overslaan"
+  );
+  assert.equal(
+    beslis({ ...rij, consent_ad_user_data: null, consent_ad_personalization: null }, { consentOnbekend: "overslaan" }).soort,
+    "overslaan"
+  );
+});

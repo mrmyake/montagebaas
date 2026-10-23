@@ -93,12 +93,12 @@ export const LEAD_STATUSSEN_MET_BEDRAG_VERPLICHT: LeadStatus[] = [
   "uitgevoerd",
 ];
 
-// Spiegelt montagebaas.ads_conversie_uploads (0007_ads_conversies.sql).
+// Spiegelt montagebaas.ads_conversie_uploads (0007_ads_conversies.sql, derde actie sinds 0008).
 export type AdsUploadStatus = "wachtend" | "verstuurd" | "fout" | "overgeslagen";
 export interface AdsConversieUploadRow {
   id: number;
   aanvraag_id: string;
-  conversie_actie: "offerte_verstuurd" | "opdracht_gewonnen";
+  conversie_actie: "aanvraag_ontvangen" | "offerte_verstuurd" | "opdracht_gewonnen";
   event_tijdstip: string;
   waarde: number;
   status: AdsUploadStatus;

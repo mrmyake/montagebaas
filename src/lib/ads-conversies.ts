@@ -13,8 +13,12 @@
  */
 import { createHash } from "node:crypto";
 
-export type ConversieActie = "offerte_verstuurd" | "opdracht_gewonnen";
-export const CONVERSIE_ACTIES: ConversieActie[] = ["offerte_verstuurd", "opdracht_gewonnen"];
+export type ConversieActie = "aanvraag_ontvangen" | "offerte_verstuurd" | "opdracht_gewonnen";
+export const CONVERSIE_ACTIES: ConversieActie[] = [
+  "aanvraag_ontvangen", // elke website-aanvraag bij binnenkomst, waarde = prijs_indicatie_max
+  "offerte_verstuurd",
+  "opdracht_gewonnen",
+];
 
 /** Maximale leeftijd van een klik op het moment van de conversie. */
 export const MAX_KLIK_LEEFTIJD_DAGEN = 90;

@@ -66,22 +66,34 @@ export function leesConsentBeleid(): ConsentOnbekendBeleid {
   return "wachten"; // geen beslissing genomen → niets definitiefs doen
 }
 
+const ACTIE_ENV: Record<ConversieActie, string> = {
+  aanvraag_ontvangen: "ADS_CONVERSIE_ACTIE_AANVRAAG_ONTVANGEN",
+  offerte_verstuurd: "ADS_CONVERSIE_ACTIE_OFFERTE_VERSTUURD",
+  opdracht_gewonnen: "ADS_CONVERSIE_ACTIE_OPDRACHT_GEWONNEN",
+};
+
 function conversionActionId(actie: ConversieActie): string | null {
-  const v =
-    actie === "offerte_verstuurd"
-      ? process.env.ADS_CONVERSIE_ACTIE_OFFERTE_VERSTUURD
-      : process.env.ADS_CONVERSIE_ACTIE_OPDRACHT_GEWONNEN;
-  return v?.trim() || null;
+  return process.env[ACTIE_ENV[actie]]?.trim() || null;
 }
 
-export async function draaiAdsConversiesJob(modus: JobModus): Promise<JobRapport> {
+/** Is de koppeling ingericht? Zonder sleutel en klant-ID heeft versturen geen zin. */
+export function adsUploadGeconfigureerd(): boolean {
+  return Boolean(process.env.GOOGLE_SA_KEY_JSON?.trim() && process.env.ADS_CUSTOMER_ID?.trim());
+}
+
+export async function draaiAdsConversiesJob(
+  modus: JobModus,
+  filter?: { aanvraagId: string; actie?: ConversieActie }
+): Promise<JobRapport> {
   const db = supabaseAdmin();
   const consentOnbekend = leesConsentBeleid();
 
-  const { data, error } = await db
-    .from("ads_conversies_te_versturen")
-    .select("*")
-    .returns<TeVersturenRij[]>();
+  let query = db.from("ads_conversies_te_versturen").select("*");
+  if (filter) {
+    query = query.eq("aanvraag_id", filter.aanvraagId);
+    if (filter.actie) query = query.eq("conversie_actie", filter.actie);
+  }
+  const { data, error } = await query.returns<TeVersturenRij[]>();
   if (error) throw new Error(`Werkvoorraad lezen mislukt: ${error.message}`);
   const rijen = data ?? [];
 
@@ -223,5 +235,26 @@ async function upsertUpload(
   );
   if (error) {
     console.error("[ads-conversies] upsert mislukt:", rij.aanvraag_id, rij.conversie_actie, error.message);
+  }
+}
+
+/**
+ * Directe verzending van één aanvraag, bedoeld voor `after()` vlak na de insert
+ * (aanvraag_ontvangen). Mag nooit gooien en nooit de formulierrespons raken:
+ * elke fout wordt gelogd en de dagelijkse cron probeert het opnieuw. Zonder
+ * ingerichte koppeling gebeurt er niets, zodat er ook geen 'fout'-rijen
+ * ontstaan voordat de env-vars gezet zijn.
+ */
+export async function verstuurAdsConversieDirect(
+  aanvraagId: string,
+  actie: ConversieActie = "aanvraag_ontvangen"
+): Promise<void> {
+  if (!adsUploadGeconfigureerd()) return;
+  try {
+    const rapport = await draaiAdsConversiesJob("verzend", { aanvraagId, actie });
+    const fout = rapport.acties.find((a) => a.fout !== undefined);
+    if (fout) console.error("[ads-conversies] directe verzending mislukt:", aanvraagId, actie, fout.fout);
+  } catch (err) {
+    console.error("[ads-conversies] directe verzending gooide:", aanvraagId, actie, err);
   }
 }

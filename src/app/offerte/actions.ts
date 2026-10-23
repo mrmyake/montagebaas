@@ -9,8 +9,9 @@ import { stuurLeadNotificatie, stuurKlantBevestiging } from "@/lib/notify";
 import { stuurNtfy } from "@/lib/ntfy";
 import { rateLimit } from "@/lib/rate-limit";
 import { euro } from "@/lib/pricing";
-import { attributieVoorInsert } from "@/lib/attributie";
+import { attributieVoorInsertMetConsent } from "@/lib/attributie";
 import { consentVoorInsert, type ConsentState } from "@/lib/consent";
+import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
 import type { AanvraagInsert } from "@/lib/db.types";
 
 export interface AanvraagPayload {
@@ -91,9 +92,9 @@ export async function verstuurAanvraag(
   const postcodeNet = payload.postcode.trim().toUpperCase();
   const toelichting = payload.toelichting?.trim() || null;
 
-  // Attributie reist mee in onze eigen cookie, dus AanvraagPayload hoeft niet
-  // uitgebreid te worden — de client stuurt hier niets voor mee.
-  const attributie = attributieVoorInsert(await cookies());
+  // Attributie reist mee in onze eigen cookie, maar telt alleen als de bezoeker
+  // de banner accepteerde — de keuze zelf stuurt de client mee in de payload.
+  const attributie = attributieVoorInsertMetConsent(await cookies(), payload.consent);
 
   const insert: AanvraagInsert = {
     ...attributie,
@@ -161,6 +162,10 @@ export async function verstuurAanvraag(
       priority: "high",
     })
   );
+
+  // Conversie 'aanvraag_ontvangen' meteen naar Google Ads — async, best-effort.
+  // De dagelijkse cron pakt op wat hier niet lukt.
+  after(() => verstuurAdsConversieDirect(id));
 
   // Notificaties — best-effort, mogen de aanvraag niet laten falen.
   const leadData = {

@@ -12,6 +12,21 @@ declare global {
 export const CONSENT_STORAGE_KEY = "montagebaas_consent";
 export type ConsentState = "granted" | "denied";
 
+/** Wordt op `window` gedispatcht zodra de bezoeker in de banner kiest; detail = ConsentState. */
+export const CONSENT_CHANGED_EVENT = "mb:consent-changed";
+/** Wordt op `window` gedispatcht om de banner opnieuw te openen (footerlink "Cookie-instellingen"). */
+export const CONSENT_OPEN_EVENT = "mb:consent-open";
+
+export function meldConsentGewijzigd(state: ConsentState): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent<ConsentState>(CONSENT_CHANGED_EVENT, { detail: state }));
+}
+
+export function openConsentBanner(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(CONSENT_OPEN_EVENT));
+}
+
 export function setConsent(granted: boolean): void {
   if (typeof window === "undefined" || typeof window.gtag !== "function") return;
   const v: ConsentState = granted ? "granted" : "denied";

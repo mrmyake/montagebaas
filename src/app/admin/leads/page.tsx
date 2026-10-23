@@ -49,7 +49,11 @@ const ADS_STATUS_LABELS: Record<AdsUploadStatus, string> = {
   overgeslagen: "overgeslagen",
 };
 
-const ADS_ACTIE_LABELS = { offerte_verstuurd: "Offerte", opdracht_gewonnen: "Opdracht" } as const;
+const ADS_ACTIE_LABELS = {
+  aanvraag_ontvangen: "Aanvraag",
+  offerte_verstuurd: "Offerte",
+  opdracht_gewonnen: "Opdracht",
+} as const;
 
 /** Per aanvraag: uploadstatus per conversieactie, voor de kolom "Ads". */
 function AdsCel({ uploads }: { uploads: AdsConversieUploadRow[] }) {

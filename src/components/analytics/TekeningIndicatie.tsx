@@ -24,12 +24,12 @@ const MAX_POGINGEN = 20; // ~40s (2s interval)
 export function TekeningIndicatie() {
   const id = useSearchParams().get("a");
   const [state, setState] = useState<Status>({ fase: "laden" });
+  // Zonder ?a= (formulier-pad) is er niets te pollen: afgeleid, niet via setState
+  // in het effect (react-hooks/set-state-in-effect).
+  const weergave: Status = id ? state : { fase: "geen" };
 
   useEffect(() => {
-    if (!id) {
-      setState({ fase: "geen" });
-      return;
-    }
+    if (!id) return;
     let pogingen = 0;
     let gestopt = false;
     let timer: ReturnType<typeof setTimeout>;
@@ -82,9 +82,9 @@ export function TekeningIndicatie() {
     };
   }, [id]);
 
-  if (!id || state.fase === "geen") return null;
+  if (!id || weergave.fase === "geen") return null;
 
-  if (state.fase === "laden") {
+  if (weergave.fase === "laden") {
     return (
       <div className="mx-auto mt-6 flex max-w-md items-center justify-center gap-2 rounded-xl bg-paper px-4 py-3 text-sm text-ink-soft ring-1 ring-line">
         <Loader2 size={16} className="animate-spin text-accent" />
@@ -101,15 +101,15 @@ export function TekeningIndicatie() {
     <div className="mx-auto mt-6 max-w-md rounded-2xl bg-accent-soft/50 px-5 py-4 text-left ring-1 ring-accent/30">
       <p className="text-sm font-medium text-ink-soft">Indicatie op basis van je tekening</p>
       <p className="mt-1 text-2xl font-bold text-ink">
-        {euro(state.min)} – {euro(state.max)}
+        {euro(weergave.min)} – {euro(weergave.max)}
       </p>
       <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-muted">
         <Info size={14} className="mt-0.5 shrink-0" />
-        {state.ruw
+        {weergave.ruw
           ? "Ruwe indicatie — je tekening was lastig automatisch te lezen, dus de definitieve prijs kan afwijken. We nemen binnen 24 uur contact met je op."
           : "Indicatie op basis van je tekening. We nemen binnen 24 uur contact met je op voor je exacte vaste prijs."}
       </p>
-      {state.ruw && (
+      {weergave.ruw && (
         <a
           href={artikellijstWa}
           target="_blank"
