@@ -26,7 +26,9 @@ dedupliceert aan Google's kant én wordt door de `unique`-constraint hier tegeng
 
 Overslaan (status `overgeslagen` + reden): waarde ontbreekt/0; geen click-ID én geen
 bruikbare e-mail/telefoon; klik ouder dan 90 dagen op het conversiemoment (alleen bij
-click-ID; `created_at` van de aanvraag geldt als benadering van het klikmoment).
+click-ID; `created_at` van de aanvraag geldt als benadering van het klikmoment);
+**consent geweigerd** (de bezoeker klikte "Weigeren" — dan gaat er niets naar Google,
+ook geen klik-ID; zo belooft de cookiebanner het).
 
 ## Eenmalige inrichting (Ilja)
 

@@ -183,6 +183,14 @@ export function beslis(
     };
   }
 
+  // Geweigerd = niet versturen. De bezoeker heeft nee gezegd tegen het delen
+  // van gegevens met Google voor advertentiemeting; dan sturen we ook geen
+  // klik-ID of gehashte contactgegevens na. (Google verwerkt EER-conversies
+  // zonder CONSENT_GRANTED op adUserData sowieso niet.) De bannertekst belooft dit.
+  if (rij.consent_ad_user_data === false || rij.consent_ad_personalization === false) {
+    return { soort: "overslaan", reden: "consent geweigerd", klikType };
+  }
+
   const consentOnbekend = rij.consent_ad_user_data === null || rij.consent_ad_personalization === null;
   if (consentOnbekend) {
     if (opties.consentOnbekend === "wachten") {

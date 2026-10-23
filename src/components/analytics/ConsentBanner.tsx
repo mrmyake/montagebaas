@@ -60,8 +60,11 @@ export function ConsentBanner() {
           voor advertentiemeting en gepersonaliseerde advertenties. Vraag je een
           offerte aan, dan geven we ook een versleutelde (gehashte) versie van je
           e-mailadres en telefoonnummer aan Google door, zodat we kunnen meten
-          welke advertentie tot een opdracht leidde. Weiger je, dan meten en delen
-          we niets. Zie onze{" "}
+          welke advertentie tot een opdracht leidde. Weiger je, dan plaatsen we geen
+          Google-cookies en delen we bij een aanvraag geen contactgegevens met
+          Google. We onthouden dan wel zelf, in een eigen cookie, via welke
+          advertentie je binnenkwam, en Google ontvangt alleen cookieloze
+          meetsignalen zonder klik-ID. Zie onze{" "}
           <a href="/privacy" className="text-accent underline">
             privacyverklaring
           </a>

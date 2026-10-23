@@ -120,10 +120,11 @@ test("beslis: consent onbekend volgt het beleid", () => {
   }
 });
 
-test("beslis: geweigerde consent gaat als CONSENT_DENIED mee", () => {
+test("beslis: geweigerde consent → overslaan, ook bij maar één van de twee", () => {
   const b = beslis({ ...basis, consent_ad_user_data: false, consent_ad_personalization: false }, { consentOnbekend: "wachten" });
-  assert.equal(b.soort, "versturen");
-  if (b.soort === "versturen") assert.equal(b.event.consent.adUserData, "CONSENT_DENIED");
+  assert.equal(b.soort, "overslaan");
+  if (b.soort === "overslaan") assert.equal(b.reden, "consent geweigerd");
+  assert.equal(beslis({ ...basis, consent_ad_personalization: false }, { consentOnbekend: "wachten" }).soort, "overslaan");
 });
 
 test("request-body: bestemming, HEX-encoding en validateOnly", () => {
