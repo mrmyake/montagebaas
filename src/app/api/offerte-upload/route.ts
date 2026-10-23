@@ -2,6 +2,7 @@ import { NextResponse, after } from "next/server";
 import { headers, cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
 import { attributieVoorInsert } from "@/lib/attributie";
+import { consentVoorInsert } from "@/lib/consent";
 import { stuurNtfy } from "@/lib/ntfy";
 import { rateLimit } from "@/lib/rate-limit";
 import { verwerkTekening } from "@/lib/tekening-verwerker";
@@ -96,6 +97,7 @@ export async function POST(req: Request) {
     .from("aanvragen")
     .insert({
       ...attributie,
+      ...consentVoorInsert(form.get("consent")),
       naam,
       telefoon,
       email,

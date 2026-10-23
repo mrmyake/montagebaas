@@ -2,7 +2,12 @@
 
 import { startTransition, useActionState, useRef, useState } from "react";
 import { updateLead } from "./actions";
-import { LEAD_STATUSSEN, LEAD_STATUSSEN_MET_FACTUUR, type LeadStatus } from "@/lib/db.types";
+import {
+  LEAD_STATUSSEN,
+  LEAD_STATUSSEN_MET_BEDRAG_VERPLICHT,
+  LEAD_STATUSSEN_MET_FACTUUR,
+  type LeadStatus,
+} from "@/lib/db.types";
 
 // Wachttijd na de laatste toetsaanslag voordat tekst- en bedragvelden opslaan.
 const AUTOSAVE_VERTRAGING_MS = 800;
@@ -65,8 +70,23 @@ export function LeadRowForm({
     if (timerRef.current) verstuur();
   }
 
+  // Client-side spiegel van de servercheck in actions.ts: een status die naar
+  // Google Ads gaat, vereist een bedrag. Blokkeert het opslaan van de
+  // statuswissel zolang beide bedragvelden leeg zijn.
+  function bedragOntbreekt(nieuweStatus: LeadStatus): boolean {
+    if (!LEAD_STATUSSEN_MET_BEDRAG_VERPLICHT.includes(nieuweStatus)) return false;
+    const fd = formRef.current ? new FormData(formRef.current) : null;
+    const offerte = Number(fd?.get("offerte_bedrag")?.toString().replace(",", ".") || 0);
+    const gefactureerd = LEAD_STATUSSEN_MET_FACTUUR.includes(nieuweStatus)
+      ? Number(fd?.get("gefactureerd_bedrag")?.toString().replace(",", ".") || 0)
+      : 0;
+    return !(offerte > 0 || gefactureerd > 0);
+  }
+  const [blokkade, setBlokkade] = useState<string | null>(null);
+
   let melding: React.ReactNode = null;
-  if (pending || heeftWijziging) melding = <span className="text-sm text-[var(--color-muted)]">Opslaan…</span>;
+  if (blokkade) melding = <span className="text-sm text-red-600">{blokkade}</span>;
+  else if (pending || heeftWijziging) melding = <span className="text-sm text-[var(--color-muted)]">Opslaan…</span>;
   else if (result?.error) melding = <span className="text-sm text-red-600">{result.error}</span>;
   else if (result?.opgeslagen) melding = <span className="text-sm text-green-700">Opgeslagen ✓</span>;
 
@@ -79,6 +99,7 @@ export function LeadRowForm({
       }}
       onInput={(e) => {
         if (e.target instanceof HTMLSelectElement) return; // select slaat via onChange direct op
+        setBlokkade(null);
         planOpslaan(AUTOSAVE_VERTRAGING_MS);
       }}
       onBlur={opslaanBijVerlaten}
@@ -88,7 +109,17 @@ export function LeadRowForm({
         name="lead_status"
         value={status}
         onChange={(e) => {
-          setStatus(e.target.value as LeadStatus);
+          const nieuw = e.target.value as LeadStatus;
+          if (bedragOntbreekt(nieuw)) {
+            setBlokkade(
+              nieuw === "offerte_verstuurd"
+                ? "Vul eerst het offertebedrag in; dan pas kan de status naar Offerte verstuurd."
+                : "Vul eerst het offerte- of gefactureerd bedrag in; dan pas kan de status naar Gewonnen/Uitgevoerd."
+            );
+            return; // select blijft op de oude status staan
+          }
+          setBlokkade(null);
+          setStatus(nieuw);
           // Timeout 0: pas na de re-render opslaan, zodat het factuurveld al
           // (on)beschikbaar is gemaakt voor de nieuwe status.
           planOpslaan(0);

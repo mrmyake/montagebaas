@@ -52,6 +52,10 @@ export interface AanvraagRow {
   gefactureerd_bedrag: number | null; // alleen gevuld bij lead_status 'gewonnen' of 'uitgevoerd' (db check constraint)
   reden_verloren: string | null;
   notitie: string | null;
+  // Consent Mode-keuze op het moment van verzenden (0007). null = geen keuze
+  // bekend (banner nog open, of aanvraag van vóór de migratie).
+  consent_ad_user_data: boolean | null;
+  consent_ad_personalization: boolean | null;
 }
 
 export type LeadStatus =
@@ -79,6 +83,30 @@ export const LEAD_STATUSSEN: LeadStatus[] = [
 
 // Statussen waarbij een gefactureerd_bedrag is toegestaan (db check constraint).
 export const LEAD_STATUSSEN_MET_FACTUUR: LeadStatus[] = ["gewonnen", "uitgevoerd"];
+
+// Statussen die een conversie naar Google Ads opleveren en daarom een bedrag
+// vereisen: offerte_verstuurd → offerte_bedrag; gewonnen/uitgevoerd →
+// offerte_bedrag of gefactureerd_bedrag (de upload neemt coalesce van beide).
+export const LEAD_STATUSSEN_MET_BEDRAG_VERPLICHT: LeadStatus[] = [
+  "offerte_verstuurd",
+  "gewonnen",
+  "uitgevoerd",
+];
+
+// Spiegelt montagebaas.ads_conversie_uploads (0007_ads_conversies.sql).
+export type AdsUploadStatus = "wachtend" | "verstuurd" | "fout" | "overgeslagen";
+export interface AdsConversieUploadRow {
+  id: number;
+  aanvraag_id: string;
+  conversie_actie: "offerte_verstuurd" | "opdracht_gewonnen";
+  event_tijdstip: string;
+  waarde: number;
+  status: AdsUploadStatus;
+  reden: string | null;
+  request_id: string | null;
+  response: unknown;
+  verzonden_op: string | null;
+}
 
 export type LeadBron = "website" | "werkspot" | "doorverwijzing" | "overig";
 

@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { verifieerAdminSessie } from "@/lib/admin-auth";
-import { LEAD_STATUSSEN, LEAD_STATUSSEN_MET_FACTUUR, type LeadStatus } from "@/lib/db.types";
+import {
+  LEAD_STATUSSEN,
+  LEAD_STATUSSEN_MET_BEDRAG_VERPLICHT,
+  LEAD_STATUSSEN_MET_FACTUUR,
+  type LeadStatus,
+} from "@/lib/db.types";
 
 export type UpdateLeadResult = { error?: string; opgeslagen?: boolean };
 
@@ -41,6 +46,22 @@ export async function updateLead(
   const gefactureerdBedrag = magFactuur ? parseBedrag(formData.get("gefactureerd_bedrag")) : null;
   const redenVerloren = parseTekst(formData.get("reden_verloren"));
   const notitie = parseTekst(formData.get("notitie"));
+
+  // Deze statussen gaan als conversie (met waarde) naar Google Ads; zonder
+  // bedrag is er niets te versturen. Serverside afgedwongen, de client toont
+  // dezelfde melding alvast.
+  const bedragVerplicht = LEAD_STATUSSEN_MET_BEDRAG_VERPLICHT.includes(leadStatus);
+  const heeftBedrag =
+    (offerteBedrag !== null && offerteBedrag > 0) ||
+    (magFactuur && gefactureerdBedrag !== null && gefactureerdBedrag > 0);
+  if (bedragVerplicht && !heeftBedrag) {
+    return {
+      error:
+        leadStatus === "offerte_verstuurd"
+          ? "Vul eerst het offertebedrag in; dan pas kan de status naar Offerte verstuurd."
+          : "Vul eerst het offerte- of gefactureerd bedrag in; dan pas kan de status naar Gewonnen/Uitgevoerd.",
+    };
+  }
 
   const db = supabaseAdmin();
   const { error } = await db

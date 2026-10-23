@@ -4,9 +4,13 @@ import { useEffect, useState } from "react";
 import { setConsent, CONSENT_STORAGE_KEY, type ConsentState } from "@/lib/consent";
 
 /**
- * AVG-cookiebanner. GA4 staat default op 'denied' (Consent Mode v2, zie
- * Analytics.tsx); deze banner upgradet naar 'granted' bij accepteren. Toont
- * niets als GA4 niet geconfigureerd is of de bezoeker al gekozen heeft.
+ * AVG-cookiebanner. GA4 en Google Ads staan default op 'denied' (Consent Mode
+ * v2, zie Analytics.tsx); deze banner upgradet alle vier de signalen naar
+ * 'granted' bij accepteren — inclusief ad_user_data en ad_personalization,
+ * omdat de keuze ook meereist met een offerteaanvraag en bepaalt of gehashte
+ * contactgegevens naar Google Ads mogen (enhanced conversions for leads, zie
+ * docs/ADS-CONVERSIES.md). De tekst moet dat dus benoemen. Toont niets als
+ * GA4 niet geconfigureerd is of de bezoeker al gekozen heeft.
  */
 export function ConsentBanner() {
   const [decision, setDecision] = useState<ConsentState | null>(null);
@@ -50,9 +54,14 @@ export function ConsentBanner() {
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-8 sm:py-5">
         <p className="flex-1 text-sm leading-relaxed text-ink-soft">
-          We gebruiken cookies om het siteverkeer te meten. Door op
-          &lsquo;Accepteren&rsquo; te klikken ga je akkoord met analytics-cookies.
-          Zie onze{" "}
+          We gebruiken cookies om het siteverkeer te meten en om te zien welke
+          Google-advertenties tot een aanvraag leiden. Klik je op
+          &lsquo;Accepteren&rsquo;, dan delen we gegevens over je bezoek met Google
+          voor advertentiemeting en gepersonaliseerde advertenties. Vraag je een
+          offerte aan, dan geven we ook een versleutelde (gehashte) versie van je
+          e-mailadres en telefoonnummer aan Google door, zodat we kunnen meten
+          welke advertentie tot een opdracht leidde. Weiger je, dan meten en delen
+          we niets. Zie onze{" "}
           <a href="/privacy" className="text-accent underline">
             privacyverklaring
           </a>

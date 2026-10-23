@@ -6,6 +6,7 @@ import { UploadCloud, FileCheck2, Loader2, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, inputClass } from "@/components/configurator/parts";
 import { OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
+import { huidigeConsentKeuze } from "@/lib/consent";
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB per bestand
 const MAX_FILES = 8;
@@ -79,6 +80,7 @@ export function TekeningUpload() {
       fd.append("email", email.trim());
       fd.append("telefoon", telefoon.trim());
       fd.append("website", website); // honeypot
+      fd.append("consent", huidigeConsentKeuze() ?? "");
       const res = await fetch("/api/offerte-upload", { method: "POST", body: fd });
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; error?: string; id?: string }

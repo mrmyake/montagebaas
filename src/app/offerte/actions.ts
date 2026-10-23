@@ -10,6 +10,7 @@ import { stuurNtfy } from "@/lib/ntfy";
 import { rateLimit } from "@/lib/rate-limit";
 import { euro } from "@/lib/pricing";
 import { attributieVoorInsert } from "@/lib/attributie";
+import { consentVoorInsert, type ConsentState } from "@/lib/consent";
 import type { AanvraagInsert } from "@/lib/db.types";
 
 export interface AanvraagPayload {
@@ -24,6 +25,7 @@ export interface AanvraagPayload {
   gewenste_periode: string;
   toelichting?: string;
   website?: string; // honeypot — moet leeg zijn
+  consent?: ConsentState | null; // bannerkeuze (localStorage) — zie lib/consent.ts
 }
 
 export type AanvraagResultaat =
@@ -95,6 +97,7 @@ export async function verstuurAanvraag(
 
   const insert: AanvraagInsert = {
     ...attributie,
+    ...consentVoorInsert(payload.consent),
     type_klus: payload.type_klus,
     aantal_kasten_range: payload.grootte,
     opstelling: payload.opstelling,

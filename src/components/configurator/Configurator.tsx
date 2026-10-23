@@ -25,6 +25,7 @@ import {
 import { berekenPrijs, euro, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { verstuurAanvraag } from "@/app/offerte/actions";
 import { OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
+import { huidigeConsentKeuze } from "@/lib/consent";
 
 const TOTAAL = 6;
 
@@ -105,6 +106,7 @@ export function Configurator() {
       gewenste_periode: periode,
       toelichting,
       website, // honeypot
+      consent: huidigeConsentKeuze(),
     });
     if (res.ok) {
       // Markeer een ECHTE verzending zodat de bedankpagina het conversie-event

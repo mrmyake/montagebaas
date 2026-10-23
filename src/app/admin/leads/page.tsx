@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase";
-import { LEAD_STATUSSEN, LEAD_BRONNEN, type LeadOverzichtRow, type LeadStatus, type LeadBron } from "@/lib/db.types";
+import {
+  LEAD_STATUSSEN,
+  LEAD_BRONNEN,
+  type AdsConversieUploadRow,
+  type AdsUploadStatus,
+  type LeadOverzichtRow,
+  type LeadStatus,
+  type LeadBron,
+} from "@/lib/db.types";
 import { LeadRowForm } from "./LeadRowForm";
 
 export const metadata = { title: "Leads — Montagebaas admin" };
@@ -34,6 +42,41 @@ function formatteerDatum(iso: string): string {
   return new Date(iso).toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" });
 }
 
+const ADS_STATUS_LABELS: Record<AdsUploadStatus, string> = {
+  wachtend: "wacht",
+  verstuurd: "verstuurd",
+  fout: "fout",
+  overgeslagen: "overgeslagen",
+};
+
+const ADS_ACTIE_LABELS = { offerte_verstuurd: "Offerte", opdracht_gewonnen: "Opdracht" } as const;
+
+/** Per aanvraag: uploadstatus per conversieactie, voor de kolom "Ads". */
+function AdsCel({ uploads }: { uploads: AdsConversieUploadRow[] }) {
+  if (uploads.length === 0) return <span className="text-[var(--color-muted)]">—</span>;
+  return (
+    <div className="flex flex-col gap-0.5 text-xs">
+      {uploads.map((u) => (
+        <span
+          key={u.conversie_actie}
+          title={[u.reden, u.verzonden_op ? `verzonden ${formatteerDatum(u.verzonden_op)}` : null]
+            .filter(Boolean)
+            .join(" · ") || undefined}
+          className={
+            u.status === "verstuurd"
+              ? "text-green-700"
+              : u.status === "fout"
+                ? "font-semibold text-red-600"
+                : "text-[var(--color-muted)]"
+          }
+        >
+          {ADS_ACTIE_LABELS[u.conversie_actie]}: {ADS_STATUS_LABELS[u.status]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function dagenStil(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
 }
@@ -51,6 +94,26 @@ export default async function AdminLeadsPage({
   if (bron) query = query.eq("bron", bron);
 
   const { data, error } = await query.returns<LeadOverzichtRow[]>();
+
+  // Uploadstatus richting Google Ads (0007). Aparte query, klein genoeg om
+  // volledig op te halen; gegroepeerd per aanvraag voor de kolom "Ads".
+  const uploadsPerAanvraag = new Map<string, AdsConversieUploadRow[]>();
+  if (data && data.length > 0) {
+    const { data: uploads } = await db
+      .from("ads_conversie_uploads")
+      .select("*")
+      .in(
+        "aanvraag_id",
+        data.map((r) => r.id)
+      )
+      .order("conversie_actie")
+      .returns<AdsConversieUploadRow[]>();
+    for (const u of uploads ?? []) {
+      const lijst = uploadsPerAanvraag.get(u.aanvraag_id) ?? [];
+      lijst.push(u);
+      uploadsPerAanvraag.set(u.aanvraag_id, lijst);
+    }
+  }
 
   return (
     <div>
@@ -99,7 +162,7 @@ export default async function AdminLeadsPage({
 
       {!error && data && data.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-sm">
+          <table className="w-full min-w-[1000px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-[var(--color-line-strong)] text-left text-[var(--color-muted)]">
                 <th className="py-2 pr-3">Naam</th>
@@ -108,6 +171,7 @@ export default async function AdminLeadsPage({
                 <th className="py-2 pr-3">Betaalde klik</th>
                 <th className="py-2 pr-3">Campagne</th>
                 <th className="py-2 pr-3">Stil sinds</th>
+                <th className="py-2 pr-3">Ads</th>
                 <th className="py-2 pr-3">Status / bedragen</th>
               </tr>
             </thead>
@@ -131,6 +195,9 @@ export default async function AdminLeadsPage({
                     <td className={`py-2 pr-3 whitespace-nowrap ${gemarkeerd ? "font-semibold text-[var(--color-accent)]" : ""}`}>
                       {stil} {stil === 1 ? "dag" : "dagen"}
                       {gemarkeerd && " ⚠"}
+                    </td>
+                    <td className="py-2 pr-3">
+                      <AdsCel uploads={uploadsPerAanvraag.get(row.id) ?? []} />
                     </td>
                     <td className="py-2 pr-3">
                       <LeadRowForm
