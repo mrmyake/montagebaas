@@ -23,12 +23,22 @@ export const CONVERSIE_ACTIES: ConversieActie[] = [
 /** Maximale leeftijd van een klik op het moment van de conversie. */
 export const MAX_KLIK_LEEFTIJD_DAGEN = 90;
 
-/** Spiegelt montagebaas.ads_conversies_te_versturen (0007_ads_conversies.sql). */
+/**
+ * Moment waarop de consentkeuze per aanvraag live ging (0007 op montagebaas.com).
+ * Aanvragen van daarvóór hebben structureel NULL in de consentkolommen: er was
+ * nog niets om vast te leggen. Die gaan bij de backfill mee met
+ * CONSENT_STATUS_UNSPECIFIED. Aanvragen van daarna met NULL volgen het beleid
+ * ADS_CONSENT_ONBEKEND (in productie: overslaan).
+ */
+export const CONSENT_CAPTURE_LIVEGANG = "2026-10-23T00:00:00+02:00";
+
+/** Spiegelt montagebaas.ads_conversies_te_versturen (0007 t/m 0011). */
 export interface TeVersturenRij {
   aanvraag_id: string;
   conversie_actie: ConversieActie;
   event_tijdstip: string;
-  tijdstip_bron: "log" | "fallback";
+  /** 'migratie' = tijdstip komt uit de statusimport van 25-09-2026 en is niet echt. */
+  tijdstip_bron: "log" | "fallback" | "migratie";
   waarde: number | string | null;
   created_at: string;
   lead_status: string;
@@ -41,10 +51,42 @@ export interface TeVersturenRij {
   consent_ad_personalization: boolean | null;
   upload_status: "wachtend" | "fout" | null;
   consent_bron: "banner" | "formulier" | null;
+  /** Alleen bij aanvraag_ontvangen: id van een eerdere aanvraag (≤ 7 dagen) met hetzelfde e-mailadres of telefoonnummer (0011). */
+  duplicaat_van: string | null;
 }
 
 /**
- * Beleid voor rijen zonder vastgelegde consent (NULL in de database):
+ * Eigen contactgegevens (testinzendingen). Komen uit ADS_UITGESLOTEN_CONTACTEN,
+ * genormaliseerd met normaliseerEmail/normaliseerTelefoon; zie
+ * parseUitgeslotenContacten. Een aanvraag die op e-mail óf telefoon matcht, gaat
+ * nooit naar Google.
+ */
+export interface UitgeslotenContacten {
+  emails: Set<string>;
+  telefoons: Set<string>;
+}
+
+/** "me@x.nl, 06-12345678" → genormaliseerde sets. Onbruikbare items worden stil genegeerd. */
+export function parseUitgeslotenContacten(raw: string | undefined | null): UitgeslotenContacten {
+  const uit: UitgeslotenContacten = { emails: new Set(), telefoons: new Set() };
+  for (const item of (raw ?? "").split(",")) {
+    const s = item.trim();
+    if (!s) continue;
+    if (s.includes("@")) {
+      const e = normaliseerEmail(s);
+      if (e) uit.emails.add(e);
+    } else {
+      const t = normaliseerTelefoon(s);
+      if (t) uit.telefoons.add(t);
+    }
+  }
+  return uit;
+}
+
+/**
+ * Beleid voor rijen zonder vastgelegde consent (NULL in de database) die zijn
+ * binnengekomen ná CONSENT_CAPTURE_LIVEGANG. Oudere rijen gaan altijd mee met
+ * CONSENT_STATUS_UNSPECIFIED (zie beslis):
  *  - "wachten":      niet versturen, rij blijft in de werkvoorraad (standaard
  *                    zolang er geen beslissing is genomen);
  *  - "overslaan":    niet versturen, definitief markeren als overgeslagen;
@@ -164,18 +206,50 @@ function dagenTussen(vroeg: string, laat: string): number {
  */
 export function beslis(
   rij: TeVersturenRij,
-  opties: { consentOnbekend: ConsentOnbekendBeleid; nu?: Date }
+  opties: {
+    consentOnbekend: ConsentOnbekendBeleid;
+    consentLivegang?: string;
+    uitgesloten?: UitgeslotenContacten;
+    nu?: Date;
+  }
 ): Beslissing {
   const klik = kiesKlikId(rij);
   const klikType = klik?.type ?? null;
+
+  const email = normaliseerEmail(rij.email);
+  const telefoon = normaliseerTelefoon(rij.telefoon);
+
+  // Eigen testinzendingen: nooit versturen, welke actie ook.
+  if (
+    opties.uitgesloten &&
+    ((email && opties.uitgesloten.emails.has(email)) ||
+      (telefoon && opties.uitgesloten.telefoons.has(telefoon)))
+  ) {
+    return { soort: "overslaan", reden: "testinzending (eigen contactgegevens)", klikType };
+  }
+
+  // Statusimport van 25-09: het logtijdstip is het importmoment, niet het echte
+  // conversiemoment. Niets definitiefs beslissen (ook niet over waarde of
+  // klikleeftijd) tot de datum in lead_status_log is gecorrigeerd — dan wordt
+  // tijdstip_bron weer 'log' en gaat de rij vanzelf mee.
+  if (rij.tijdstip_bron === "migratie") {
+    return {
+      soort: "wachten",
+      reden: "event-tijdstip komt uit de statusimport van 25-09; datum nog corrigeren",
+      klikType,
+    };
+  }
+
+  // Dubbele aanvraag (zelfde contact binnen 7 dagen): alleen de eerste telt.
+  if (rij.duplicaat_van) {
+    return { soort: "overslaan", reden: `duplicaat van ${rij.duplicaat_van.slice(0, 8)}`, klikType };
+  }
 
   const waarde = rij.waarde === null || rij.waarde === undefined ? NaN : Number(rij.waarde);
   if (!Number.isFinite(waarde) || waarde <= 0) {
     return { soort: "overslaan", reden: "waarde ontbreekt of is 0", klikType };
   }
 
-  const email = normaliseerEmail(rij.email);
-  const telefoon = normaliseerTelefoon(rij.telefoon);
   if (!klik && !email && !telefoon) {
     return { soort: "overslaan", reden: "geen click-ID en geen bruikbare e-mail/telefoon", klikType };
   }
@@ -197,7 +271,12 @@ export function beslis(
   }
 
   const consentOnbekend = rij.consent_ad_user_data === null || rij.consent_ad_personalization === null;
-  if (consentOnbekend) {
+  const historisch =
+    new Date(rij.created_at).getTime() <
+    new Date(opties.consentLivegang ?? CONSENT_CAPTURE_LIVEGANG).getTime();
+  // Historische rij (van vóór consent-capture): er was niets om vast te leggen,
+  // dus mee met CONSENT_STATUS_UNSPECIFIED. Alleen nieuwe rijen volgen het beleid.
+  if (consentOnbekend && !historisch) {
     if (opties.consentOnbekend === "wachten") {
       return { soort: "wachten", reden: "consent onbekend; beleid nog niet vastgesteld", klikType };
     }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import { draaiAdsConversiesJob, type JobModus } from "@/lib/ads-conversies-job";
+import { adsUploadActief, draaiAdsConversiesJob, type JobModus } from "@/lib/ads-conversies-job";
 
 /**
  * Dagelijkse upload van offline conversies naar Google Ads (zie vercel.json).
@@ -29,6 +29,11 @@ export async function GET(req: Request) {
   const mode = new URL(req.url).searchParams.get("mode") ?? "verzend";
   if (mode !== "plan" && mode !== "validate" && mode !== "verzend") {
     return NextResponse.json({ ok: false, error: "Onbekende mode." }, { status: 400 });
+  }
+
+  // Kill switch: de cron blijft dan netjes 200 geven (geen dagelijkse foutmelding in Vercel).
+  if (mode === "verzend" && !adsUploadActief()) {
+    return NextResponse.json({ ok: true, uitgeschakeld: true, melding: "ADS_UPLOAD_ACTIEF is niet 'true'; niets gedaan." });
   }
 
   try {

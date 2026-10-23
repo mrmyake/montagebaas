@@ -7,6 +7,7 @@ import {
   kiesKlikId,
   normaliseerEmail,
   normaliseerTelefoon,
+  parseUitgeslotenContacten,
   sha256Hex,
   type TeVersturenRij,
 } from "./ads-conversies.ts";
@@ -28,6 +29,7 @@ const basis: TeVersturenRij = {
   consent_ad_personalization: true,
   upload_status: null,
   consent_bron: "banner",
+  duplicaat_van: null,
 };
 
 test("e-mail: whitespace, lowercase, gmail-punten en +label", () => {
@@ -110,8 +112,14 @@ test("beslis: klik ouder dan 90 dagen → overslaan, zonder klik-id niet", () =>
   assert.equal(beslis({ ...oud, gclid: null }, { consentOnbekend: "wachten" }).soort, "versturen");
 });
 
-test("beslis: consent onbekend volgt het beleid", () => {
-  const rij = { ...basis, consent_ad_user_data: null, consent_ad_personalization: null };
+test("beslis: consent onbekend (nieuwe rij) volgt het beleid", () => {
+  const rij = {
+    ...basis,
+    created_at: "2026-10-23T09:00:00+02:00",
+    event_tijdstip: "2026-10-24T09:00:00+02:00",
+    consent_ad_user_data: null,
+    consent_ad_personalization: null,
+  };
   assert.equal(beslis(rij, { consentOnbekend: "wachten" }).soort, "wachten");
   assert.equal(beslis(rij, { consentOnbekend: "overslaan" }).soort, "overslaan");
   const b = beslis(rij, { consentOnbekend: "unspecified" });
@@ -119,6 +127,80 @@ test("beslis: consent onbekend volgt het beleid", () => {
   if (b.soort === "versturen") {
     assert.equal(b.event.consent.adUserData, "CONSENT_STATUS_UNSPECIFIED");
   }
+});
+
+test("beslis: historische rij (vóór consent-capture) met consent null → UNSPECIFIED, ongeacht beleid", () => {
+  // basis.created_at = 2026-09-20, ruim vóór CONSENT_CAPTURE_LIVEGANG (23-10-2026).
+  const rij = { ...basis, consent_ad_user_data: null, consent_ad_personalization: null };
+  for (const beleid of ["wachten", "overslaan", "unspecified"] as const) {
+    const b = beslis(rij, { consentOnbekend: beleid });
+    assert.equal(b.soort, "versturen", `beleid ${beleid}`);
+    if (b.soort === "versturen") {
+      assert.equal(b.event.consent.adUserData, "CONSENT_STATUS_UNSPECIFIED");
+      assert.equal(b.event.consent.adPersonalization, "CONSENT_STATUS_UNSPECIFIED");
+    }
+  }
+  // Nieuwe rij (ná livegang) met null blijft het beleid volgen.
+  const nieuw = { ...rij, created_at: "2026-10-23T09:00:00+02:00", event_tijdstip: "2026-10-23T09:00:00+02:00" };
+  assert.equal(beslis(nieuw, { consentOnbekend: "overslaan" }).soort, "overslaan");
+  assert.equal(beslis(nieuw, { consentOnbekend: "wachten" }).soort, "wachten");
+  // Grens is instelbaar (test-haak): livegang vóór de rij → rij is 'nieuw'.
+  assert.equal(
+    beslis(rij, { consentOnbekend: "overslaan", consentLivegang: "2026-09-01T00:00:00+02:00" }).soort,
+    "overslaan"
+  );
+  // Geweigerd blijft geweigerd, ook historisch.
+  assert.equal(beslis({ ...rij, consent_ad_user_data: false }, { consentOnbekend: "overslaan" }).soort, "overslaan");
+});
+
+test("beslis: tijdstip uit statusimport 25-09 → wachten, vóór elke definitieve beslissing", () => {
+  const rij: TeVersturenRij = { ...basis, tijdstip_bron: "migratie", event_tijdstip: "2026-09-25T06:43:00+00:00" };
+  const b = beslis(rij, { consentOnbekend: "overslaan" });
+  assert.equal(b.soort, "wachten");
+  if (b.soort === "wachten") assert.match(b.reden, /25-09/);
+  // Ook zonder waarde of met een te oude klik: niet definitief overslaan.
+  assert.equal(beslis({ ...rij, waarde: null }, { consentOnbekend: "overslaan" }).soort, "wachten");
+  assert.equal(
+    beslis({ ...rij, created_at: "2026-05-01T00:00:00+00:00" }, { consentOnbekend: "overslaan" }).soort,
+    "wachten"
+  );
+});
+
+test("beslis: duplicaat (zelfde contact binnen 7 dagen) → overslaan met verwijzing naar de eerste", () => {
+  const rij: TeVersturenRij = {
+    ...basis,
+    conversie_actie: "aanvraag_ontvangen",
+    event_tijdstip: basis.created_at,
+    waarde: 2700,
+    duplicaat_van: "09a5acbd-0000-0000-0000-000000000000",
+  };
+  const b = beslis(rij, { consentOnbekend: "overslaan" });
+  assert.equal(b.soort, "overslaan");
+  if (b.soort === "overslaan") assert.equal(b.reden, "duplicaat van 09a5acbd");
+  // Zonder duplicaat_van gewoon versturen.
+  assert.equal(beslis({ ...rij, duplicaat_van: null }, { consentOnbekend: "overslaan" }).soort, "versturen");
+});
+
+test("beslis: eigen contactgegevens (testinzending) → overslaan, op e-mail of telefoon, genormaliseerd", () => {
+  const uitgesloten = parseUitgeslotenContacten(" Me@Ilja.com , 06 - 2917 3468, kapot,, ");
+  assert.deepEqual([...uitgesloten.emails], ["me@ilja.com"]);
+  assert.deepEqual([...uitgesloten.telefoons], ["+31629173468"]);
+
+  const opEmail = beslis({ ...basis, email: "ME@ilja.com" }, { consentOnbekend: "wachten", uitgesloten });
+  assert.equal(opEmail.soort, "overslaan");
+  if (opEmail.soort === "overslaan") assert.equal(opEmail.reden, "testinzending (eigen contactgegevens)");
+  assert.equal(
+    beslis({ ...basis, telefoon: "+31 (0)6 29173468" }, { consentOnbekend: "wachten", uitgesloten }).soort,
+    "overslaan"
+  );
+  // Gaat vóór alles: ook een migratie-rij van een testinzending wordt definitief overgeslagen.
+  assert.equal(
+    beslis({ ...basis, email: "me@ilja.com", tijdstip_bron: "migratie" }, { consentOnbekend: "wachten", uitgesloten }).soort,
+    "overslaan"
+  );
+  // Andere contactgegevens: ongemoeid.
+  assert.equal(beslis(basis, { consentOnbekend: "wachten", uitgesloten }).soort, "versturen");
+  assert.equal(beslis(basis, { consentOnbekend: "wachten", uitgesloten: parseUitgeslotenContacten("") }).soort, "versturen");
 });
 
 test("beslis: geweigerde consent → overslaan, ook bij maar één van de twee", () => {
@@ -172,8 +254,9 @@ test("aanvraag_ontvangen: zelfde regels, transactionId met eigen suffix", () => 
     beslis({ ...rij, gclid: null, email: null, telefoon: null }, { consentOnbekend: "overslaan" }).soort,
     "overslaan"
   );
-  assert.equal(
-    beslis({ ...rij, consent_ad_user_data: null, consent_ad_personalization: null }, { consentOnbekend: "overslaan" }).soort,
-    "overslaan"
-  );
+  // Consent onbekend: historisch (vóór 23-10-2026) → mee met UNSPECIFIED; nieuw → beleid.
+  const onbekend = { ...rij, consent_ad_user_data: null, consent_ad_personalization: null };
+  assert.equal(beslis(onbekend, { consentOnbekend: "overslaan" }).soort, "versturen");
+  const nieuw = { ...onbekend, created_at: "2026-10-23T08:00:00+02:00", event_tijdstip: "2026-10-23T08:00:00+02:00" };
+  assert.equal(beslis(nieuw, { consentOnbekend: "overslaan" }).soort, "overslaan");
 });

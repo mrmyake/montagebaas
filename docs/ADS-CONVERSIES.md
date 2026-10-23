@@ -7,7 +7,7 @@ Google Ads via de **Data Manager API** (`events:ingest`). Bron: `montagebaas.aan
 
 | Onderdeel | Waar |
 |---|---|
-| Consent-kolommen, uploadtabel, werkvoorraad-view | `supabase/migrations/0007_ads_conversies.sql`, `0008_ads_aanvraag_ontvangen.sql` |
+| Consent-kolommen, uploadtabel, werkvoorraad-view | `supabase/migrations/0007_ads_conversies.sql`, `0008_ads_aanvraag_ontvangen.sql`, `0010_ads_backfill.sql`, `0011_ads_dedupe.sql` |
 | Normaliseren, hashen, beslissen, request bouwen (puur, getest) | `src/lib/ads-conversies.ts` + `.test.ts` |
 | Service-account-token (JWT → access token) | `src/lib/google-auth.ts` |
 | Orkestratie (view → API → `ads_conversie_uploads`) | `src/lib/ads-conversies-job.ts` |
@@ -18,7 +18,7 @@ Drie conversieacties:
 
 | Actie | Moment | Waarde |
 |---|---|---|
-| `aanvraag_ontvangen` | `created_at` van de aanvraag (alleen aanvragen vanaf 23-10-2026, geen backfill) | `prijs_indicatie_max` |
+| `aanvraag_ontvangen` | `created_at` van de aanvraag (rollend: aanvragen van de afgelopen 90 dagen, incl. backfill) | `prijs_indicatie_max` |
 | `offerte_verstuurd` | eerste `lead_status_log.naar_status = 'offerte_verstuurd'` | `offerte_bedrag` |
 | `opdracht_gewonnen` | eerste `naar_status in ('gewonnen','uitgevoerd')` | `coalesce(gefactureerd_bedrag, offerte_bedrag)` |
 
@@ -29,11 +29,23 @@ prijsindicatie heeft). Wat daar niet lukt, pakt de dagelijkse cron op.
 `transactionId` = `{aanvraag_id}:{actie}`, dus een tweede upload van dezelfde rij
 dedupliceert aan Google's kant én wordt door de `unique`-constraint hier tegengehouden.
 
-Overslaan (status `overgeslagen` + reden): waarde ontbreekt/0; geen click-ID én geen
+Overslaan (status `overgeslagen` + reden): eigen testinzending (`ADS_UITGESLOTEN_CONTACTEN`);
+**duplicaat** (alleen `aanvraag_ontvangen`: een eerdere website-aanvraag binnen 7 dagen met
+hetzelfde e-mailadres, lowercase, of telefoonnummer, alleen cijfers — alleen de eerste gaat
+mee, de rest krijgt reden `duplicaat van <kort id>`; 0011); waarde ontbreekt/0; geen click-ID én geen
 bruikbare e-mail/telefoon; klik ouder dan 90 dagen op het conversiemoment (alleen bij
 click-ID; `created_at` van de aanvraag geldt als benadering van het klikmoment);
 **consent geweigerd** (de bezoeker klikte "Weigeren" — dan gaat er niets naar Google,
 ook geen klik-ID; zo belooft de cookiebanner het).
+
+Wachten (status `wachtend`, rij blijft in de werkvoorraad): `tijdstip_bron = 'migratie'`.
+De leadstatussen zijn op 25-09-2026 in bulk geïmporteerd; het logtijdstip van die rijen
+is het importmoment, niet het echte moment van offerte of opdracht. Corrigeer
+`lead_status_log.gewijzigd_op` (of voeg de echte logregel toe), dan wordt de bron weer
+`log` en gaat de rij bij de volgende run vanzelf mee. Zolang `GOOGLE_SA_KEY_JSON` en
+`ADS_CUSTOMER_ID` ontbreken, doet de job in `validate`/`verzend` niets (ook niet
+wegschrijven); alleen `plan` werkt dan. Staat `ADS_UPLOAD_ACTIEF` niet op `true`, dan doet
+`verzend` evenmin iets (de cron geeft dan 200 met `uitgeschakeld: true`).
 
 ## Eenmalige inrichting (Ilja)
 
@@ -90,13 +102,18 @@ conversieactie als `ctId=…`, of in de kolom "ID" van het overzicht). Die gaan 
 | `ADS_CONVERSIE_ACTIE_OFFERTE_VERSTUURD` | conversion action ID |
 | `ADS_CONVERSIE_ACTIE_OPDRACHT_GEWONNEN` | conversion action ID |
 | `ADS_CONSENT_ONBEKEND` | `wachten` (standaard), `overslaan` of `unspecified` — zie hieronder |
+| `ADS_UPLOAD_ACTIEF` | kill switch, standaard uit: alleen `true` laat `verzend` (de cron en de directe upload na een aanvraag) echt versturen en wegschrijven. De cron vraagt nooit om `validate`, dus een handmatige `?mode=validate` of `?mode=plan` via de route werkt altijd. Staat op `false` tot de backfill is goedgekeurd. |
+| `ADS_UITGESLOTEN_CONTACTEN` | komma-gescheiden eigen e-mailadressen en telefoonnummers (testinzendingen); aanvragen die hierop matchen gaan nooit naar Google, reden `testinzending` |
 
 ### 4. Consent zonder vastgelegde keuze
 
 De bannerkeuze reist sinds 0007 mee met elke aanvraag (`consent_ad_user_data`,
-`consent_ad_personalization`). Rijen van vóór die migratie, en aanvragen waarbij
-de bezoeker nog geen keuze had gemaakt, hebben `null`. `ADS_CONSENT_ONBEKEND` bepaalt
-wat daarmee gebeurt:
+`consent_ad_personalization`). Aanvragen van vóór de livegang daarvan
+(`CONSENT_CAPTURE_LIVEGANG` = 23-10-2026 00:00 in `src/lib/ads-conversies.ts`) hebben
+structureel `null`: er was niets om vast te leggen. Die gaan **altijd** mee met
+`CONSENT_STATUS_UNSPECIFIED`. Aanvragen van daarna waarbij de bezoeker geen keuze
+maakte, hebben ook `null`; daarvoor bepaalt `ADS_CONSENT_ONBEKEND` wat er gebeurt
+(in productie: `overslaan`):
 
 - `wachten` (standaard): niet versturen, rij blijft in de werkvoorraad;
 - `overslaan`: definitief niet versturen;

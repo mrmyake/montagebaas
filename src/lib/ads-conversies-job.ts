@@ -6,6 +6,7 @@ import {
   beslis,
   bouwIngestRequest,
   normaliseerCustomerId,
+  parseUitgeslotenContacten,
   type AdsEvent,
   type Beslissing,
   type ConsentOnbekendBeleid,
@@ -35,6 +36,7 @@ const SCOPE = "https://www.googleapis.com/auth/datamanager";
 export interface RijRapport {
   aanvraag: string; // korte id — geen namen of contactgegevens in de output
   actie: ConversieActie;
+  eventTijdstip: string;
   waarde: number | null;
   klikType: string;
   tijdstipBron: string;
@@ -81,12 +83,33 @@ export function adsUploadGeconfigureerd(): boolean {
   return Boolean(process.env.GOOGLE_SA_KEY_JSON?.trim() && process.env.ADS_CUSTOMER_ID?.trim());
 }
 
+/**
+ * Kill switch. Alleen de letterlijke waarde "true" laat de verzend-modus echt
+ * versturen en wegschrijven; alles anders (ook ontbrekend) houdt de cron en de
+ * directe upload tegen. plan en validate werken altijd.
+ */
+export function adsUploadActief(): boolean {
+  return process.env.ADS_UPLOAD_ACTIEF?.trim() === "true";
+}
+
 export async function draaiAdsConversiesJob(
   modus: JobModus,
   filter?: { aanvraagId: string; actie?: ConversieActie }
 ): Promise<JobRapport> {
+  // Zonder sleutel en klant-ID niets lezen of wegschrijven: anders zet de cron
+  // rijen definitief op 'overgeslagen' voordat er ooit iets verstuurd is.
+  if (modus !== "plan" && !adsUploadGeconfigureerd()) {
+    throw new Error(
+      "Ads-upload niet ingericht (GOOGLE_SA_KEY_JSON en/of ADS_CUSTOMER_ID ontbreekt); niets gedaan."
+    );
+  }
+  if (modus === "verzend" && !adsUploadActief()) {
+    throw new Error("ADS_UPLOAD_ACTIEF staat niet op 'true'; niets verzonden of weggeschreven.");
+  }
+
   const db = supabaseAdmin();
   const consentOnbekend = leesConsentBeleid();
+  const uitgesloten = parseUitgeslotenContacten(process.env.ADS_UITGESLOTEN_CONTACTEN);
 
   let query = db.from("ads_conversies_te_versturen").select("*");
   if (filter) {
@@ -109,11 +132,12 @@ export async function draaiAdsConversiesJob(
   for (const a of CONVERSIE_ACTIES) perActie.set(a, []);
 
   for (const rij of rijen) {
-    const b = beslis(rij, { consentOnbekend });
+    const b = beslis(rij, { consentOnbekend, uitgesloten });
     rapport.samenvatting[b.soort] += 1;
     rapport.rijen.push({
       aanvraag: rij.aanvraag_id.slice(0, 8),
       actie: rij.conversie_actie,
+      eventTijdstip: rij.event_tijdstip,
       waarde: rij.waarde === null ? null : Number(rij.waarde),
       klikType: b.klikType ?? "geen",
       tijdstipBron: rij.tijdstip_bron,
@@ -249,7 +273,7 @@ export async function verstuurAdsConversieDirect(
   aanvraagId: string,
   actie: ConversieActie = "aanvraag_ontvangen"
 ): Promise<void> {
-  if (!adsUploadGeconfigureerd()) return;
+  if (!adsUploadGeconfigureerd() || !adsUploadActief()) return;
   try {
     const rapport = await draaiAdsConversiesJob("verzend", { aanvraagId, actie });
     const fout = rapport.acties.find((a) => a.fout !== undefined);
