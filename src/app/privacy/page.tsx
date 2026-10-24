@@ -35,7 +35,13 @@ export default function PrivacyPage() {
               Wanneer je een offerte aanvraagt, verwerken we: je naam, telefoonnummer, e-mailadres,
               postcode, de gegevens over je keukenklus (type, grootte, opstelling, gekozen
               extra&apos;s en gewenste periode) en een eventuele toelichting. We vragen
-              <strong> geen volledig adres en geen foto&apos;s</strong>.
+              <strong> geen volledig adres</strong>.
+            </p>
+            <p className="mt-2">
+              Upload je een tekening, PDF of foto&apos;s van je keukenontwerp, dan bewaren we die
+              bestanden in een afgeschermde opslag bij je aanvraag en lezen we ze automatisch uit om
+              je een prijsindicatie te geven. Upload alleen wat over je keuken gaat; op een foto kan
+              meer te zien zijn dan je bedoelt.
             </p>
             <p className="mt-2">
               Stuur je ons de link naar je ontwerp in de IKEA Keukenplanner, dan halen we via die
