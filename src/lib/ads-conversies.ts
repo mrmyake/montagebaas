@@ -15,10 +15,19 @@ import { createHash } from "node:crypto";
 
 export type ConversieActie = "aanvraag_ontvangen" | "offerte_verstuurd" | "opdracht_gewonnen";
 export const CONVERSIE_ACTIES: ConversieActie[] = [
-  "aanvraag_ontvangen", // elke website-aanvraag bij binnenkomst, waarde = prijs_indicatie_max
+  "aanvraag_ontvangen", // elke website-aanvraag bij binnenkomst, vaste waarde (ADS_LEAD_WAARDE)
   "offerte_verstuurd",
   "opdracht_gewonnen",
 ];
+
+/**
+ * Vaste waarde van een binnengekomen aanvraag (aanvraag_ontvangen), voor alle
+ * leads gelijk, ongeacht invoermethode of prijsindicatie. Overschrijfbaar met
+ * ADS_LEAD_WAARDE (zie ads-conversies-job.ts). Zo eindigt geen lead meer als
+ * 'overgeslagen' omdat er (nog) geen prijs is, en stuurt een ongekalibreerde
+ * indicatie de biedstrategie niet.
+ */
+export const ADS_LEAD_WAARDE_STANDAARD = 2250;
 
 /** Maximale leeftijd van een klik op het moment van de conversie. */
 export const MAX_KLIK_LEEFTIJD_DAGEN = 90;
@@ -210,6 +219,8 @@ export function beslis(
     consentOnbekend: ConsentOnbekendBeleid;
     consentLivegang?: string;
     uitgesloten?: UitgeslotenContacten;
+    /** Waarde voor aanvraag_ontvangen; standaard ADS_LEAD_WAARDE_STANDAARD. */
+    leadWaarde?: number;
     nu?: Date;
   }
 ): Beslissing {
@@ -245,7 +256,14 @@ export function beslis(
     return { soort: "overslaan", reden: `duplicaat van ${rij.duplicaat_van.slice(0, 8)}`, klikType };
   }
 
-  const waarde = rij.waarde === null || rij.waarde === undefined ? NaN : Number(rij.waarde);
+  // aanvraag_ontvangen: altijd de vaste leadwaarde; de view levert daar geen waarde.
+  // offerte_verstuurd/opdracht_gewonnen: het echte bedrag uit de view.
+  const waarde =
+    rij.conversie_actie === "aanvraag_ontvangen"
+      ? (opties.leadWaarde ?? ADS_LEAD_WAARDE_STANDAARD)
+      : rij.waarde === null || rij.waarde === undefined
+        ? NaN
+        : Number(rij.waarde);
   if (!Number.isFinite(waarde) || waarde <= 0) {
     return { soort: "overslaan", reden: "waarde ontbreekt of is 0", klikType };
   }
