@@ -36,19 +36,24 @@ test("fixture: telling gelijk aan verwacht.json (die gebruikt de monitor)", () =
   assert.equal(valideerTelling(telling).ok, true);
 });
 
-test("fixture 36FDA15A: kern van de telling, vertrouwen hoog, prijscontrole sluit", { skip: ontwerp.uuid !== "36FDA15A-7C94-436F-ABEA-0C4BEB046ED6" }, () => {
+// Verwachting van Ilja zelf (niet uit het script): wat er in "MB monitor" hoort te zitten.
+test("fixture MB monitor: telling volgens de checklist van het ontwerp", { skip: ontwerp.uuid !== "103DE682-C854-453C-8B9D-D2C96079BBC8" }, () => {
   const { bom } = leesBom({ appData: { bom: ontwerp.bom_ruw } });
   const r = bomNaarTelling(bom, producten);
-  assert.equal(r.telling.onderkasten, 5);
-  assert.equal(r.telling.bovenkasten, 2); // 2× bovenkast met ventilatie
-  assert.equal(r.telling.hoge_kasten, 2);
-  assert.equal(r.telling.lade_elementen, 15); // lades, geen ladefronten
-  assert.equal(r.telling.vertrouwen, "hoog");
+  const t = r.telling;
+  assert.equal(t.onderkasten, 3); // waarvan 1 spoelkast; vaatwasserpositie telt niet
+  assert.equal(t.bovenkasten, 2);
+  assert.equal(t.hoge_kasten, 2); // oven + inbouwkoelkast
+  assert.equal(r.werkblad, "laminaat_op_locatie"); // EKBACKEN op standaardlengte
+  assert.ok(t.aannames.some((a) => /op locatie zagen/.test(a)));
+  assert.equal(t.uitsparing_spoelbak, 1);
+  assert.equal(t.spoelbak_kraan, 1);
+  for (const veld of ["vaatwasser", "inductie", "afzuigkap", "oven", "koelkast_vriezer"] as const) {
+    assert.equal(t[veld], 1, veld);
+  }
+  assert.equal(t.gaskookplaat, 0);
+  assert.equal(t.vertrouwen, "hoog");
   assert.equal(r.prijscontrole.verschil, 0);
-  assert.equal(r.werkblad, "geen");
-  assert.ok(r.telling.aannames.some((a) => /bovenkast\(en\) met ventilatie/.test(a)));
-  // 3 ophangrails op 2 bovenkasten: géén ratio-controle meer
-  assert.ok(!r.telling.aannames.some((a) => /ophangrail/i.test(a)));
 });
 
 // ---------------------------------------------------------------------------
@@ -120,7 +125,7 @@ const apparaten: Item[] = [
   { omschrijving: "inbouwspoelbak, 1 bak, roestvrij staal" },
   { omschrijving: "keukenmengkraan, roestvrij staalkleur" },
   { omschrijving: "inductiekookplaat, IKEA 300 zwart" },
-  { omschrijving: "inbouwvaatwasser, IKEA 500" },
+  { omschrijving: "inbouw vaatwasser, IKEA 500 roestvrij staalkleur, 60 cm" }, // ook zo gespeld
   { omschrijving: "heteluchtoven, zwart IKEA 300" },
   { omschrijving: "koel- / diepvrieskast, IKEA 500 inbouw" },
   { omschrijving: "afzuigkap wand, IKEA 300 zwart" },
