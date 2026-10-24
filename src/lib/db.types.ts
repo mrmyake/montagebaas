@@ -3,6 +3,8 @@
  * Houd in sync met de migratie.
  */
 
+import type { Verwerking } from "@/lib/ads-verwerking";
+
 export interface AanvraagRow {
   id: string;
   created_at: string;
@@ -52,6 +54,8 @@ export interface AanvraagRow {
   gefactureerd_bedrag: number | null; // alleen gevuld bij lead_status 'gewonnen' of 'uitgevoerd' (db check constraint)
   reden_verloren: string | null;
   notitie: string | null;
+  // Werkelijk gewerkte dagen, in halve dagen (0015). Een meting: blijft staan bij een statuswijziging.
+  werkelijke_dagen: number | null;
   // Consent Mode-keuze op het moment van verzenden (0007). null = geen keuze
   // bekend (banner nog open, of aanvraag van vóór de migratie).
   consent_ad_user_data: boolean | null;
@@ -128,7 +132,8 @@ export const LEAD_STATUSSEN_MET_BEDRAG_VERPLICHT: LeadStatus[] = [
   "uitgevoerd",
 ];
 
-// Spiegelt montagebaas.ads_conversie_uploads (0007_ads_conversies.sql, derde actie sinds 0008).
+// Spiegelt montagebaas.ads_conversie_uploads (0007_ads_conversies.sql, derde actie sinds 0008,
+// verwerking sinds 0015).
 export type AdsUploadStatus = "wachtend" | "verstuurd" | "fout" | "overgeslagen";
 export interface AdsConversieUploadRow {
   id: number;
@@ -141,6 +146,7 @@ export interface AdsConversieUploadRow {
   request_id: string | null;
   response: unknown;
   verzonden_op: string | null;
+  verwerking: Verwerking | null;
 }
 
 export type LeadBron = "website" | "werkspot" | "doorverwijzing" | "overig";
@@ -170,6 +176,7 @@ export interface LeadOverzichtRow {
   notitie: string | null; // sinds 0006
   invoermethode: Invoermethode | null; // sinds 0013
   planner_status: PlannerStatus | null; // sinds 0013
+  werkelijke_dagen: number | null; // sinds 0015
 }
 
 // Spiegelt montagebaas.roi_per_maand (0005_lead_status.sql).

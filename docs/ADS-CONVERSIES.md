@@ -11,6 +11,7 @@ Google Ads via de **Data Manager API** (`events:ingest`). Bron: `montagebaas.aan
 | Normaliseren, hashen, beslissen, request bouwen (puur, getest) | `src/lib/ads-conversies.ts` + `.test.ts` |
 | Service-account-token (JWT → access token) | `src/lib/google-auth.ts` |
 | Orkestratie (view → API → `ads_conversie_uploads`) | `src/lib/ads-conversies-job.ts` |
+| Verwerkingscheck (requestStatus → kolom `verwerking`) | `supabase/migrations/0015_ads_verwerking.sql`, `src/lib/ads-verwerking.ts` + `.test.ts`, `src/lib/ads-verwerking-job.ts` |
 | Cron-ingang | `src/app/api/cron/ads-conversies/route.ts`, schema in `vercel.json` |
 | Admin: bedrag verplicht bij conversiestatus, kolom "Ads" | `src/app/admin/leads/*` |
 
@@ -138,7 +139,7 @@ Handmatig, met `CRON_SECRET` uit de env:
 curl -s -H "Authorization: Bearer $CRON_SECRET" "https://montagebaas.com/api/cron/ads-conversies?mode=plan" | jq
 # validateOnly naar Google, niets wegschrijven
 curl -s -H "Authorization: Bearer $CRON_SECRET" "https://montagebaas.com/api/cron/ads-conversies?mode=validate" | jq
-# echte upload (= wat de cron doet)
+# echte upload (= wat de cron doet), gevolgd door de verwerkingscheck (zie Controle achteraf)
 curl -s -H "Authorization: Bearer $CRON_SECRET" "https://montagebaas.com/api/cron/ads-conversies?mode=verzend" | jq
 ```
 
@@ -147,11 +148,52 @@ Lokaal werkt hetzelfde tegen `http://localhost:3000` met `npm run dev`.
 ## Controle achteraf
 
 - `ads_conversie_uploads`: status per (aanvraag, actie), met `request_id` en de ruwe `response`.
+  `status = 'verstuurd'` betekent alleen dat Google de request heeft **aangenomen**
+  (HTTP 200 + requestId); of de events daarna echt verwerkt zijn, staat in `verwerking`.
 - Google Ads: Doelen → Conversies → Samenvatting → conversieactie → **Diagnostiek**.
   Verwerking duurt tot 24–48 uur. Daar staan het aantal geïmporteerde events en het
   matchpercentage van de user-provided data.
-- API: `GET https://datamanager.googleapis.com/v1/requestStatus:retrieve?requestId=…`
-  met hetzelfde token geeft de verwerkingsstatus per bestemming.
+
+### Verwerkingscheck (kolom `verwerking`, sinds 0015)
+
+De cron vraagt na de upload per uniek `request_id` de verwerkingsstatus op via
+`GET https://datamanager.googleapis.com/v1/requestStatus:retrieve?requestId=…`
+(zelfde service account) en zet het antwoord op alle rijen met dat `request_id`:
+
+```json
+{ "status": "PARTIAL_SUCCESS", "record_count": 9,
+  "error_info":   [{ "reden": "PROCESSING_ERROR_REASON_INVALID_GBRAID", "aantal": 1 }],
+  "warning_info": [], "opgehaald_op": "2026-10-25T05:13:40.000Z" }
+```
+
+- Gecontroleerd worden rijen die **minstens 30 minuten** geleden verstuurd zijn en nog
+  geen eindstatus hebben. Eindstatus = `SUCCESS`, `PARTIAL_SUCCESS` of `FAILED` (de API
+  kent `FAILED`, niet `FAILURE`). `PROCESSING`, `REQUEST_STATUS_UNKNOWN` en `null`
+  (ophalen mislukt, zie veld `fout`) worden de volgende dag opnieuw opgevraagd.
+- `record_count` is het aantal events dat Google in de request zag; `error_info` telt
+  per reden hoeveel daarvan niet verwerkt zijn. `FAILED` met evenveel fouten als
+  records = niets geteld in Ads, ook al staat de rij op `verstuurd`.
+- Code: `src/lib/ads-verwerking.ts` (puur, getest) en `src/lib/ads-verwerking-job.ts`.
+
+Handmatig:
+
+```bash
+# alleen de check (zelfde selectie als de cron)
+curl -s -H "Authorization: Bearer $CRON_SECRET" "https://montagebaas.com/api/cron/ads-conversies?mode=status" | jq
+# alle requestIds opnieuw, ook die al een eindstatus hebben
+curl -s -H "Authorization: Bearer $CRON_SECRET" "https://montagebaas.com/api/cron/ads-conversies?mode=status&alles=1" | jq
+```
+
+Overzicht per request in SQL:
+
+```sql
+select request_id, conversie_actie, count(*) as rijen,
+       verwerking->>'status' as status, verwerking->>'record_count' as records,
+       verwerking->'error_info' as fouten, min(verzonden_op) as verzonden
+from montagebaas.ads_conversie_uploads
+where request_id is not null
+group by 1, 2, 4, 5, 6 order by 7;
+```
 
 ## Buiten scope
 

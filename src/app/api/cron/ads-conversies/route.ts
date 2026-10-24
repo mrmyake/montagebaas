@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import { adsUploadActief, draaiAdsConversiesJob, type JobModus } from "@/lib/ads-conversies-job";
+import { adsUploadActief, adsUploadGeconfigureerd, draaiAdsConversiesJob, type JobModus } from "@/lib/ads-conversies-job";
+import { draaiAdsVerwerkingCheck, type VerwerkingJobRapport } from "@/lib/ads-verwerking-job";
 
 /**
  * Dagelijkse upload van offline conversies naar Google Ads (zie vercel.json).
@@ -8,6 +9,11 @@ import { adsUploadActief, draaiAdsConversiesJob, type JobModus } from "@/lib/ads
  *
  * Handmatig: `?mode=plan` (alleen rapport), `?mode=validate` (validateOnly
  * naar Google, niets wegschrijven), `?mode=verzend` (standaard, echte upload).
+ *
+ * Na de upload (verzend) volgt de verwerkingscheck: per requestId ouder dan
+ * 30 minuten zonder eindstatus de status opvragen en in `verwerking` zetten.
+ * Los: `?mode=status` (alleen de check), `?mode=status&alles=1` (elk requestId
+ * opnieuw, eenmalig).
  */
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -26,9 +32,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "Niet geautoriseerd." }, { status: 401 });
   }
 
-  const mode = new URL(req.url).searchParams.get("mode") ?? "verzend";
-  if (mode !== "plan" && mode !== "validate" && mode !== "verzend") {
+  const params = new URL(req.url).searchParams;
+  const mode = params.get("mode") ?? "verzend";
+  if (mode !== "plan" && mode !== "validate" && mode !== "verzend" && mode !== "status") {
     return NextResponse.json({ ok: false, error: "Onbekende mode." }, { status: 400 });
+  }
+
+  if (mode === "status") {
+    if (!adsUploadGeconfigureerd()) {
+      return NextResponse.json({ ok: false, error: "Ads-upload niet ingericht; geen status op te vragen." }, { status: 500 });
+    }
+    try {
+      const verwerking = await draaiAdsVerwerkingCheck({ alles: params.get("alles") === "1" });
+      return NextResponse.json({ ok: true, verwerking });
+    } catch (err) {
+      console.error("[ads-verwerking] check mislukt:", err);
+      return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
+    }
   }
 
   // Kill switch: de cron blijft dan netjes 200 geven (geen dagelijkse foutmelding in Vercel).
@@ -39,7 +59,19 @@ export async function GET(req: Request) {
   try {
     const rapport = await draaiAdsConversiesJob(mode as JobModus);
     const mislukt = rapport.acties.some((a) => a.fout !== undefined);
-    return NextResponse.json({ ok: !mislukt, ...rapport }, { status: mislukt ? 502 : 200 });
+
+    // Verwerkingscheck van eerdere uploads; een fout hier mag de upload-uitkomst niet verhullen.
+    let verwerking: VerwerkingJobRapport | { fout: string } | undefined;
+    if (mode === "verzend") {
+      try {
+        verwerking = await draaiAdsVerwerkingCheck();
+      } catch (err) {
+        console.error("[ads-verwerking] check mislukt:", err);
+        verwerking = { fout: String(err) };
+      }
+    }
+
+    return NextResponse.json({ ok: !mislukt, ...rapport, verwerking }, { status: mislukt ? 502 : 200 });
   } catch (err) {
     console.error("[ads-conversies] job mislukt:", err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
