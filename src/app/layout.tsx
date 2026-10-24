@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
@@ -13,14 +12,16 @@ import { AttributieCapture } from "@/components/analytics/AttributieCapture";
 import { localBusinessSchema, websiteSchema } from "@/lib/schema";
 import { site } from "@/lib/site";
 
-const sans = Inter({
+// Lettertypen lokaal gehost (variabel, latin; OFL, zie fonts/*-OFL.txt): de build
+// hangt zo niet af van Google Fonts. Bron: @fontsource-variable/inter en
+// @fontsource-variable/space-grotesk, beide 5.3.0.
+const sans = localFont({
+  src: "./fonts/Inter-latin-wght.woff2",
   variable: "--font-sans",
-  subsets: ["latin"],
   display: "swap",
+  weight: "100 900",
 });
 
-// Lokaal gehost (variabel, latin; OFL, zie fonts/SpaceGrotesk-OFL.txt): de build
-// hangt zo niet af van Google Fonts. Bron: @fontsource-variable/space-grotesk 5.3.0.
 const display = localFont({
   src: "./fonts/SpaceGrotesk-latin-wght.woff2",
   variable: "--font-display",
