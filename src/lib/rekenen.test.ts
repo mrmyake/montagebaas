@@ -4,7 +4,7 @@
 // type-stripping (Node 23.6+), geen externe dependency.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { berekenPrijsUitTelling, valideerTelling, type Tarieven, type KeukenTelling } from "./rekenen.ts";
+import { berekenPrijsUitTelling, isLegeTelling, valideerTelling, type Tarieven, type KeukenTelling } from "./rekenen.ts";
 
 const TARIEVEN: Tarieven = {
   basis: { dagtarief_excl: 560, effectieve_uren_dag: 7, voorrij_excl: 45, btw: 0.21 },
@@ -89,4 +89,12 @@ test("validatie: een ontbrekend telveld → niet doorrekenen", () => {
 test("validatie: volledige telling is geldig", () => {
   const res = valideerTelling(TELLING);
   assert.equal(res.ok, true);
+});
+
+test("lege telling: alle telvelden 0 → leeg; één veld ≠ 0 → niet leeg", () => {
+  const leeg = Object.fromEntries(Object.keys(TELLING).map((k) => [k, 0])) as unknown as KeukenTelling;
+  const t = { ...leeg, aannames: [], vertrouwen: "laag" } as KeukenTelling;
+  assert.equal(isLegeTelling(t), true);
+  assert.equal(isLegeTelling({ ...t, oven: 1 }), false);
+  assert.equal(isLegeTelling(TELLING), false);
 });
