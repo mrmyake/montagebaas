@@ -1,0 +1,2535 @@
+{
+ "uuid": "36FDA15A-7C94-436F-ABEA-0C4BEB046ED6",
+ "opgehaald_op": "2026-10-24T08:15:55.488Z",
+ "bom": {
+  "decos": [
+   {
+    "dbID": "MSC-42460954-NL",
+    "uuid": "C3E8CB64-5E16-4AE1-823E-3DDE675B2753",
+    "quantity": 1
+   },
+   {
+    "dbID": "MSC-42460958-NL",
+    "uuid": "66803CA2-540E-45F1-869D-05CF276EDFF2",
+    "quantity": 1
+   }
+  ],
+  "packs": [
+   {
+    "dbID": "ART-90556071-NL",
+    "price": {
+     "current": {
+      "type": "regular",
+      "value": 4,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "packAmount": 2,
+       "pricingMethod": "pack",
+       "roundingMethod": "ceil"
+      }
+     },
+     "regular": {
+      "type": "regular",
+      "value": 4,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "packAmount": 2,
+       "pricingMethod": "pack",
+       "roundingMethod": "ceil"
+      }
+     },
+     "discountType": "regular"
+    },
+    "quantity": 11
+   },
+   {
+    "dbID": "ART-80557028-NL",
+    "price": {
+     "current": {
+      "type": "regular",
+      "value": 10,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "packAmount": "2",
+       "pricingMethod": "pack",
+       "roundingMethod": "ceil"
+      }
+     },
+     "regular": {
+      "type": "regular",
+      "value": 10,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "packAmount": "2",
+       "pricingMethod": "pack",
+       "roundingMethod": "ceil"
+      }
+     },
+     "discountType": "regular"
+    },
+    "quantity": 1
+   }
+  ],
+  "locale": "nl-NL",
+  "linears": [
+   {
+    "dbID": "ART-60205664-NL",
+    "price": {
+     "current": {
+      "type": "regular",
+      "value": 19,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "percentage": 0,
+       "pricingMethod": "linearPercentageByItem",
+       "roundingMethod": "ceil"
+      }
+     },
+     "regular": {
+      "type": "regular",
+      "value": 19,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "percentage": 0,
+       "pricingMethod": "linearPercentageByItem",
+       "roundingMethod": "ceil"
+      }
+     },
+     "discountType": "regular"
+    },
+    "quantity": 3,
+    "computedWidth": 4600
+   }
+  ],
+  "version": 11,
+  "currency": "EUR",
+  "products": [
+   {
+    "dbID": "ASL-44460978-NL",
+    "uuid": "8D24CBB1-1181-4866-B4D2-59D6B9142B8A",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460318-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460027-NL",
+        "children": [
+         {
+          "dbID": "ART-60591679-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 79,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 79,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         },
+         {
+          "dbID": "ASM-42460030-NL"
+         },
+         {
+          "dbID": "ASM-42460029-NL"
+         },
+         {
+          "dbID": "ASM-42461158-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42461141-NL",
+      "children": [
+       {
+        "dbID": "ART-40221453-NL",
+        "price": {
+         "current": {
+          "type": "regular",
+          "value": 9,
+          "endDate": null,
+          "startDate": null,
+          "additionalData": {
+           "pricingMethod": "regular",
+           "roundingMethod": "ceil"
+          }
+         },
+         "regular": {
+          "type": "regular",
+          "value": 9,
+          "endDate": null,
+          "startDate": null,
+          "additionalData": {
+           "pricingMethod": "regular",
+           "roundingMethod": "ceil"
+          }
+         },
+         "discountType": "regular"
+        }
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460037-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-10600662-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 84,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 84,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460545-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-10600676-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 60,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 60,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "nomenclatureNumber": 3
+   },
+   {
+    "dbID": "ASL-42467242-NL",
+    "uuid": "96342830-827C-4E1A-9008-7AFFD4A5EE73",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460603-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460632-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460029-NL"
+         },
+         {
+          "dbID": "ASM-42460593-NL",
+          "children": [
+           {
+            "dbID": "MSC-42460515-NL"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "dbID": "ART-00518192-NL",
+        "price": {
+         "current": {
+          "type": "regular",
+          "value": 20,
+          "endDate": null,
+          "startDate": null,
+          "additionalData": {
+           "pricingMethod": "regular",
+           "roundingMethod": "ceil"
+          }
+         },
+         "regular": {
+          "type": "regular",
+          "value": 20,
+          "endDate": null,
+          "startDate": null,
+          "additionalData": {
+           "pricingMethod": "regular",
+           "roundingMethod": "ceil"
+          }
+         },
+         "discountType": "regular"
+        }
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460637-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460605-NL",
+        "children": [
+         {
+          "dbID": "ART-50404169-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 31,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 31,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         }
+        ]
+       },
+       {
+        "dbID": "ASM-42460605-NL",
+        "children": [
+         {
+          "dbID": "ART-50404169-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 31,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 31,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ART-70274628-NL",
+      "price": {
+       "current": {
+        "type": "regular",
+        "value": 7.99,
+        "endDate": null,
+        "startDate": null,
+        "additionalData": {
+         "pricingMethod": "regular",
+         "roundingMethod": "ceil"
+        }
+       },
+       "regular": {
+        "type": "regular",
+        "value": 7.99,
+        "endDate": null,
+        "startDate": null,
+        "additionalData": {
+         "pricingMethod": "regular",
+         "roundingMethod": "ceil"
+        }
+       },
+       "discountType": "regular"
+      }
+     }
+    ],
+    "nomenclatureNumber": 2
+   },
+   {
+    "dbID": "ASL-42468359-NL",
+    "uuid": "3E985582-66EA-4599-A9D1-ABF336AAC2A1",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42468144-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460328-NL",
+        "children": [
+         {
+          "dbID": "ART-90591687-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 130,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 130,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         },
+         {
+          "dbID": "ASM-42460030-NL"
+         },
+         {
+          "dbID": "ASM-42460514-NL"
+         },
+         {
+          "dbID": "ASM-42461158-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42468021-AT"
+     },
+     {
+      "dbID": "ASM-42468167-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460572-AT",
+        "children": [
+         {
+          "dbID": "ASM-42460032-AT",
+          "children": [
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "dbID": "ASM-42460572-AT",
+        "children": [
+         {
+          "dbID": "ASM-42460032-AT",
+          "children": [
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42468021-AT"
+     },
+     {
+      "dbID": "MSC-44460556-NL",
+      "children": [
+       {
+        "dbID": "MSC-42460515-CL"
+       }
+      ]
+     }
+    ],
+    "itemNote": "wordt inbouw 180cm met koel/vries deurenen 60x60 + 60x120",
+    "nomenclatureNumber": 6
+   },
+   {
+    "dbID": "ASL-42460274-NL",
+    "uuid": "D4CB7F7E-0BF2-46BC-9A6A-92A2D757A344",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460028-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460027-NL",
+        "children": [
+         {
+          "dbID": "ART-20591704-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 56,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 56,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         },
+         {
+          "dbID": "ASM-42460030-NL"
+         },
+         {
+          "dbID": "ASM-42460029-NL"
+         },
+         {
+          "dbID": "ASM-42461158-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460037-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-70600664-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 89,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 89,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460545-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-90600677-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 67,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 67,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460042-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460041-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460040-NL",
+          "children": [
+           {
+            "dbID": "ART-30600703-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 11,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 11,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-40600670-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 49,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 49,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460042-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460041-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460040-NL",
+          "children": [
+           {
+            "dbID": "ART-30600703-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 11,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 11,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-40600670-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 49,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 49,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "nomenclatureNumber": 7
+   },
+   {
+    "dbID": "ASL-42460271-NL",
+    "uuid": "4CA0CAFC-BEE3-4813-A43D-FF0B6D6ABE99",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460028-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460027-NL",
+        "children": [
+         {
+          "dbID": "ART-40591703-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 52,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 52,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         },
+         {
+          "dbID": "ASM-42460030-NL"
+         },
+         {
+          "dbID": "ASM-42460029-NL"
+         },
+         {
+          "dbID": "ASM-42461158-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460037-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-30600661-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 81,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 81,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460037-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-30600661-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 81,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 81,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460042-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460041-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460040-NL",
+          "children": [
+           {
+            "dbID": "ART-30600703-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 11,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 11,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-60600669-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 45,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 45,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "nomenclatureNumber": 8
+   },
+   {
+    "dbID": "ASL-42460273-NL",
+    "uuid": "0402764C-9A8C-4404-9381-4141C6927176",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460028-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460027-NL",
+        "children": [
+         {
+          "dbID": "ART-60591702-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 49,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 49,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         },
+         {
+          "dbID": "ASM-42460030-NL"
+         },
+         {
+          "dbID": "ASM-42460029-NL"
+         },
+         {
+          "dbID": "ASM-42461158-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460037-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-50600660-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 78,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 78,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-50404169-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 31,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 31,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460545-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-30600675-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 55,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 55,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-50404169-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 31,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 31,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460042-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460041-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460040-NL",
+          "children": [
+           {
+            "dbID": "ART-50600702-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 10,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 10,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-80600668-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 40,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 40,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460042-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460041-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460040-NL",
+          "children": [
+           {
+            "dbID": "ART-50600702-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 10,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 10,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-80600668-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 40,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 40,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "nomenclatureNumber": 4
+   },
+   {
+    "dbID": "ASL-42468358-NL",
+    "uuid": "288C7B04-9E22-422C-9A6E-985FF0FCA682",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42468144-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460328-NL",
+        "children": [
+         {
+          "dbID": "ART-90591687-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 130,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 130,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         },
+         {
+          "dbID": "ASM-42460030-NL"
+         },
+         {
+          "dbID": "ASM-42460514-NL"
+         },
+         {
+          "dbID": "ASM-42461158-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42467475-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460601-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460032-NL",
+          "children": [
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "dbID": "ASM-42460033-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460032-NL",
+          "children": [
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42468003-NL"
+     },
+     {
+      "dbID": "MSC-44460556-NL",
+      "children": [
+       {
+        "dbID": "MSC-42460515-CL"
+       }
+      ]
+     }
+    ],
+    "itemNote": "wordt inbouw 180 voor oven + 2x deuren 60x60",
+    "nomenclatureNumber": 5
+   },
+   {
+    "dbID": "ASL-42460114-NL",
+    "uuid": "490DD1AE-A7B3-47EF-9D5B-A4ECA8624EB2",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460326-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460027-NL",
+        "children": [
+         {
+          "dbID": "ART-60591679-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 79,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 79,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         },
+         {
+          "dbID": "ASM-42460030-NL"
+         },
+         {
+          "dbID": "ASM-42460029-NL"
+         },
+         {
+          "dbID": "ASM-42461158-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42461738-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460307-NL"
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460545-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-10600676-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 60,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 60,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460037-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460036-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460035-NL",
+          "children": [
+           {
+            "dbID": "ART-10600662-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 84,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 84,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ART-90404172-NL",
+            "price": {
+             "current": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "regular": {
+              "type": "regular",
+              "value": 39,
+              "endDate": null,
+              "startDate": null,
+              "additionalData": {
+               "pricingMethod": "regular",
+               "roundingMethod": "ceil"
+              }
+             },
+             "discountType": "regular"
+            }
+           },
+           {
+            "dbID": "ASM-42460031-NL"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "nomenclatureNumber": 1
+   },
+   {
+    "dbID": "ASL-42460166-NL",
+    "uuid": "6233F742-6BBC-4F4C-B83A-753195781EAE",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460509-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460032-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460031-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460578-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460537-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460539-NL"
+         },
+         {
+          "dbID": "ART-70591706-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 61,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 61,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "nomenclatureNumber": 9
+   },
+   {
+    "dbID": "ASL-42460166-NL",
+    "uuid": "816B1F18-FF5E-4CAA-AEBD-EF81CA666117",
+    "packs": [],
+    "children": [
+     {
+      "dbID": "ASM-42460509-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460032-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460031-NL"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "dbID": "ASM-42460578-NL",
+      "children": [
+       {
+        "dbID": "ASM-42460537-NL",
+        "children": [
+         {
+          "dbID": "ASM-42460539-NL"
+         },
+         {
+          "dbID": "ART-70591706-NL",
+          "price": {
+           "current": {
+            "type": "regular",
+            "value": 61,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "regular": {
+            "type": "regular",
+            "value": 61,
+            "endDate": null,
+            "startDate": null,
+            "additionalData": {
+             "pricingMethod": "regular",
+             "roundingMethod": "ceil"
+            }
+           },
+           "discountType": "regular"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "itemNote": "wordt inbouw deur nodig van 120 voor deze en er onder",
+    "nomenclatureNumber": 10
+   },
+   {
+    "dbID": "ART-80557033-NL",
+    "packs": [],
+    "price": {
+     "current": {
+      "type": "regular",
+      "value": 99,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "pricingMethod": "regular",
+       "roundingMethod": "ceil"
+      }
+     },
+     "regular": {
+      "type": "regular",
+      "value": 99,
+      "endDate": null,
+      "startDate": null,
+      "additionalData": {
+       "pricingMethod": "regular",
+       "roundingMethod": "ceil"
+      }
+     },
+     "discountType": "regular"
+    },
+    "quantity": 1
+   }
+  ],
+  "totalPrice": {
+   "current": 2394.99,
+   "endDate": null,
+   "regular": 2394.99,
+   "currency": "EUR",
+   "startDate": null,
+   "discountType": "regular",
+   "vatInformation": null,
+   "showRegularPrice": true,
+   "secondaryCurrencyCurrent": 0,
+   "secondaryCurrencyRegular": 0
+  },
+  "distributionID": "NL"
+ },
+ "producten": {
+  "ART-60591679-NL": {
+   "dbId": "ART-60591679-NL",
+   "artikelnummer": "605.916.79",
+   "referentie": "ART-60591679-NL",
+   "naam": "METOD",
+   "omschrijving": "onderkast v inbouwapp/spoelbak, zwartgrijs",
+   "maat": "80x60x80 cm",
+   "breedte": 800,
+   "diepte": 600,
+   "hoogte": 800,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-40221453-NL": {
+   "dbId": "ART-40221453-NL",
+   "artikelnummer": "402.214.53",
+   "referentie": "ART-40221453-NL",
+   "naam": "UTRUSTA",
+   "omschrijving": "ladefront, middel, wit",
+   "maat": "80 cm",
+   "breedte": 755,
+   "diepte": 14,
+   "hoogte": 145,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-10600662-NL": {
+   "dbId": "ART-10600662-NL",
+   "artikelnummer": "106.006.62",
+   "referentie": "ART-10600662-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, hoog, donkergrijs",
+   "maat": "80x45 cm",
+   "breedte": 764,
+   "diepte": 450,
+   "hoogte": 212,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-90404172-NL": {
+   "dbId": "ART-90404172-NL",
+   "artikelnummer": "904.041.72",
+   "referentie": "ART-90404172-NL",
+   "naam": "SINARP",
+   "omschrijving": "ladefront, bruin",
+   "maat": "80x40 cm",
+   "breedte": 797,
+   "diepte": 19,
+   "hoogte": 397,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-10600676-NL": {
+   "dbId": "ART-10600676-NL",
+   "artikelnummer": "106.006.76",
+   "referentie": "ART-10600676-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, middel, donkergrijs",
+   "maat": "80x37 cm",
+   "breedte": 764,
+   "diepte": 337,
+   "hoogte": 144,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-00518192-NL": {
+   "dbId": "ART-00518192-NL",
+   "artikelnummer": "005.181.92",
+   "referentie": "ART-00518192-NL",
+   "naam": "VÅGLIG",
+   "omschrijving": "verbindingsrail voor fronten",
+   "maat": null,
+   "breedte": 71,
+   "diepte": 6,
+   "hoogte": 741,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-50404169-NL": {
+   "dbId": "ART-50404169-NL",
+   "artikelnummer": "504.041.69",
+   "referentie": "ART-50404169-NL",
+   "naam": "SINARP",
+   "omschrijving": "ladefront, bruin",
+   "maat": "60x40 cm",
+   "breedte": 597,
+   "diepte": 19,
+   "hoogte": 397,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-70274628-NL": {
+   "dbId": "ART-70274628-NL",
+   "artikelnummer": "702.746.28",
+   "referentie": "ART-70274628-NL",
+   "naam": "FIXA",
+   "omschrijving": "steunbeslag voor werkblad, verzinkt",
+   "maat": null,
+   "breedte": 390,
+   "diepte": 17,
+   "hoogte": 41,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-90591687-NL": {
+   "dbId": "ART-90591687-NL",
+   "artikelnummer": "905.916.87",
+   "referentie": "ART-90591687-NL",
+   "naam": "METOD",
+   "omschrijving": "hoge kast voor inbouwapparatuur, zwartgrijs",
+   "maat": "60x60x200 cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 2000,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-20591704-NL": {
+   "dbId": "ART-20591704-NL",
+   "artikelnummer": "205.917.04",
+   "referentie": "ART-20591704-NL",
+   "naam": "METOD",
+   "omschrijving": "onderkast, zwartgrijs",
+   "maat": "80x60x80 cm",
+   "breedte": 800,
+   "diepte": 600,
+   "hoogte": 800,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-70600664-NL": {
+   "dbId": "ART-70600664-NL",
+   "artikelnummer": "706.006.64",
+   "referentie": "ART-70600664-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, hoog, donkergrijs",
+   "maat": "80x60 cm",
+   "breedte": 764,
+   "diepte": 532,
+   "hoogte": 212,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-90600677-NL": {
+   "dbId": "ART-90600677-NL",
+   "artikelnummer": "906.006.77",
+   "referentie": "ART-90600677-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, middel, donkergrijs",
+   "maat": "80x60 cm",
+   "breedte": 764,
+   "diepte": 532,
+   "hoogte": 144,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-30600703-NL": {
+   "dbId": "ART-30600703-NL",
+   "artikelnummer": "306.007.03",
+   "referentie": "ART-30600703-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "ladefront, laag, donkergrijs",
+   "maat": "80 cm",
+   "breedte": 755,
+   "diepte": 14,
+   "hoogte": 79,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-40600670-NL": {
+   "dbId": "ART-40600670-NL",
+   "artikelnummer": "406.006.70",
+   "referentie": "ART-40600670-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, laag, donkergrijs",
+   "maat": "80x60 cm",
+   "breedte": 764,
+   "diepte": 532,
+   "hoogte": 77,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-40591703-NL": {
+   "dbId": "ART-40591703-NL",
+   "artikelnummer": "405.917.03",
+   "referentie": "ART-40591703-NL",
+   "naam": "METOD",
+   "omschrijving": "onderkast, zwartgrijs",
+   "maat": "80x37x80 cm",
+   "breedte": 800,
+   "diepte": 376,
+   "hoogte": 800,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-30600661-NL": {
+   "dbId": "ART-30600661-NL",
+   "artikelnummer": "306.006.61",
+   "referentie": "ART-30600661-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, hoog, donkergrijs",
+   "maat": "80x37 cm",
+   "breedte": 764,
+   "diepte": 337,
+   "hoogte": 212,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-60600669-NL": {
+   "dbId": "ART-60600669-NL",
+   "artikelnummer": "606.006.69",
+   "referentie": "ART-60600669-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, laag, donkergrijs",
+   "maat": "80x37 cm",
+   "breedte": 764,
+   "diepte": 337,
+   "hoogte": 77,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-60591702-NL": {
+   "dbId": "ART-60591702-NL",
+   "artikelnummer": "605.917.02",
+   "referentie": "ART-60591702-NL",
+   "naam": "METOD",
+   "omschrijving": "onderkast, zwartgrijs",
+   "maat": "60x60x80 cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 800,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-50600660-NL": {
+   "dbId": "ART-50600660-NL",
+   "artikelnummer": "506.006.60",
+   "referentie": "ART-50600660-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, hoog, donkergrijs",
+   "maat": "60x60 cm",
+   "breedte": 564,
+   "diepte": 532,
+   "hoogte": 212,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-30600675-NL": {
+   "dbId": "ART-30600675-NL",
+   "artikelnummer": "306.006.75",
+   "referentie": "ART-30600675-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, middel, donkergrijs",
+   "maat": "60x60 cm",
+   "breedte": 564,
+   "diepte": 532,
+   "hoogte": 144,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-50600702-NL": {
+   "dbId": "ART-50600702-NL",
+   "artikelnummer": "506.007.02",
+   "referentie": "ART-50600702-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "ladefront, laag, donkergrijs",
+   "maat": "60 cm",
+   "breedte": 555,
+   "diepte": 14,
+   "hoogte": 79,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-80600668-NL": {
+   "dbId": "ART-80600668-NL",
+   "artikelnummer": "806.006.68",
+   "referentie": "ART-80600668-NL",
+   "naam": "KNIVSHULT",
+   "omschrijving": "lade, laag, donkergrijs",
+   "maat": "60x60 cm",
+   "breedte": 564,
+   "diepte": 532,
+   "hoogte": 71,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-70591706-NL": {
+   "dbId": "ART-70591706-NL",
+   "artikelnummer": "705.917.06",
+   "referentie": "ART-70591706-NL",
+   "naam": "METOD",
+   "omschrijving": "bovenkast met ventilatie, zwartgrijs",
+   "maat": "60x60x60 cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 600,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-80557033-NL": {
+   "dbId": "ART-80557033-NL",
+   "artikelnummer": "805.570.33",
+   "referentie": "ART-80557033-NL",
+   "naam": "METOD",
+   "omschrijving": "verankeringsframe voor kookeiland",
+   "maat": "210 cm",
+   "breedte": 2100,
+   "diepte": 300,
+   "hoogte": 70,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-60205664-NL": {
+   "dbId": "ART-60205664-NL",
+   "artikelnummer": "602.056.64",
+   "referentie": "ART-60205664-NL",
+   "naam": "METOD",
+   "omschrijving": "ophangrail, verzinkt",
+   "maat": "200 cm",
+   "breedte": 2000,
+   "diepte": 10,
+   "hoogte": 55,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-90556071-NL": {
+   "dbId": "ART-90556071-NL",
+   "artikelnummer": "905.560.71",
+   "referentie": "ART-90556071-NL",
+   "naam": "SEKTION",
+   "omschrijving": "poot voor kast",
+   "maat": "11 cm",
+   "breedte": 89,
+   "diepte": 51,
+   "hoogte": 114,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ART-80557028-NL": {
+   "dbId": "ART-80557028-NL",
+   "artikelnummer": "805.570.28",
+   "referentie": "ART-80557028-NL",
+   "naam": "METOD",
+   "omschrijving": "verbindingsrail v kast/dekpaneel",
+   "maat": null,
+   "breedte": 760,
+   "diepte": 10,
+   "hoogte": 10,
+   "leverbaar": true,
+   "eindDatum": null
+  },
+  "ASL-44460978-NL": {
+   "dbId": "ASL-44460978-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-44460978-NL",
+   "naam": "ME/MA 110",
+   "omschrijving": "Onderkast voor kookplaat met geïntegreerde afzuiging en lades",
+   "maat": "80x60 cm",
+   "breedte": 800,
+   "diepte": 600,
+   "hoogte": 802,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42467242-NL": {
+   "dbId": "ASL-42467242-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42467242-NL",
+   "naam": "ME 200",
+   "omschrijving": "Vaatwasser met 2 ladefronten",
+   "maat": "60x60x80cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 802,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42468359-NL": {
+   "dbId": "ASL-42468359-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42468359-NL",
+   "naam": "ME 715",
+   "omschrijving": "Hoge kast voor koelkast en vriezer",
+   "maat": "60x60x200 cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 2000,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42460274-NL": {
+   "dbId": "ASL-42460274-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42460274-NL",
+   "naam": "ME/MA 161",
+   "omschrijving": "Onderkast met laden en binnenladen",
+   "maat": "80x60 cm",
+   "breedte": 800,
+   "diepte": 600,
+   "hoogte": 802,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42460271-NL": {
+   "dbId": "ASL-42460271-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42460271-NL",
+   "naam": "ME/MA 477",
+   "omschrijving": "Onderkast met lades en binnenlades",
+   "maat": "80x37 cm",
+   "breedte": 800,
+   "diepte": 376,
+   "hoogte": 802,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42460273-NL": {
+   "dbId": "ASL-42460273-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42460273-NL",
+   "naam": "ME/MA 160",
+   "omschrijving": "Onderkast met laden en binnenladen",
+   "maat": "60x60 cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 802,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42468358-NL": {
+   "dbId": "ASL-42468358-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42468358-NL",
+   "naam": "ME 714",
+   "omschrijving": "Hoge kast voor koelkast en vriezer",
+   "maat": "60x60x200 cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 2000,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42460114-NL": {
+   "dbId": "ASL-42460114-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42460114-NL",
+   "naam": "ME/MA 197",
+   "omschrijving": "Onderkast voor spoelbak met lades",
+   "maat": "80x60 cm",
+   "breedte": 800,
+   "diepte": 600,
+   "hoogte": 802,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  },
+  "ASL-42460166-NL": {
+   "dbId": "ASL-42460166-NL",
+   "artikelnummer": null,
+   "referentie": "ASL-42460166-NL",
+   "naam": "ME 376",
+   "omschrijving": "Bovenkast",
+   "maat": "60x60 cm",
+   "breedte": 600,
+   "diepte": 600,
+   "hoogte": 600,
+   "leverbaar": true,
+   "eindDatum": "3000-01-01T00:00:00.000Z"
+  }
+ },
+ "opstelling": {
+  "muren": [
+   [
+    [
+     -2075,
+     2070.849365234375
+    ],
+    [
+     2075,
+     2070.849365234375
+    ]
+   ],
+   [
+    [
+     2075,
+     -1379.150601970616
+    ],
+    [
+     2075,
+     2070.849365234374
+    ]
+   ],
+   [
+    [
+     -2075,
+     -1379.150601970616
+    ],
+    [
+     -2075,
+     2070.849365234365
+    ]
+   ],
+   [
+    [
+     2075,
+     -1379.150601970616
+    ],
+    [
+     -2075,
+     -1379.150601970616
+    ]
+   ]
+  ],
+  "posities": [
+   {
+    "uuid": "8D24CBB1-1181-4866-B4D2-59D6B9142B8A",
+    "x": -1700,
+    "y": 995.84912109375,
+    "ruggelings": false
+   },
+   {
+    "uuid": "96342830-827C-4E1A-9008-7AFFD4A5EE73",
+    "x": -1700,
+    "y": 295.84942626953125,
+    "ruggelings": false
+   },
+   {
+    "uuid": "3E985582-66EA-4599-A9D1-ABF336AAC2A1",
+    "x": -499.9992980957031,
+    "y": 1695.848876953125,
+    "ruggelings": false
+   },
+   {
+    "uuid": "D4CB7F7E-0BF2-46BC-9A6A-92A2D757A344",
+    "x": 101.27135467529297,
+    "y": 118.60755920410156,
+    "ruggelings": true
+   },
+   {
+    "uuid": "4CA0CAFC-BEE3-4813-A43D-FF0B6D6ABE99",
+    "x": 589.2713623046875,
+    "y": 118.60758972167969,
+    "ruggelings": true
+   },
+   {
+    "uuid": "0402764C-9A8C-4404-9381-4141C6927176",
+    "x": -1699.99951171875,
+    "y": 1695.84912109375,
+    "ruggelings": false
+   },
+   {
+    "uuid": "288C7B04-9E22-422C-9A6E-985FF0FCA682",
+    "x": -1099.9998779296875,
+    "y": 1695.848876953125,
+    "ruggelings": false
+   },
+   {
+    "uuid": "490DD1AE-A7B3-47EF-9D5B-A4ECA8624EB2",
+    "x": -1700,
+    "y": -404.15087890625,
+    "ruggelings": false
+   },
+   {
+    "uuid": "6233F742-6BBC-4F4C-B83A-753195781EAE",
+    "x": -1699.999755859375,
+    "y": 1695.849365234375,
+    "ruggelings": false
+   },
+   {
+    "uuid": "816B1F18-FF5E-4CAA-AEBD-EF81CA666117",
+    "x": -1700,
+    "y": 1695.84912109375,
+    "ruggelings": false
+   }
+  ]
+ }
+}

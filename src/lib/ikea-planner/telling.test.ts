@@ -10,6 +10,8 @@ import { leesBom, type BomNode } from "./bom.ts";
 import { bomNaarTelling } from "./telling.ts";
 import type { ProductInfo } from "./product.ts";
 import { TELVELDEN, valideerTelling } from "../rekenen.ts";
+import { leesOpstelling, type Opstelling } from "./opstelling.ts";
+import { existsSync, readdirSync } from "node:fs";
 
 const lees = (naam: string) => JSON.parse(readFileSync(new URL(`./__fixtures__/${naam}`, import.meta.url), "utf8"));
 const ontwerp = lees("ontwerp.json");
@@ -28,6 +30,7 @@ test("fixture: hash van bom_ruw klopt met de vastgelegde hash", () => {
 test("fixture: telling gelijk aan verwacht.json (die gebruikt de monitor)", () => {
   const { bom } = leesBom({ appData: { bom: ontwerp.bom_ruw } });
   const { telling } = bomNaarTelling(bom, producten, {
+    opstelling: ontwerp.opstelling,
     projectNaam: ontwerp.project.projectName,
     datumOpgeslagen: ontwerp.project.dateUpdate,
   });
@@ -105,7 +108,7 @@ function maakBom(items: Item[]): { bom: BomNode; producten: Record<string, Produ
       // Zelfde positienaam = zelfde ASL-node, zoals products[] in een echte BOM.
       let asl = bom.products.find((p: BomNode) => p.dbID.startsWith("ASL-") && prod[p.dbID]?.omschrijving === it.positie);
       if (!asl) {
-        asl = { dbID: `ASL-${volgnr++}-NL`, children: [] };
+        asl = { dbID: `ASL-${volgnr++}-NL`, uuid: it.positie, children: [] };
         prod[asl.dbID] = { ...info, dbId: asl.dbID, artikelnummer: null, referentie: null, omschrijving: it.positie };
         bom.products.push(asl);
       }
@@ -282,7 +285,7 @@ const tellingVan = (items: Item[]) => {
   return bomNaarTelling(bom, producten).telling;
 };
 
-test("verankeringsframe voor kookeiland: niet geteld, wel als aanname", () => {
+test("verankeringsframe zonder plaatsingsdata: niet geteld, wel de algemene aanname", () => {
   const zonder = tellingVan(kasten);
   const met = tellingVan([...kasten, { omschrijving: "verankeringsframe voor kookeiland", aantal: 2 }]);
   for (const k of TELVELDEN) assert.equal(met[k], zonder[k], k);
@@ -393,4 +396,133 @@ test("eigen apparaten zonder ASL-namen: terugval op de ART-regels", () => {
   assert.ok(kook.aannames.includes(eigen("kookplaat")));
   const alleenSpoel = tellingVan([{ omschrijving: "onderkast v inbouwapp/spoelbak, wit" }, { omschrijving: "inbouwspoelbak, 1 bak" }]);
   assert.ok(!alleenSpoel.aannames.includes(eigen("kookplaat")));
+});
+
+// ---------------------------------------------------------------------------
+// Eiland (opstelling)
+// ---------------------------------------------------------------------------
+
+const EILAND_WATER = (wat: string) => `Eiland met ${wat}: water, afvoer en stroom moeten vóór de montage in de vloer liggen.`;
+const EILAND_DROOG = "Eiland/vrijstaand blok in het ontwerp.";
+const FRAME_ZONDER_EILAND = "Verankeringsframe voor kookeiland besteld, maar geen eiland in het ontwerp: te veel besteld?";
+const EILAND_ZONDER_FRAME = "Eiland zonder verankeringsframe: controleren of dat nodig is.";
+const eilandAannames = (a: string[]) => a.filter((x) => /eiland/i.test(x));
+
+// Ruimte van 4 × 3 m; een kast tegen de muur staat met zijn midden ±375 mm van de muur.
+const kamer: Opstelling["muren"] = [[[0, 0], [4000, 0]], [[4000, 0], [4000, 3000]], [[4000, 3000], [0, 3000]], [[0, 3000], [0, 0]]];
+const op = (...posities: [string, number, number, boolean?][]): Opstelling => ({
+  muren: kamer,
+  posities: posities.map(([uuid, x, y, ruggelings]) => ({ uuid, x, y, ruggelings: !!ruggelings })),
+});
+const metOpstelling = (items: Item[], opstelling: Opstelling | null) => {
+  const { bom, producten } = maakBom(items);
+  return bomNaarTelling(bom, producten, { opstelling }).telling;
+};
+const FRAME: Item = { omschrijving: "verankeringsframe voor kookeiland" };
+
+test("eiland, ruggelings, met spoelbak + frame: alleen de water-aanname", () => {
+  const t = metOpstelling(
+    [
+      { omschrijving: "onderkast v inbouwapp/spoelbak, wit", positie: "Onderkast voor spoelbak" },
+      { omschrijving: "inbouwspoelbak, 1 bak", positie: "Onderkast voor spoelbak" },
+      { omschrijving: "onderkast, wit", positie: "Onderkast met lades" },
+      FRAME,
+    ],
+    op(["Onderkast voor spoelbak", 2000, 1500, true], ["Onderkast met lades", 2000, 375])
+  );
+  assert.equal(t.eiland, 1);
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_WATER("spoelbak")]);
+});
+
+test("eiland, vrijstaand (> 80 cm van elke muur), met spoelbak en kookplaat, zonder frame", () => {
+  const t = metOpstelling(
+    [
+      { omschrijving: "inbouwspoelbak, 1 bak", positie: "Onderkast voor spoelbak" },
+      { omschrijving: "inductiekookplaat, zwart", positie: "Onderkast voor kookplaat" },
+      { omschrijving: "onderkast v inbouwapp/spoelbak, wit", positie: "Onderkast voor kookplaat" },
+    ],
+    op(["Onderkast voor spoelbak", 1600, 1500], ["Onderkast voor kookplaat", 2200, 1500])
+  );
+  assert.equal(t.eiland, 1);
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_WATER("spoelbak en kookplaat"), EILAND_ZONDER_FRAME]);
+});
+
+test("eiland zonder spoelbak/kookplaat (die staan tegen de muur): droog eiland", () => {
+  const t = metOpstelling(
+    [
+      { omschrijving: "onderkast, wit", positie: "Onderkast met lades" },
+      { omschrijving: "inbouwspoelbak, 1 bak", positie: "Onderkast voor spoelbak" },
+      FRAME,
+    ],
+    op(["Onderkast met lades", 2000, 1500], ["Onderkast voor spoelbak", 2000, 375])
+  );
+  assert.equal(t.eiland, 1);
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_DROOG]);
+});
+
+test("frame, alles tegen de muur (ook een hoekkast op 51 cm): geen eiland, te veel besteld?", () => {
+  const t = metOpstelling(
+    [{ omschrijving: "onderkast, wit", positie: "Onderkast met lades" }, { omschrijving: "hoekonderkast, wit", positie: "Onderhoekkast" }, FRAME],
+    op(["Onderkast met lades", 2000, 375], ["Onderhoekkast", 512, 512])
+  );
+  assert.equal(t.eiland, 0);
+  assert.deepEqual(eilandAannames(t.aannames), [FRAME_ZONDER_EILAND]);
+});
+
+test("geen eiland en geen frame: geen eiland-aanname", () => {
+  const t = metOpstelling([{ omschrijving: "onderkast, wit", positie: "Onderkast met lades" }], op(["Onderkast met lades", 2000, 375]));
+  assert.equal(t.eiland, 0);
+  assert.deepEqual(eilandAannames(t.aannames), []);
+});
+
+test("leesOpstelling: muren en kastposities uit appData.projectInfo; zonder projectInfo null", () => {
+  const projectInfo = {
+    walls: [{ startPoint: { x: 0, y: 0 }, endPoint: { x: 4000, y: 0 } }],
+    products: [
+      { uuid: "A", transfo: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 100, 375, 0, 1], contextParameters: [{ id: "isBackToBack", val: true }] },
+      { uuid: "B", transfo: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9, 9, 0, 1], contextParameters: [{ id: "plinth", val: "x" }] }, // geen kast
+    ],
+  };
+  const o = leesOpstelling({ appData: { projectInfo: JSON.stringify(projectInfo) } });
+  assert.deepEqual(o, { muren: [[[0, 0], [4000, 0]]], posities: [{ uuid: "A", x: 100, y: 375, ruggelings: true }] });
+  assert.equal(leesOpstelling({ appData: {} }), null);
+  assert.equal(leesOpstelling({ appData: { projectInfo: "{kapot" } }), null);
+});
+
+// Eigen ontwerp van Ilja met een bevestigd eiland (ruggelings).
+test("fixture 36FDA15A: eiland, zonder spoelbak/kookplaat erin, frame besteld", () => {
+  const f = lees("eiland-36FDA15A.json");
+  const r = bomNaarTelling(f.bom, f.producten, { opstelling: f.opstelling });
+  assert.equal(r.telling.eiland, 1);
+  assert.deepEqual(eilandAannames(r.telling.aannames), [EILAND_DROOG]);
+});
+
+// Klantontwerpen uit de spike: staan NIET in git (geen klantdata). Draaien alleen
+// lokaal als spikes/ikea-planner/data er is.
+const SPIKE = new URL("../../../spikes/ikea-planner/data/", import.meta.url);
+const spikeOntwerp = (prefix: string) => {
+  const map = new URL("raw/", SPIKE);
+  const f = existsSync(map) ? readdirSync(map).find((x) => x.startsWith(prefix)) : undefined;
+  if (!f) return null;
+  const raw = JSON.parse(readFileSync(new URL(f, map), "utf8"));
+  const cache = JSON.parse(readFileSync(new URL("productcache.json", SPIKE), "utf8"));
+  const producten: Record<string, ProductInfo> = {};
+  for (const [id, p] of Object.entries<Record<string, string>>(cache)) {
+    producten[id] = { dbId: id, artikelnummer: null, referentie: p.referentie ?? null, naam: p.naam ?? "", omschrijving: p.omschrijving ?? "",
+      maat: null, breedte: null, diepte: null, hoogte: null, leverbaar: true, eindDatum: null };
+  }
+  return bomNaarTelling(raw.bom, producten, { opstelling: leesOpstelling({ appData: raw.appData }) }).telling;
+};
+const spikeAanwezig = existsSync(new URL("raw/", SPIKE));
+
+test("spike 9C9EB523 (bevestigd eiland): vrijstaand blok met kookplaat", { skip: !spikeAanwezig && "spike-data niet lokaal" }, () => {
+  const t = spikeOntwerp("9C9EB523")!;
+  assert.equal(t.eiland, 1);
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_WATER("kookplaat")]);
+});
+
+test("spike 62ED0CF3 (geen eiland, wel frame): te veel besteld?", { skip: !spikeAanwezig && "spike-data niet lokaal" }, () => {
+  const t = spikeOntwerp("62ED0CF3")!;
+  assert.equal(t.eiland, 0);
+  assert.deepEqual(eilandAannames(t.aannames), [FRAME_ZONDER_EILAND]);
 });

@@ -170,6 +170,7 @@ export const positieIds = (bom: BomNode): string[] => [
 
 export interface Positie {
   dbId: string;
+  uuid: string | null; // koppelt aan de plaatsing in de opstelling (opstelling.ts)
   naam: string | null; // 'vaatwasser met 2 ladefronten' (kleine letters), null = geen productgegevens
   soorten: string[]; // soorten van de geprijsde artikelen in deze positie
 }
@@ -187,7 +188,7 @@ export function posities(bom: BomNode, producten: Record<string, ProductInfo>): 
         if (info?.omschrijving) soorten.add(soortVan(info.omschrijving));
       }
       const naam = producten[p.dbID]?.omschrijving?.toLowerCase() || null;
-      return { dbId: p.dbID, naam, soorten: [...soorten] };
+      return { dbId: p.dbID, uuid: typeof p.uuid === "string" ? p.uuid : null, naam, soorten: [...soorten] };
     });
 }
 

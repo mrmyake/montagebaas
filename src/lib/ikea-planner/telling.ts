@@ -13,6 +13,7 @@
 import type { KeukenTelling } from "../rekenen.ts";
 import { artikelenUitBom, geprijsdeRegels, posities, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
 import type { ProductInfo } from "./product.ts";
+import { eilandPosities, type Opstelling } from "./opstelling.ts";
 
 export type WerkbladSoort =
   | "geen"
@@ -93,7 +94,7 @@ const HOUT = /massief|fineer|eiken(?!patroon|effect)|walnoot|bamboe/i;
 export function bomNaarTelling(
   bom: BomNode,
   producten: Record<string, ProductInfo>,
-  meta: { projectNaam?: string | null; datumOpgeslagen?: string | null } = {}
+  meta: { projectNaam?: string | null; datumOpgeslagen?: string | null; opstelling?: Opstelling | null } = {}
 ): PlannerTelling {
   const artikelen = artikelenUitBom(bom, producten);
   const aannames: string[] = [];
@@ -138,9 +139,11 @@ export function bomNaarTelling(
   let koppeling = Math.max(0, bladStukken.length - 1);
 
   // Niet 'ondergelijmde spoelbak': dat is de HACKBOL-/YTTERVÄGGA-dienst voor maatwerk, de spoelbak zelf staat apart.
-  const spoelbakken = som(soortMatch(/^(inbouw|opbouw|onderbouw)?spoelbak/));
+  const isSpoelbak = (soort: string) => /^(inbouw|opbouw|onderbouw)?spoelbak/.test(soort);
+  const isKookplaat = (soort: string) => /kookplaat/.test(soort) && !/recirculatie|scheiding/.test(soort);
+  const spoelbakken = som((a) => isSpoelbak(a.soort));
   const kranen = som(soortMatch(/keukenmengkraan/));
-  const kookplaten = som((a) => /kookplaat/.test(a.soort) && !/recirculatie|scheiding/.test(a.soort));
+  const kookplaten = som((a) => isKookplaat(a.soort));
   let uitsparing_spoelbak = spoelbakken;
   let uitsparing_kookplaat = kookplaten;
   let spoelbak_kraan = Math.max(spoelbakken, kranen ? 1 : 0);
@@ -179,6 +182,11 @@ export function bomNaarTelling(
     aannames.push("Kookplaat met geïntegreerde afzuiging: geteld als inductie, niet als losse afzuigkap");
   }
 
+  // ---- Eiland (uit de opstelling, niet uit de BOM) ----
+  const pos = posities(bom, producten);
+  const eilandUuids = meta.opstelling ? eilandPosities(meta.opstelling) : new Set<string>();
+  const eiland = eilandUuids.size > 0 ? 1 : 0;
+
   const telling: KeukenTelling = {
     onderkasten,
     bovenkasten,
@@ -206,6 +214,7 @@ export function bomNaarTelling(
     afvoer_leidingwerk: 0,
     onderkast_verlichting: som(soortMatch(/^led-strip/)),
     binneninrichting: som(soortIs(...BINNENINRICHTING)),
+    eiland,
     aannames,
     vertrouwen: "hoog",
   };
@@ -221,8 +230,24 @@ export function bomNaarTelling(
   if (pc.verschil !== null && pc.verschil !== 0) {
     aannames.push(`Prijscontrole BOM wijkt af: som €${pc.som} vs. totaal €${pc.totaal} (verschil €${pc.verschil})`);
   }
-  if (artikelen.some(soortIs("verankeringsframe voor kookeiland"))) {
-    aannames.push("Verankeringsframe voor kookeiland in de lijst: eiland in het ontwerp, of te veel besteld? Controleren.");
+  const frame = artikelen.some(soortIs("verankeringsframe voor kookeiland"));
+  if (!meta.opstelling) {
+    // Geen plaatsingsdata: we weten niet of er een eiland is.
+    if (frame) aannames.push("Verankeringsframe voor kookeiland in de lijst: eiland in het ontwerp, of te veel besteld? Controleren.");
+  } else if (eiland) {
+    const inEiland = pos.filter((p) => p.uuid && eilandUuids.has(p.uuid)).flatMap((p) => p.soorten);
+    const water = [
+      ...(inEiland.some(isSpoelbak) ? ["spoelbak"] : []),
+      ...(inEiland.some(isKookplaat) ? ["kookplaat"] : []),
+    ];
+    aannames.push(
+      water.length
+        ? `Eiland met ${water.join(" en ")}: water, afvoer en stroom moeten vóór de montage in de vloer liggen.`
+        : "Eiland/vrijstaand blok in het ontwerp."
+    );
+    if (!frame) aannames.push("Eiland zonder verankeringsframe: controleren of dat nodig is.");
+  } else if (frame) {
+    aannames.push("Verankeringsframe voor kookeiland besteld, maar geen eiland in het ontwerp: te veel besteld?");
   }
 
   // Eigen apparaten: een positie of kast zonder het apparaat dat erin hoort.
@@ -234,7 +259,6 @@ export function bomNaarTelling(
     "koelkast/vriezer": telling.koelkast_vriezer,
     kookplaat: kookplaatAantal,
   };
-  const pos = posities(bom, producten);
   const missend: Apparaat[] = [];
   if (pos.some((p) => p.naam)) {
     for (const { apparaat, positie } of APPARAAT_POSITIES) {

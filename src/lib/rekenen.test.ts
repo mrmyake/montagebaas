@@ -44,6 +44,7 @@ const TELLING: KeukenTelling = {
   inductie: 1, gaskookplaat: 0, afzuigkap: 1, oven: 1, koelkast_vriezer: 2, magnetron: 1,
   sloop: 0, scheve_muren: 0, kraanboring: 0, afvoer_leidingwerk: 2, onderkast_verlichting: 0,
   binneninrichting: 0,
+  eiland: 0,
   aannames: ["3 hoge kasten aangenomen; vries mogelijk onderbouw", "plint geschat 9 m"],
   vertrouwen: "gemiddeld",
 };
@@ -92,9 +93,9 @@ test("validatie: volledige telling is geldig", () => {
   assert.equal(res.ok, true);
 });
 
-test("binneninrichting heeft nog geen minuten in de tarieven: weegt 0", () => {
+test("binneninrichting en eiland hebben nog geen minuten in de tarieven: wegen 0", () => {
   const zonder = berekenPrijsUitTelling(TELLING, TARIEVEN);
-  const met = berekenPrijsUitTelling({ ...TELLING, binneninrichting: 4 }, TARIEVEN);
+  const met = berekenPrijsUitTelling({ ...TELLING, binneninrichting: 4, eiland: 1 }, TARIEVEN);
   assert.equal(met.totaal_minuten, zonder.totaal_minuten);
   assert.equal(met.compleet.incl, zonder.compleet.incl);
 });

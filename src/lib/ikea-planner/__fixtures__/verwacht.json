@@ -28,6 +28,7 @@
   "afvoer_leidingwerk": 0,
   "onderkast_verlichting": 2,
   "binneninrichting": 1,
+  "eiland": 0,
   "aannames": [
    "Laminaat werkblad op standaardlengte: op locatie zagen, toeslag halve dag (~€350) zit NIET in de berekende prijs",
    "Koppeling = aantal bladdelen − 1 (2 delen)",
