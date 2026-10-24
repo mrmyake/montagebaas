@@ -11,7 +11,7 @@
  * vaatwasserpositie heeft geen METOD-frame en telt dus vanzelf niet als onderkast.
  */
 import type { KeukenTelling } from "../rekenen.ts";
-import { artikelenUitBom, geprijsdeRegels, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
+import { artikelenUitBom, geprijsdeRegels, posities, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
 import type { ProductInfo } from "./product.ts";
 
 export type WerkbladSoort =
@@ -35,6 +35,58 @@ export interface PlannerTelling {
 const rond1 = (n: number) => Math.round(n * 10) / 10;
 const rond2 = (n: number) => Math.round(n * 100) / 100;
 
+/** Binneninrichting: telt als aantal in `binneninrichting`. */
+const BINNENINRICHTING = [
+  "uittrekbare kastinrichting",
+  "carrousel onderhoekkast",
+  "inrichting onderhoekkast",
+  "uittrekbaar frame v afvalsortering",
+  "steunframe voor afvalsorteerbak",
+];
+
+/**
+ * Soorten die bewust niet geteld worden: fronten (frames tellen), beslag,
+ * toebehoren van apparaten/spoelbak/led, en de maatwerkdiensten bij een werkblad
+ * (het werkbladtype dekt die). Alles wat níet geteld wordt én niet hier staat,
+ * maar wel op montagewerk lijkt (VANGNET), komt als "Niet herkend" in de aannames.
+ */
+const BEKEND_GENEGEERD = new Set([
+  // fronten
+  "ladefront", "deur", "deur onderhoekkast", "front voor vaatwasser",
+  // beslag en montagedelen
+  "ophangrail", "poot voor kast", "scharnier", "scharnier m demper v keuken", "scharnier voor keukenhoekkast",
+  "handgreep", "drukbeslag", "verbindingsrail voor fronten", "verbindingsrail v kast/dekpaneel",
+  "steunbeslag voor werkblad", "boormal", "inzet ladezijkant", "console voor oven",
+  // planken
+  "plank", "vaste geventileerde plank", "plank onderhoekkast",
+  // toebehoren
+  "sifon/bodemventiel 1 bak", "sifon/bodemventiel 2 bakken", "extra aansluiting sifon", "deksel",
+  "ton met deksel", "koolstoffilter", "flexibele afvoerpijp voor afzuigkap", "scheiding voor kookplaat",
+  "recirculatiekit voor kookplaat", "condensbescherming", "bestekbak", "bak voor keukengerei",
+  // led-toebehoren
+  "driver voor draadloze besturing", "afstandsbediening", "aansluitsnoer", "verbindingssnoer",
+  // werkbladdiensten bij maatwerk
+  "gat maken", "voorbereiding", "rand", "kantlijst", "kantlijst achter", "ondergelijmde spoelbak", "gepolijste onderkant",
+  // eigen aanname (zie onder)
+  "verankeringsframe voor kookeiland",
+]);
+const VANGNET = /kast|oven|koel|vries|vaatwas|magnetron|afzuig|kook|apparaat|paneel|blad|opberger|verlicht|lamp|led|spoelbak|kraan|plint|lijst|wand|front|deur|lade|plank|rek/;
+
+/**
+ * Posities (ASL) en het apparaat dat erin hoort. Sommige namen zijn Engels
+ * ("high cabinet for fridge and freezer"). Oven niet midden in een woord:
+ * "bovenkast met planken".
+ */
+const APPARAAT_POSITIES = [
+  { apparaat: "vaatwasser", positie: /vaatwasser|dishwasher/ },
+  { apparaat: "oven", positie: /(^|[^a-z])oven/ },
+  { apparaat: "koelkast/vriezer", positie: /koel|vries|fridge|freezer/ },
+  { apparaat: "kookplaat", positie: /kookplaat|\bhob\b/ },
+] as const;
+type Apparaat = (typeof APPARAAT_POSITIES)[number]["apparaat"];
+const eigenApparaat = (apparaat: Apparaat) =>
+  `Geen ${apparaat} in de lijst: eigen apparaat of nog niet besteld? Merk en type nodig voor nismaten.`;
+
 const STEEN = /porselein|keramiek|composiet|kwarts|steen(?!patroon)/i;
 const HOUT = /massief|fineer|eiken(?!patroon|effect)|walnoot|bamboe/i;
 
@@ -46,7 +98,11 @@ export function bomNaarTelling(
   const artikelen = artikelenUitBom(bom, producten);
   const aannames: string[] = [];
 
-  const som = (pred: (a: Artikel) => boolean) => rond2(artikelen.filter(pred).reduce((s, a) => s + a.aantal, 0));
+  // Elk artikel dat ergens meetelt, onthouden: de rest gaat langs het vangnet.
+  const geteld = new Set<string>();
+  const markeer = (pred: (a: Artikel) => boolean) => artikelen.filter(pred).forEach((a) => geteld.add(a.dbId));
+  const tel = (pred: (a: Artikel) => boolean) => rond2(artikelen.filter(pred).reduce((s, a) => s + a.aantal, 0));
+  const som = (pred: (a: Artikel) => boolean) => (markeer(pred), tel(pred));
   const soortIs = (...soorten: string[]) => (a: Artikel) => soorten.includes(a.soort);
   const soortMatch = (re: RegExp) => (a: Artikel) => re.test(a.soort);
 
@@ -66,6 +122,7 @@ export function bomNaarTelling(
 
   // ---- Werkblad ----
   const bladen = artikelen.filter((a) => a.soort === "werkblad" || a.soort === "maatwerkblad");
+  markeer((a) => bladen.includes(a));
   let werkblad: WerkbladSoort = "geen";
   if (bladen.some((a) => STEEN.test(a.omschrijving))) werkblad = "steen";
   else if (bladen.some((a) => a.soort === "maatwerkblad")) werkblad = "maatwerk_laminaat";
@@ -110,6 +167,7 @@ export function bomNaarTelling(
 
   // ---- Plint en spatwand (meters) ----
   const plint_meter = meters((o) => /^(geventileerde )?plint/.test(o));
+  markeer((a) => /^(geventileerde )?plint/.test(a.soort) || /wandpaneel/.test(a.omschrijving));
   const spatwandExt = regels
     .filter((r) => r.dbId.startsWith("EXT-") && r.methode === "linearMeter" && r.node?.computedHeight && /wandpaneel/.test(omschr(r.dbId)))
     .reduce((s, r) => s + r.aantal, 0);
@@ -147,6 +205,7 @@ export function bomNaarTelling(
     kraanboring: 0,
     afvoer_leidingwerk: 0,
     onderkast_verlichting: som(soortMatch(/^led-strip/)),
+    binneninrichting: som(soortIs(...BINNENINRICHTING)),
     aannames,
     vertrouwen: "hoog",
   };
@@ -162,6 +221,42 @@ export function bomNaarTelling(
   if (pc.verschil !== null && pc.verschil !== 0) {
     aannames.push(`Prijscontrole BOM wijkt af: som €${pc.som} vs. totaal €${pc.totaal} (verschil €${pc.verschil})`);
   }
+  if (artikelen.some(soortIs("verankeringsframe voor kookeiland"))) {
+    aannames.push("Verankeringsframe voor kookeiland in de lijst: eiland in het ontwerp, of te veel besteld? Controleren.");
+  }
+
+  // Eigen apparaten: een positie of kast zonder het apparaat dat erin hoort.
+  // Liefst op de naam van de ASL-positie; zonder die namen op de ART-regels.
+  const kookplaatAantal = kookplaten;
+  const aantalVan: Record<Apparaat, number> = {
+    vaatwasser: telling.vaatwasser,
+    oven: telling.oven,
+    "koelkast/vriezer": telling.koelkast_vriezer,
+    kookplaat: kookplaatAantal,
+  };
+  const pos = posities(bom, producten);
+  const missend: Apparaat[] = [];
+  if (pos.some((p) => p.naam)) {
+    for (const { apparaat, positie } of APPARAAT_POSITIES) {
+      const plekken = pos.filter((p) => p.naam && positie.test(p.naam)).length;
+      if (plekken > aantalVan[apparaat]) missend.push(apparaat);
+    }
+  } else {
+    const aantal = (soort: string) => tel(soortIs(soort));
+    const hogeInbouw = aantal("hoge kast voor inbouwapparatuur");
+    if (aantal("front voor vaatwasser") > 0 && telling.vaatwasser === 0) missend.push("vaatwasser");
+    if ((hogeInbouw > 0 || aantal("console voor oven") > 0) && telling.oven === 0) missend.push("oven");
+    if (hogeInbouw > telling.oven && telling.koelkast_vriezer === 0) missend.push("koelkast/vriezer");
+    if (aantal("onderkast v inbouwapp/spoelbak") > spoelbakken && kookplaatAantal === 0) missend.push("kookplaat");
+  }
+  for (const apparaat of missend) aannames.push(eigenApparaat(apparaat));
+
+  // Vangnet: niet geteld, niet bewust genegeerd, maar het lijkt op montagewerk.
+  for (const a of artikelen) {
+    if (geteld.has(a.dbId) || BEKEND_GENEGEERD.has(a.soort) || !VANGNET.test(a.soort)) continue;
+    aannames.push(`Niet herkend, controleren: ${a.soort} (${a.artikelnummer})`);
+  }
+
   aannames.push("Lichtlijst, sloop, scheve muren, kraanboring en afvoer/leidingwerk: niet af te leiden uit de planner, op 0");
   aannames.push(
     `Bron: IKEA planner-link${meta.projectNaam ? ` "${meta.projectNaam}"` : ""}` +

@@ -33,19 +33,22 @@ export interface KeukenTelling {
   kraanboring: number;
   afvoer_leidingwerk: number;
   onderkast_verlichting: number;
+  // Uittrekbare kastinrichting, carrousel/inrichting hoekkast, afvalsortering (aantal).
+  // Nog geen minuten in de tarieven: weegt dus 0 tot dat bepaald is.
+  binneninrichting: number;
 
   aannames: string[]; // elk twijfelpunt letterlijk
   vertrouwen: "hoog" | "gemiddeld" | "laag"; // stuurt mens-in-de-lus
 }
 
-/** De 25 numerieke telvelden (de _meter-velden mogen 1 decimaal hebben). */
+/** De 26 numerieke telvelden (de _meter-velden mogen 1 decimaal hebben). */
 export const TELVELDEN: readonly (keyof KeukenTelling)[] = [
   "onderkasten", "bovenkasten", "hoge_kasten", "lade_elementen", "zijwanden",
   "plint_meter", "lichtlijst_meter", "werkblad_meter", "uitsparing_spoelbak",
   "uitsparing_kookplaat", "koppeling", "spatwand_meter", "spoelbak_kraan",
   "vaatwasser", "inductie", "gaskookplaat", "afzuigkap", "oven",
   "koelkast_vriezer", "magnetron", "sloop", "scheve_muren", "kraanboring",
-  "afvoer_leidingwerk", "onderkast_verlichting",
+  "afvoer_leidingwerk", "onderkast_verlichting", "binneninrichting",
 ] as const;
 
 const VERTROUWEN_WAARDEN = ["hoog", "gemiddeld", "laag"] as const;
@@ -77,7 +80,7 @@ export type ValidatieResultaat =
   | { ok: false; ontbrekend: string[] };
 
 /**
- * Dwingt het contract af: élk van de 25 telvelden moet aanwezig zijn als eindig
+ * Dwingt het contract af: élk van de 26 telvelden moet aanwezig zijn als eindig
  * getal, plus de twee metavelden. Een ontbrekend veld → niet doorrekenen (een
  * stil-als-0 gelezen veld geeft een te lage "vaste" prijs). Geeft de lijst met
  * problemen terug zodat de aanvraag naar de wachtrij kan.

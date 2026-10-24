@@ -3,7 +3,7 @@
  * Gedeeld door de lead-verwerker en de dagelijkse monitor. Gooit een PlannerFout.
  */
 import { haalOntwerp, type OpgehaaldOntwerp } from "./client.ts";
-import { bomIds, leesBom, referentieIds, type BomNode } from "./bom.ts";
+import { bomIds, leesBom, positieIds, referentieIds, type BomNode } from "./bom.ts";
 import { haalProducten } from "./producten.ts";
 import { bomNaarTelling, type PlannerTelling } from "./telling.ts";
 import type { ProductInfo } from "./product.ts";
@@ -20,9 +20,10 @@ export async function leesOntwerp(uuid: string): Promise<GelezenOntwerp> {
   const ontwerp = await haalOntwerp(uuid);
   const { bom } = leesBom(ontwerp.metadata);
 
-  // Sequentieel: eerst alles uit de BOM, dan de ART-nummers waar maatwerk (EXT) naar verwijst.
+  // Sequentieel: eerst alles uit de BOM (plus de ASL-posities, voor de naam van
+  // elke positie), dan de ART-nummers waar maatwerk (EXT) naar verwijst.
   const ids = bomIds(bom);
-  let producten = await haalProducten(ids);
+  let producten = await haalProducten([...ids, ...positieIds(bom)]);
   const refs = referentieIds(bom, producten);
   if (refs.length) producten = { ...producten, ...(await haalProducten(refs)) };
 
