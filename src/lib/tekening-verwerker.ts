@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { leesTekening } from "@/lib/tekening-lezer";
 import { laadTarieven } from "@/lib/tarieven";
-import { berekenPrijsUitTelling } from "@/lib/rekenen";
+import { berekenPrijsUitTelling, isLegeTelling } from "@/lib/rekenen";
 import { stuurNtfy } from "@/lib/ntfy";
 import {
   stuurTekeningIndicatieNotificatie,
@@ -61,16 +61,20 @@ export async function verwerkTekening(
   try {
     const { validatie, ruw } = await leesTekening(pad);
 
-    if (!validatie.ok) {
+    // Een lezing met alle telvelden op 0 is geen keuken: geen bedrag (anders
+    // krijgt de klant alleen de voorrijkosten als "indicatie"), naar controle.
+    const leeg = validatie.ok && isLegeTelling(validatie.telling);
+    if (!validatie.ok || leeg) {
+      const ontbrekend = validatie.ok ? ["alle telvelden zijn 0 (geen keuken herkend)"] : validatie.ontbrekend;
       await db.from("aanvragen").update({ status: "controle_tekening" }).eq("id", aanvraagId);
       console.warn(
-        `[tekening] Validatie faalde (${aanvraagId}); ontbrekend: ${validatie.ontbrekend.join(", ")}`,
+        `[tekening] Validatie faalde (${aanvraagId}); ontbrekend: ${ontbrekend.join(", ")}`,
         ruw
       );
       await Promise.allSettled([
         stuurNtfy({
           title: `Tekening: handmatige controle nodig`,
-          body: `Lead ${aanvraagId}: telling onvolledig (${validatie.ontbrekend.join(", ")}). Geen indicatie getoond; beoordeel de tekening zelf.`,
+          body: `Lead ${aanvraagId}: telling onvolledig (${ontbrekend.join(", ")}). Geen indicatie getoond; beoordeel de tekening zelf.`,
           tags: "warning",
         }),
         stuurTekeningIndicatieNotificatie({
@@ -83,10 +87,10 @@ export async function verwerkTekening(
           pad,
           attachments,
           ...context,
-          ontbrekend: validatie.ontbrekend,
+          ontbrekend,
         }),
       ]);
-    } else {
+    } else if (validatie.ok) {
       const telling = validatie.telling;
       const hoog = telling.vertrouwen === "hoog";
 

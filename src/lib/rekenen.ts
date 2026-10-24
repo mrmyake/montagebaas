@@ -101,6 +101,14 @@ export function valideerTelling(input: unknown): ValidatieResultaat {
   return { ok: true, telling: obj as unknown as KeukenTelling };
 }
 
+/**
+ * Alle telvelden 0: er is geen keuken herkend (bv. een lege of verkeerde
+ * upload). Doorrekenen zou alleen de voorrijkosten als "prijs" opleveren.
+ */
+export function isLegeTelling(t: KeukenTelling): boolean {
+  return TELVELDEN.every((veld) => t[veld] === 0);
+}
+
 /** Geld in centen afronden — voorkomt float-ruis en is correct voor bedragen. */
 function naarCenten(bedrag: number): number {
   return Math.round(bedrag * 100) / 100;
