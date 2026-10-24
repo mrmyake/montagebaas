@@ -24,7 +24,7 @@ import {
 } from "@/lib/configurator";
 import { berekenPrijs, euro, type Extras, type Grootte, type Opstelling } from "@/lib/pricing";
 import { verstuurAanvraag } from "@/app/offerte/actions";
-import { OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
+import { INVOERMETHODE_KEY, OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
 import { bewaarConsentKeuze, huidigeConsentKeuze, type ConsentBron } from "@/lib/consent";
 import { ConsentCheckbox } from "@/components/analytics/ConsentCheckbox";
 
@@ -124,6 +124,7 @@ export function Configurator() {
       // (offerte_aanvraag) één keer afvuurt — niet bij direct bezoek of refresh.
       try {
         window.sessionStorage.setItem(OFFERTE_VERZONDEN_KEY, "1");
+        window.sessionStorage.setItem(INVOERMETHODE_KEY, "formulier");
       } catch {
         // sessionStorage onbereikbaar — conversie valt dan terug op niets, lead is wél opgeslagen
       }

@@ -113,6 +113,7 @@ export async function verstuurAanvraag(
     email,
     gewenste_periode: payload.gewenste_periode,
     toelichting,
+    invoermethode: "formulier",
   };
 
   let id: string;

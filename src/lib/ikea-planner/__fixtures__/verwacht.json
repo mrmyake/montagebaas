@@ -1,0 +1,37 @@
+{
+ "uuid": "36FDA15A-7C94-436F-ABEA-0C4BEB046ED6",
+ "bom_sha256": "4509d046fdc57d6a8f14e29c6ea3abeb476f5c6e505a3cf98622c97b3b3d8596",
+ "telling": {
+  "onderkasten": 5,
+  "bovenkasten": 2,
+  "hoge_kasten": 2,
+  "lade_elementen": 15,
+  "zijwanden": 0,
+  "plint_meter": 0,
+  "lichtlijst_meter": 0,
+  "werkblad_meter": 0,
+  "uitsparing_spoelbak": 0,
+  "uitsparing_kookplaat": 0,
+  "koppeling": 0,
+  "spatwand_meter": 0,
+  "spoelbak_kraan": 0,
+  "vaatwasser": 0,
+  "inductie": 0,
+  "gaskookplaat": 0,
+  "afzuigkap": 0,
+  "oven": 0,
+  "koelkast_vriezer": 0,
+  "magnetron": 0,
+  "sloop": 0,
+  "scheve_muren": 0,
+  "kraanboring": 0,
+  "afvoer_leidingwerk": 0,
+  "onderkast_verlichting": 0,
+  "aannames": [
+   "2 bovenkast(en) met ventilatie (opzetkast op hoge kast/koelkast) geteld als bovenkast",
+   "Lichtlijst, sloop, scheve muren, kraanboring en afvoer/leidingwerk: niet af te leiden uit de planner, op 0",
+   "Bron: IKEA planner-link \"Bajes Keuken\", laatst opgeslagen 2026-10-22"
+  ],
+  "vertrouwen": "hoog"
+ }
+}

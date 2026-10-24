@@ -3,7 +3,12 @@ import { leesTekening } from "@/lib/tekening-lezer";
 import { laadTarieven } from "@/lib/tarieven";
 import { berekenPrijsUitTelling } from "@/lib/rekenen";
 import { stuurNtfy } from "@/lib/ntfy";
-import { stuurTekeningIndicatieNotificatie, stuurTekeningKlantBevestiging } from "@/lib/notify";
+import {
+  stuurTekeningIndicatieNotificatie,
+  stuurTekeningKlantBevestiging,
+  type PlannerNotitie,
+} from "@/lib/notify";
+import type { Invoermethode } from "@/lib/db.types";
 import { euro } from "@/lib/pricing";
 import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
 
@@ -36,7 +41,10 @@ export async function verwerkTekening(
   pad: string,
   regio: string | null,
   klant: { naam: string; email: string; telefoon: string },
-  bestanden: { naam: string; buffer: Buffer }[]
+  bestanden: { naam: string; buffer: Buffer }[],
+  // Voor de owner-mail: de invoermethode, en bij een terugval vanuit de
+  // planner-link de link + waarom die niet te lezen was.
+  context: { methode?: Invoermethode; planner?: PlannerNotitie } = {}
 ): Promise<void> {
   const db = supabaseAdmin();
   // Wordt gevuld als er een geldige lezing + prijs is; bepaalt of de klant-mail
@@ -74,6 +82,7 @@ export async function verwerkTekening(
           bestandsnaam,
           pad,
           attachments,
+          ...context,
           ontbrekend: validatie.ontbrekend,
         }),
       ]);
@@ -125,6 +134,7 @@ export async function verwerkTekening(
           bestandsnaam,
           pad,
           attachments,
+          ...context,
           min,
           max,
           vertrouwen: telling.vertrouwen,

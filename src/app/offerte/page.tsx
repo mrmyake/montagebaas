@@ -7,7 +7,7 @@ import { TekeningUpload } from "@/components/configurator/TekeningUpload";
 export const metadata: Metadata = {
   title: "Bereken je prijs — IKEA-keuken laten plaatsen",
   description:
-    "Bereken in een minuut wat het plaatsen van je IKEA-keuken kost, of upload je IKEA Keukenplanner-ontwerp voor een directe indicatie. Vaste prijs vooraf, antwoord binnen 24 uur.",
+    "Plak de link naar je IKEA Keukenplanner-ontwerp, upload je PDF, of bereken in een minuut wat het plaatsen van je IKEA-keuken kost. Vaste prijs vooraf, antwoord binnen 24 uur.",
   alternates: { canonical: "/offerte" },
 };
 
@@ -26,8 +26,8 @@ export default function OffertePage() {
             Bereken je prijs
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-ink-soft">
-            Beantwoord een paar korte vragen. Je ziet meteen een prijsindicatie en ontvangt
-            binnen 24 uur een exacte offerte op maat.
+            Stuur de link naar je IKEA Keukenplanner-ontwerp, of beantwoord een paar korte vragen.
+            Je ontvangt binnen 24 uur een exacte offerte op maat.
           </p>
           <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium text-ink-soft">
             {usps.map((u) => (
@@ -39,7 +39,7 @@ export default function OffertePage() {
           </ul>
         </div>
 
-        {/* De snelweg: tekening-upload bovenaan */}
+        {/* De snelweg: planner-link of tekening-upload bovenaan */}
         <TekeningUpload />
 
         {/* Scheiding naar het hoofdpad (formulier) */}
@@ -55,8 +55,8 @@ export default function OffertePage() {
 
         {/* Zachte nudge terug naar de upload */}
         <p className="mt-6 text-center text-sm text-muted">
-          Heb je een ontwerp uit de IKEA Keukenplanner? Stuur het hierboven mee voor een
-          directe prijsindicatie op basis van je eigen plan.
+          Heb je een ontwerp uit de IKEA Keukenplanner? Plak hierboven de link naar je ontwerp,
+          dan rekenen we met je eigen plan.
         </p>
       </Container>
     </section>

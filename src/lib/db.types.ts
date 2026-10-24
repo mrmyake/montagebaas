@@ -1,5 +1,5 @@
 /**
- * Database-types voor Supabase. Spiegelt supabase/migrations/0001_init.sql.
+ * Database-types voor Supabase. Spiegelt supabase/migrations/0001_init.sql e.v.
  * Houd in sync met de migratie.
  */
 
@@ -58,6 +58,39 @@ export interface AanvraagRow {
   consent_ad_personalization: boolean | null;
   // 'banner' (cookiebalk) of 'formulier' (checkbox bij verzenden), null zonder keuze (0009).
   consent_bron: "banner" | "formulier" | null;
+  // Planner-link-ingang (0013). invoermethode is null alleen bij rijen die de
+  // backfill niet raakte; planner_status alleen gevuld bij invoermethode 'link'.
+  invoermethode: Invoermethode | null;
+  planner_status: PlannerStatus | null;
+}
+
+export type Invoermethode = "formulier" | "link" | "pdf" | "foto";
+export type PlannerStatus =
+  | "ok"
+  | "ongeldige_link"
+  | "niet_gevonden"
+  | "ikea_fout"
+  | "timeout"
+  | "onverwachte_structuur";
+
+// Spiegelt montagebaas.planner_snapshots (0013). Onveranderlijk: alleen insert.
+export interface PlannerSnapshotInsert {
+  aanvraag_id: string;
+  planner_url: string;
+  ontwerp_uuid: string;
+  status: PlannerStatus;
+  fout_detail?: string | null;
+  duur_ms?: number | null;
+  project_naam?: string | null;
+  datum_aangemaakt?: string | null;
+  datum_opgeslagen?: string | null;
+  versie_tag?: string | null;
+  bom_sha256?: string | null;
+  vergrendeld?: boolean | null;
+  bom_ruw?: string | null;
+  project?: unknown;
+  telling?: unknown;
+  tarieven_id?: string | null;
 }
 
 export type LeadStatus =
@@ -135,6 +168,8 @@ export interface LeadOverzichtRow {
   lead_maand: string;
   stil_sinds: string; // Postgres interval, komt via PostgREST als "HH:MM:SS" of "N days HH:MM:SS"
   notitie: string | null; // sinds 0006
+  invoermethode: Invoermethode | null; // sinds 0013
+  planner_status: PlannerStatus | null; // sinds 0013
 }
 
 // Spiegelt montagebaas.roi_per_maand (0005_lead_status.sql).

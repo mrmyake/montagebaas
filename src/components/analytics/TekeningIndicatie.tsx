@@ -94,7 +94,7 @@ export function TekeningIndicatie() {
   }
 
   const artikellijstWa = whatsappUrl(
-    "Hoi Montagebaas, hier is mijn IKEA-artikellijst voor mijn keuken-offerte."
+    "Hoi Montagebaas, hier is de deellink of artikellijst van mijn IKEA-keukenontwerp."
   );
 
   return (
@@ -116,7 +116,7 @@ export function TekeningIndicatie() {
           rel="noopener noreferrer"
           className="mt-3 inline-flex items-center gap-2 rounded-xl bg-trust px-4 py-2.5 text-sm font-semibold text-white hover:brightness-95"
         >
-          <WhatsappIcon size={16} /> Sneller exact? Stuur je artikellijst
+          <WhatsappIcon size={16} /> Sneller exact? Stuur je ontwerplink of artikellijst
         </a>
       )}
     </div>
