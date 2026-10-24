@@ -37,6 +37,13 @@ export default function PrivacyPage() {
               extra&apos;s en gewenste periode) en een eventuele toelichting. We vragen
               <strong> geen volledig adres en geen foto&apos;s</strong>.
             </p>
+            <p className="mt-2">
+              Stuur je ons de link naar je ontwerp in de IKEA Keukenplanner, dan halen we via die
+              link de artikellijst van je ontwerp op bij IKEA. We bewaren die lijst zoals hij op dat
+              moment was bij je aanvraag, zodat we je offerte kunnen maken en later kunnen laten zien
+              op welke versie van je ontwerp hij gebaseerd is. Dit kan alles bevatten wat je zelf in
+              je ontwerp hebt gezet, zoals de naam van je project.
+            </p>
           </div>
 
           <div>
