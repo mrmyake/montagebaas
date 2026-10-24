@@ -9,6 +9,7 @@ import {
   LEAD_STATUSSEN_MET_FACTUUR,
   type LeadStatus,
 } from "@/lib/db.types";
+import { parseWerkelijkeDagen } from "@/lib/werkelijke-dagen";
 
 export type UpdateLeadResult = { error?: string; opgeslagen?: boolean };
 
@@ -44,6 +45,11 @@ export async function updateLead(
   // factuurrecht wordt gefactureerd_bedrag altijd null, ongeacht wat de
   // (uitgeschakelde) client-input meestuurt. Voorkomt de db check-constraint-fout.
   const gefactureerdBedrag = magFactuur ? parseBedrag(formData.get("gefactureerd_bedrag")) : null;
+  // Werkelijke dagen zijn een meting: alleen te wijzigen bij gewonnen/uitgevoerd
+  // (daar is het veld actief), maar bij een andere status blijft de waarde staan.
+  // Een uitgeschakeld veld zit niet in de FormData, dus dan niet meesturen.
+  const dagen = magFactuur ? parseWerkelijkeDagen(formData.get("werkelijke_dagen")?.toString()) : null;
+  if (dagen && !dagen.ok) return { error: dagen.fout };
   const redenVerloren = parseTekst(formData.get("reden_verloren"));
   const notitie = parseTekst(formData.get("notitie"));
 
@@ -70,6 +76,7 @@ export async function updateLead(
       lead_status: leadStatus,
       offerte_bedrag: offerteBedrag,
       gefactureerd_bedrag: gefactureerdBedrag,
+      ...(dagen?.ok ? { werkelijke_dagen: dagen.waarde } : {}),
       reden_verloren: redenVerloren,
       notitie,
     })

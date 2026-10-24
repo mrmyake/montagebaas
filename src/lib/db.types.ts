@@ -54,7 +54,7 @@ export interface AanvraagRow {
   gefactureerd_bedrag: number | null; // alleen gevuld bij lead_status 'gewonnen' of 'uitgevoerd' (db check constraint)
   reden_verloren: string | null;
   notitie: string | null;
-  // Werkelijk gewerkte dagen, in halve dagen (0015). Een meting: blijft staan bij een statuswijziging.
+  // Werkelijk gewerkte dagen, in halve dagen (0016). Een meting: blijft staan bij een statuswijziging.
   werkelijke_dagen: number | null;
   // Consent Mode-keuze op het moment van verzenden (0007). null = geen keuze
   // bekend (banner nog open, of aanvraag van vóór de migratie).
@@ -176,7 +176,7 @@ export interface LeadOverzichtRow {
   notitie: string | null; // sinds 0006
   invoermethode: Invoermethode | null; // sinds 0013
   planner_status: PlannerStatus | null; // sinds 0013
-  werkelijke_dagen: number | null; // sinds 0015
+  werkelijke_dagen: number | null; // sinds 0016
 }
 
 // Spiegelt montagebaas.roi_per_maand (0005_lead_status.sql).

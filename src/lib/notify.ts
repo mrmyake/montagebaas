@@ -2,6 +2,7 @@ import { euro } from "@/lib/pricing";
 import { site, whatsappDefault, whatsappUrl } from "@/lib/site";
 import type { Invoermethode, PlannerStatus } from "@/lib/db.types";
 import { PLANNER_FOUT_UITLEG } from "@/lib/ikea-planner/fouten";
+import { herinneringTekst, type KlusZonderDagen } from "@/lib/werkelijke-dagen";
 
 /**
  * Stuurt een lead-notificatie per e-mail via Resend (https://resend.com).
@@ -788,4 +789,29 @@ export async function stuurPlannerMonitorAlarm(input: {
     },
     "planner-monitor"
   );
+}
+
+/**
+ * Wekelijkse herinnering (cron werkelijke-dagen): uitgevoerde klussen waarbij
+ * de werkelijk gewerkte dagen nog leeg zijn. Naar de eigenaar (LEAD_NOTIFY_TO).
+ */
+export async function stuurWerkelijkeDagenHerinnering(klussen: KlusZonderDagen[]): Promise<boolean> {
+  const to = process.env.LEAD_NOTIFY_TO;
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!process.env.RESEND_API_KEY || !to || !from) {
+    console.error("[werkelijke-dagen] Geen herinnering verstuurd (RESEND_API_KEY, LEAD_NOTIFY_TO of RESEND_FROM_EMAIL ontbreekt).");
+    return false;
+  }
+  const { subject, text } = herinneringTekst(klussen, process.env.NEXT_PUBLIC_SITE_URL ?? site.url);
+  await verstuurViaResend(
+    {
+      from,
+      to: [to],
+      subject,
+      html: `<pre style="font-family:ui-monospace,Menlo,monospace;font-size:13px;white-space:pre-wrap">${esc(text)}</pre>`,
+      text,
+    },
+    "werkelijke-dagen"
+  );
+  return true;
 }
