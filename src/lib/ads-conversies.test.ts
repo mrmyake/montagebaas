@@ -2,6 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  ADS_LEAD_WAARDE_STANDAARD,
   beslis,
   bouwIngestRequest,
   kiesKlikId,
@@ -88,9 +89,20 @@ test("beslis: volledig event met gclid, gehashte e-mail en telefoon", () => {
   assert.deepEqual(b.event.consent, { adUserData: "CONSENT_GRANTED", adPersonalization: "CONSENT_GRANTED" });
 });
 
-test("beslis: waarde 0 of null → overslaan", () => {
+test("beslis: offerte/opdracht met waarde 0 of null → overslaan", () => {
   assert.equal(beslis({ ...basis, waarde: 0 }, { consentOnbekend: "wachten" }).soort, "overslaan");
   assert.equal(beslis({ ...basis, waarde: null }, { consentOnbekend: "wachten" }).soort, "overslaan");
+});
+
+test("beslis: aanvraag_ontvangen krijgt altijd de vaste leadwaarde, ook zonder prijs", () => {
+  const rij = { ...basis, conversie_actie: "aanvraag_ontvangen" as const, lead_status: "nieuw", duplicaat_van: null };
+  for (const waarde of [null, 0, "1850", 3125]) {
+    const b = beslis({ ...rij, waarde }, { consentOnbekend: "wachten" });
+    assert.equal(b.soort, "versturen", `waarde ${waarde}`);
+    if (b.soort === "versturen") assert.equal(b.event.conversionValue, ADS_LEAD_WAARDE_STANDAARD);
+  }
+  const b = beslis({ ...rij, waarde: null }, { consentOnbekend: "wachten", leadWaarde: 1999.5 });
+  assert.equal(b.soort === "versturen" && b.event.conversionValue, 1999.5);
 });
 
 test("beslis: geen klik-id maar wél e-mail → versturen zonder adIdentifiers", () => {
@@ -238,17 +250,14 @@ test("aanvraag_ontvangen: zelfde regels, transactionId met eigen suffix", () => 
     ...basis,
     conversie_actie: "aanvraag_ontvangen",
     event_tijdstip: basis.created_at,
-    waarde: 1850, // prijs_indicatie_max is een geheel getal
+    waarde: null, // de view levert geen waarde meer voor aanvraag_ontvangen (0014)
   };
   const b = beslis(rij, { consentOnbekend: "overslaan" });
   assert.equal(b.soort, "versturen");
   if (b.soort !== "versturen") return;
   assert.equal(b.event.transactionId, `${basis.aanvraag_id}:aanvraag_ontvangen`);
   assert.equal(b.event.eventTimestamp, "2026-09-20T08:00:00.000Z");
-  assert.equal(b.event.conversionValue, 1850);
-
-  // Geen prijsindicatie (upload-pad vóór verwerking) → overslaan.
-  assert.equal(beslis({ ...rij, waarde: null }, { consentOnbekend: "overslaan" }).soort, "overslaan");
+  assert.equal(b.event.conversionValue, ADS_LEAD_WAARDE_STANDAARD);
   // Geen klik-ID en geen contact → overslaan; consent onbekend → beleid.
   assert.equal(
     beslis({ ...rij, gclid: null, email: null, telefoon: null }, { consentOnbekend: "overslaan" }).soort,
