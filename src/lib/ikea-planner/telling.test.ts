@@ -71,6 +71,7 @@ type Item = {
   ext?: boolean; // maatwerk: EXT-id dat via referentie naar een ART-id verwijst
   leverbaar?: boolean | null;
   sectie?: "products" | "linears";
+  positie?: string; // naam van de ASL-positie waarin dit artikel zit
 };
 
 function maakBom(items: Item[]): { bom: BomNode; producten: Record<string, ProductInfo> } {
@@ -100,7 +101,18 @@ function maakBom(items: Item[]): { bom: BomNode; producten: Record<string, Produ
     if (it.breedteMm) node.computedWidth = it.breedteMm;
     if (it.diepteMm) node.computedDepth = it.diepteMm;
     totaal += 10 * (it.aantal ?? 1);
-    bom[it.sectie ?? "products"].push(node);
+    if (it.positie) {
+      // Zelfde positienaam = zelfde ASL-node, zoals products[] in een echte BOM.
+      let asl = bom.products.find((p: BomNode) => p.dbID.startsWith("ASL-") && prod[p.dbID]?.omschrijving === it.positie);
+      if (!asl) {
+        asl = { dbID: `ASL-${volgnr++}-NL`, children: [] };
+        prod[asl.dbID] = { ...info, dbId: asl.dbID, artikelnummer: null, referentie: null, omschrijving: it.positie };
+        bom.products.push(asl);
+      }
+      asl.children.push(node);
+    } else {
+      bom[it.sectie ?? "products"].push(node);
+    }
   }
   bom.totalPrice.current = totaal;
   return { bom, producten: prod };
@@ -257,4 +269,128 @@ test("bron en versie staan altijd in de aannames", () => {
   const { bom, producten } = maakBom([{ omschrijving: "onderkast, wit" }]);
   const t = bomNaarTelling(bom, producten, { projectNaam: "Test", datumOpgeslagen: "2026-10-22T14:45:20.000Z" }).telling;
   assert.ok(t.aannames.includes('Bron: IKEA planner-link "Test", laatst opgeslagen 2026-10-22'));
+});
+
+// ---------------------------------------------------------------------------
+// Signalen: kookeiland, binneninrichting, vangnet, eigen apparaten
+// ---------------------------------------------------------------------------
+
+const eigen = (apparaat: string) =>
+  `Geen ${apparaat} in de lijst: eigen apparaat of nog niet besteld? Merk en type nodig voor nismaten.`;
+const tellingVan = (items: Item[]) => {
+  const { bom, producten } = maakBom(items);
+  return bomNaarTelling(bom, producten).telling;
+};
+
+test("verankeringsframe voor kookeiland: niet geteld, wel als aanname", () => {
+  const zonder = tellingVan(kasten);
+  const met = tellingVan([...kasten, { omschrijving: "verankeringsframe voor kookeiland", aantal: 2 }]);
+  for (const k of TELVELDEN) assert.equal(met[k], zonder[k], k);
+  assert.ok(met.aannames.includes("Verankeringsframe voor kookeiland in de lijst: eiland in het ontwerp, of te veel besteld? Controleren."));
+  assert.ok(!zonder.aannames.some((a) => /kookeiland/.test(a)));
+});
+
+test("binneninrichting: de vijf soorten tellen als aantal, niet in het vangnet", () => {
+  const t = tellingVan([
+    ...kasten,
+    { omschrijving: "uittrekbare kastinrichting, donkergrijs", aantal: 2 },
+    { omschrijving: "carrousel onderhoekkast, grijs" },
+    { omschrijving: "inrichting onderhoekkast, uittrekb, grijs" },
+    { omschrijving: "uittrekbaar frame v afvalsortering, lichtgrijs" },
+    { omschrijving: "steunframe voor afvalsorteerbak, wit" },
+  ]);
+  assert.equal(t.binneninrichting, 6);
+  assert.ok(!t.aannames.some((a) => /Niet herkend/.test(a)));
+  assert.equal(tellingVan(kasten).binneninrichting, 0);
+});
+
+test("vangnet: onbekende soort die op montagewerk lijkt → 'Niet herkend', met artikelnummer", () => {
+  const { bom, producten } = maakBom([
+    ...kasten,
+    ...apparaten,
+    { omschrijving: "open opberger, bruin/gebeitst essen" },
+    { omschrijving: "wandrek, zwart" },
+    { omschrijving: "plank, wit", aantal: 3 }, // bewust genegeerd
+    { omschrijving: "console voor oven, verzinkt" }, // bewust genegeerd
+    { omschrijving: "afstandsbediening, wit" }, // led-toebehoren: bewust genegeerd
+    { omschrijving: "theedoek, grijs" }, // geen montagewerk
+  ]);
+  const r = bomNaarTelling(bom, producten);
+  const niet = r.telling.aannames.filter((a) => a.startsWith("Niet herkend"));
+  const nr = (soort: string) => r.artikelen.find((a) => a.soort === soort)!.artikelnummer;
+  assert.deepEqual(niet.sort(), [
+    `Niet herkend, controleren: open opberger (${nr("open opberger")})`,
+    `Niet herkend, controleren: wandrek (${nr("wandrek")})`,
+  ].sort());
+});
+
+test("vangnet: een complete keuken met alle getelde soorten geeft geen 'Niet herkend'", () => {
+  const t = tellingVan([
+    ...kasten,
+    ...apparaten,
+    { omschrijving: "werkblad, eikeneffect/laminaat", breedteMm: 2460, diepteMm: 635, sectie: "linears" },
+    { omschrijving: "led-strip voor keukenwerkblad, dimbaar wit" },
+    { omschrijving: "wandpaneel op maat, wit", breedteMm: 1200, sectie: "linears" },
+  ]);
+  assert.ok(!t.aannames.some((a) => /Niet herkend/.test(a)), t.aannames.join(" | "));
+});
+
+test("eigen apparaten (ASL-posities): positie zonder apparaat → aanname per apparaat", () => {
+  const t = tellingVan([
+    { omschrijving: "ladefront, wit", positie: "Vaatwasser met 2 ladefronten" },
+    { omschrijving: "hoge kast voor inbouwapparatuur, wit", positie: "Hoge kast voor oven met planken" },
+    { omschrijving: "hoge kast voor inbouwapparatuur, wit", positie: "Hoge kast voor koelkast en vriezer" },
+    { omschrijving: "onderkast v inbouwapp/spoelbak, wit", positie: "Onderkast voor kookplaat met lades" },
+    { omschrijving: "onderkast, wit", positie: "Onderkast met lades" },
+  ]);
+  for (const a of ["vaatwasser", "oven", "koelkast/vriezer", "kookplaat"]) assert.ok(t.aannames.includes(eigen(a)), a);
+});
+
+test("eigen apparaten (ASL-posities): met apparaat geen aanname; 'bovenkast' is geen oven; Engelse namen", () => {
+  const t = tellingVan([
+    { omschrijving: "inbouwvaatwasser, IKEA 500", positie: "Vaatwasser met 2 ladefronten" },
+    { omschrijving: "heteluchtoven, zwart", positie: "Hoge kast voor oven met planken" },
+    { omschrijving: "hoge kast voor inbouwapparatuur, wit", positie: "Hoge kast voor oven met planken" },
+    { omschrijving: "inductiekookplaat, zwart", positie: "Onderkast voor kookplaat met lades" },
+    { omschrijving: "bovenkast, wit", positie: "Bovenkast met planken" },
+  ]);
+  assert.ok(!t.aannames.some((a) => a.startsWith("Geen ")), t.aannames.join(" | "));
+
+  const engels = tellingVan([
+    { omschrijving: "hoge kast voor inbouwapparatuur, wit", positie: "High cabinet for fridge and freezer" },
+    { omschrijving: "onderkast, wit", positie: "Onderkast met lades" },
+  ]);
+  assert.ok(engels.aannames.includes(eigen("koelkast/vriezer")));
+});
+
+test("eigen apparaten (ASL-posities): twee ovenposities, één oven → aanname", () => {
+  const t = tellingVan([
+    { omschrijving: "heteluchtoven, zwart", positie: "Hoge kast voor oven met planken" },
+    { omschrijving: "hoge kast voor inbouwapparatuur, wit", positie: "Hoge kast voor oven en magnetron" },
+  ]);
+  assert.ok(t.aannames.includes(eigen("oven")));
+});
+
+test("eigen apparaten zonder ASL-namen: terugval op de ART-regels", () => {
+  // front voor vaatwasser zonder vaatwasser
+  assert.ok(tellingVan([{ omschrijving: "onderkast, wit" }, { omschrijving: "front voor vaatwasser, wit" }]).aannames.includes(eigen("vaatwasser")));
+  // console voor oven zonder oven
+  assert.ok(tellingVan([{ omschrijving: "onderkast, wit" }, { omschrijving: "console voor oven, verzinkt" }]).aannames.includes(eigen("oven")));
+  // hoge kast inbouwapp zonder apparaten: oven én koelkast
+  const leeg = tellingVan([{ omschrijving: "hoge kast voor inbouwapparatuur, wit" }]);
+  assert.ok(leeg.aannames.includes(eigen("oven")));
+  assert.ok(leeg.aannames.includes(eigen("koelkast/vriezer")));
+  // de kast is verklaard door de oven: geen koelkast-aanname
+  const metOven = tellingVan([{ omschrijving: "hoge kast voor inbouwapparatuur, wit" }, { omschrijving: "heteluchtoven, zwart" }]);
+  assert.ok(!metOven.aannames.some((a) => a.startsWith("Geen ")), metOven.aannames.join(" | "));
+  // twee hoge kasten, één oven, geen koelkast
+  assert.ok(tellingVan([{ omschrijving: "hoge kast voor inbouwapparatuur, wit", aantal: 2 }, { omschrijving: "heteluchtoven, zwart" }]).aannames.includes(eigen("koelkast/vriezer")));
+  // onderkast v inbouwapp zonder kookplaat (en meer dan het aantal spoelbakken)
+  const kook = tellingVan([
+    { omschrijving: "onderkast v inbouwapp/spoelbak, wit", aantal: 2 },
+    { omschrijving: "inbouwspoelbak, 1 bak" },
+  ]);
+  assert.ok(kook.aannames.includes(eigen("kookplaat")));
+  const alleenSpoel = tellingVan([{ omschrijving: "onderkast v inbouwapp/spoelbak, wit" }, { omschrijving: "inbouwspoelbak, 1 bak" }]);
+  assert.ok(!alleenSpoel.aannames.includes(eigen("kookplaat")));
 });

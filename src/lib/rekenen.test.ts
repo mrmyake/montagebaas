@@ -43,6 +43,7 @@ const TELLING: KeukenTelling = {
   uitsparing_kookplaat: 1, koppeling: 1, spatwand_meter: 0, spoelbak_kraan: 1, vaatwasser: 1,
   inductie: 1, gaskookplaat: 0, afzuigkap: 1, oven: 1, koelkast_vriezer: 2, magnetron: 1,
   sloop: 0, scheve_muren: 0, kraanboring: 0, afvoer_leidingwerk: 2, onderkast_verlichting: 0,
+  binneninrichting: 0,
   aannames: ["3 hoge kasten aangenomen; vries mogelijk onderbouw", "plint geschat 9 m"],
   vertrouwen: "gemiddeld",
 };
@@ -89,6 +90,13 @@ test("validatie: een ontbrekend telveld → niet doorrekenen", () => {
 test("validatie: volledige telling is geldig", () => {
   const res = valideerTelling(TELLING);
   assert.equal(res.ok, true);
+});
+
+test("binneninrichting heeft nog geen minuten in de tarieven: weegt 0", () => {
+  const zonder = berekenPrijsUitTelling(TELLING, TARIEVEN);
+  const met = berekenPrijsUitTelling({ ...TELLING, binneninrichting: 4 }, TARIEVEN);
+  assert.equal(met.totaal_minuten, zonder.totaal_minuten);
+  assert.equal(met.compleet.incl, zonder.compleet.incl);
 });
 
 test("lege telling: alle telvelden 0 → leeg; één veld ≠ 0 → niet leeg", () => {

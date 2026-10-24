@@ -9,7 +9,7 @@
 // Daarna: `npm test` en de verwachte telling in verwacht.json met de hand nalopen.
 import { writeFileSync, mkdirSync } from "node:fs";
 import { haalOntwerp, haalProductenRuw } from "../src/lib/ikea-planner/client.ts";
-import { bomIds, leesBom, referentieIds } from "../src/lib/ikea-planner/bom.ts";
+import { bomIds, leesBom, positieIds, referentieIds } from "../src/lib/ikea-planner/bom.ts";
 import { productUitApi, type ProductInfo } from "../src/lib/ikea-planner/product.ts";
 import { parsePlannerLink } from "../src/lib/ikea-planner/link.ts";
 import { bomNaarTelling } from "../src/lib/ikea-planner/telling.ts";
@@ -30,7 +30,7 @@ const voegToe = async (ids: string[]) => {
   const ruw = await haalProductenRuw(ids);
   for (const [id, p] of Object.entries(ruw)) producten[id] = productUitApi(id, p);
 };
-await voegToe(bomIds(bom));
+await voegToe([...bomIds(bom), ...positieIds(bom)]);
 const refs = referentieIds(bom, producten);
 if (refs.length) await voegToe(refs);
 

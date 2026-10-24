@@ -24,6 +24,9 @@ const telveldenShape = Object.fromEntries(
 
 export const tellingSchema = z.object({
   ...telveldenShape,
+  // Later toegevoegd veld: mag ontbreken, dan 0 (zie leesTekening), zodat een
+  // lezing zonder dit veld niet naar controle_tekening valt.
+  binneninrichting: z.number().optional(),
   aannames: z.array(z.string()),
   vertrouwen: z.enum(["hoog", "gemiddeld", "laag"]),
 });
@@ -37,12 +40,12 @@ WERKWIJZE — twee sporen:
 3. ZO NEE → interpreteer de visuele tekening (plaatjes, maatlijnen, genummerde kastjes). Zet "bron: visuele tekening" in aannames en zet vertrouwen op "gemiddeld" of "laag".
 
 TELLEN:
-- Vul elk van de 25 telvelden met een getal (de _meter-velden mogen 1 decimaal). 0 is toegestaan; laat NOOIT een veld weg.
+- Vul elk van de 26 telvelden met een getal (de _meter-velden mogen 1 decimaal). 0 is toegestaan; laat NOOIT een veld weg.
 - Ontbrekende of onleesbare info → veld op 0 én een regel in aannames die je aanname/twijfel beschrijft.
 - vertrouwen = "laag" zodra een PRIJSBEPALEND veld onzeker is (onderkasten/bovenkasten/hoge kasten, werkblad_meter, eiland/afvoer). "hoog" alleen bij een eenduidig leesbaar plan (vooral met itemlijst).
 
 VELD-UITLEG (kort):
-onderkasten = lage kasten op de grond; bovenkasten = hangkasten; hoge_kasten = kolomkasten (oven/koelkast/voorraad); lade_elementen = lade-fronten/binnenlades; zijwanden = zichtbare zijpanelen; plint_meter = plint in meters; lichtlijst_meter = bovenste sierlijst in meters; werkblad_meter = werkblad-lengte in meters; uitsparing_spoelbak/uitsparing_kookplaat = uitsparingen in het werkblad; koppeling = werkblad-koppeling/verstek (aantal); spatwand_meter = achterwand in meters; spoelbak_kraan/vaatwasser/inductie/gaskookplaat/afzuigkap/oven/koelkast_vriezer/magnetron = apparaten (aantal); sloop = oude keuken slopen (1=ja, 0=nee); scheve_muren = correctie scheve muren (1=ja, 0=nee); kraanboring = extra kraangat (aantal); afvoer_leidingwerk = afvoer/leiding aanpassen (aantal punten); onderkast_verlichting = onderbouwverlichting (meters of stuks).`;
+onderkasten = lage kasten op de grond; bovenkasten = hangkasten; hoge_kasten = kolomkasten (oven/koelkast/voorraad); lade_elementen = lade-fronten/binnenlades; zijwanden = zichtbare zijpanelen; plint_meter = plint in meters; lichtlijst_meter = bovenste sierlijst in meters; werkblad_meter = werkblad-lengte in meters; uitsparing_spoelbak/uitsparing_kookplaat = uitsparingen in het werkblad; koppeling = werkblad-koppeling/verstek (aantal); spatwand_meter = achterwand in meters; spoelbak_kraan/vaatwasser/inductie/gaskookplaat/afzuigkap/oven/koelkast_vriezer/magnetron = apparaten (aantal); sloop = oude keuken slopen (1=ja, 0=nee); scheve_muren = correctie scheve muren (1=ja, 0=nee); kraanboring = extra kraangat (aantal); afvoer_leidingwerk = afvoer/leiding aanpassen (aantal punten); onderkast_verlichting = onderbouwverlichting (meters of stuks); binneninrichting = uittrekbare kastinrichting, carrousel of inrichting voor een hoekkast, afvalsorteersysteem (aantal).`;
 
 export interface LeesResultaat {
   validatie: ValidatieResultaat;
@@ -93,5 +96,5 @@ export async function leesTekening(tekeningPad: string): Promise<LeesResultaat> 
   });
 
   // valideerTelling is de autoriteit (Zod vormt alleen de output).
-  return { validatie: valideerTelling(object), ruw: object };
+  return { validatie: valideerTelling({ ...object, binneninrichting: object.binneninrichting ?? 0 }), ruw: object };
 }

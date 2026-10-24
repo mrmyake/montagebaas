@@ -156,6 +156,41 @@ export function artikelenUitBom(bom: BomNode, producten: Record<string, ProductI
     .sort((a, b) => a.artikelnummer.localeCompare(b.artikelnummer));
 }
 
+/**
+ * Ids van de posities: de ASL-assemblages direct onder `products[]`. Hun
+ * productnaam zegt waarvoor de positie bedoeld is ("Vaatwasser met 2
+ * ladefronten", "Hoge kast voor oven met planken"), ook als het apparaat zelf
+ * niet besteld is.
+ */
+export const positieIds = (bom: BomNode): string[] => [
+  ...new Set<string>(
+    (bom?.products ?? []).map((p: BomNode) => p?.dbID).filter((id: unknown): id is string => typeof id === "string" && id.startsWith("ASL-"))
+  ),
+];
+
+export interface Positie {
+  dbId: string;
+  naam: string | null; // 'vaatwasser met 2 ladefronten' (kleine letters), null = geen productgegevens
+  soorten: string[]; // soorten van de geprijsde artikelen in deze positie
+}
+
+/** Per ASL-positie: de naam en welke soorten artikelen erin zitten. */
+export function posities(bom: BomNode, producten: Record<string, ProductInfo>): Positie[] {
+  return (bom?.products ?? [])
+    .filter((p: BomNode) => typeof p?.dbID === "string" && p.dbID.startsWith("ASL-"))
+    .map((p: BomNode) => {
+      const soorten = new Set<string>();
+      for (const r of bomRegels({ products: [p] }).filter((x) => x.prijs !== null)) {
+        const ext = r.dbId.startsWith("EXT-") ? producten[r.dbId] : undefined;
+        const id = ext?.referentie ?? r.dbId;
+        const info = producten[id]?.naam ? producten[id] : (ext ?? producten[id]);
+        if (info?.omschrijving) soorten.add(soortVan(info.omschrijving));
+      }
+      const naam = producten[p.dbID]?.omschrijving?.toLowerCase() || null;
+      return { dbId: p.dbID, naam, soorten: [...soorten] };
+    });
+}
+
 /** 'onderkast, zwartgrijs' → 'onderkast' */
 export const soortVan = (omschrijving: string) => omschrijving.split(",")[0].trim().toLowerCase();
 
