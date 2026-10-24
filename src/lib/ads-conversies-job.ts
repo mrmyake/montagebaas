@@ -43,6 +43,8 @@ export interface RijRapport {
   tijdstipBron: string;
   besluit: Beslissing["soort"];
   reden?: string;
+  /** Niet-blokkerend, bv. een weggelaten ongeldig click-ID. */
+  waarschuwingen?: string[];
 }
 
 export interface ActieRapport {
@@ -155,7 +157,11 @@ export async function draaiAdsConversiesJob(
       tijdstipBron: rij.tijdstip_bron,
       besluit: b.soort,
       reden: b.soort === "versturen" ? undefined : b.reden,
+      waarschuwingen: b.waarschuwingen,
     });
+    for (const w of b.waarschuwingen ?? []) {
+      console.warn(`[ads-conversies] ${rij.aanvraag_id.slice(0, 8)} ${rij.conversie_actie}: ${w}`);
+    }
 
     if (modus !== "verzend") {
       if (b.soort === "versturen") perActie.get(rij.conversie_actie)!.push({ rij, event: b.event });
@@ -239,6 +245,9 @@ export async function draaiAdsConversiesJob(
               request_id: r.requestId ?? null,
               response: response as object,
               verzonden_op: new Date().toISOString(),
+              // Nieuwe request → oude verwerkingsstatus (bv. FAILED van een
+              // eerdere poging) is niet meer van toepassing; de check vult hem opnieuw.
+              verwerking: null,
             }
           : { status: "fout", reden: `HTTP ${httpStatus}`, response: response as object }
       );
@@ -257,6 +266,7 @@ async function upsertUpload(
     request_id?: string | null;
     response?: object | null;
     verzonden_op?: string | null;
+    verwerking?: null;
   }
 ): Promise<void> {
   const { error } = await db.from("ads_conversie_uploads").upsert(

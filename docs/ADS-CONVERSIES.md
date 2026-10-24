@@ -154,6 +154,14 @@ Lokaal werkt hetzelfde tegen `http://localhost:3000` met `npm run dev`.
   Verwerking duurt tot 24–48 uur. Daar staan het aantal geïmporteerde events en het
   matchpercentage van de user-provided data.
 
+### Formaatcheck click-ID's
+
+`gclid`, `gbraid` en `wbraid` gelden alleen als ze uit `[A-Za-z0-9_-]` bestaan en minimaal
+20 tekens lang zijn. Een ongeldige waarde (Google weigert die per event met
+`PROCESSING_ERROR_REASON_INVALID_GBRAID` e.d.) wordt weggelaten: de rij gaat mee zonder dat
+click-ID, op gehashte e-mail/telefoon, en krijgt een waarschuwing in het rapport
+(`rijen[].waarschuwingen`) en in de logs. De rij wordt niet geblokkeerd.
+
 ### Verwerkingscheck (kolom `verwerking`, sinds 0015)
 
 De cron vraagt na de upload per uniek `request_id` de verwerkingsstatus op via

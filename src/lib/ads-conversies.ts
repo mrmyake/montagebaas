@@ -123,10 +123,14 @@ export interface AdsEvent {
   consent: AdsConsent;
 }
 
-export type Beslissing =
+export type Beslissing = (
   | { soort: "versturen"; event: AdsEvent; klikType: KlikIdType | null }
   | { soort: "overslaan"; reden: string; klikType: KlikIdType | null }
-  | { soort: "wachten"; reden: string; klikType: KlikIdType | null };
+  | { soort: "wachten"; reden: string; klikType: KlikIdType | null }
+) & {
+  /** Niet-blokkerend, bv. een ongeldig click-ID dat is weggelaten. */
+  waarschuwingen?: string[];
+};
 
 // ---------------------------------------------------------------------------
 // Normaliseren en hashen
@@ -182,15 +186,36 @@ export function sha256Hex(waarde: string): string {
 // Beslissen en bouwen
 // ---------------------------------------------------------------------------
 
+/**
+ * Formaat van gclid/gbraid/wbraid: alleen [A-Za-z0-9_-] en minimaal 20 tekens.
+ * Google weigert een ongeldige waarde per event (PROCESSING_ERROR_REASON_INVALID_GBRAID
+ * e.d.), waardoor de hele conversie van die lead verloren gaat. Een ongeldige
+ * waarde laten we daarom weg en sturen we de rij zonder dat click-ID
+ * (terugval op gehashte e-mail/telefoon), met een waarschuwing.
+ */
+export const KLIK_ID_PATROON = /^[A-Za-z0-9_-]{20,}$/;
+
+export function isGeldigKlikId(waarde: string | null | undefined): boolean {
+  return typeof waarde === "string" && KLIK_ID_PATROON.test(waarde);
+}
+
+const KLIK_ID_VOLGORDE: KlikIdType[] = ["gclid", "gbraid", "wbraid"];
+
+/** Welke click-ID's van de rij gevuld maar ongeldig zijn (voor de waarschuwing). */
+export function ongeldigeKlikIds(rij: Pick<TeVersturenRij, "gclid" | "gbraid" | "wbraid">): KlikIdType[] {
+  return KLIK_ID_VOLGORDE.filter((t) => rij[t] && !isGeldigKlikId(rij[t]));
+}
+
 export function kiesKlikId(rij: Pick<TeVersturenRij, "gclid" | "gbraid" | "wbraid">): {
   type: KlikIdType;
   waarde: string;
 } | null {
   // Precies één, met voorrang gclid. In de praktijk komen gclid en gbraid
-  // soms samen voor (iOS); dan wint gclid.
-  if (rij.gclid) return { type: "gclid", waarde: rij.gclid };
-  if (rij.gbraid) return { type: "gbraid", waarde: rij.gbraid };
-  if (rij.wbraid) return { type: "wbraid", waarde: rij.wbraid };
+  // soms samen voor (iOS); dan wint gclid. Ongeldige waarden tellen niet mee.
+  for (const type of KLIK_ID_VOLGORDE) {
+    const waarde = rij[type];
+    if (waarde && isGeldigKlikId(waarde)) return { type, waarde };
+  }
   return null;
 }
 
@@ -226,6 +251,12 @@ export function beslis(
 ): Beslissing {
   const klik = kiesKlikId(rij);
   const klikType = klik?.type ?? null;
+  const ongeldig = ongeldigeKlikIds(rij);
+  const waarschuwingen = ongeldig.map(
+    (t) => `${t} heeft een ongeldig formaat (${rij[t]!.length} tekens) en is weggelaten`
+  );
+  const met = (b: Beslissing): Beslissing =>
+    waarschuwingen.length > 0 ? { ...b, waarschuwingen } : b;
 
   const email = normaliseerEmail(rij.email);
   const telefoon = normaliseerTelefoon(rij.telefoon);
@@ -236,7 +267,7 @@ export function beslis(
     ((email && opties.uitgesloten.emails.has(email)) ||
       (telefoon && opties.uitgesloten.telefoons.has(telefoon)))
   ) {
-    return { soort: "overslaan", reden: "testinzending (eigen contactgegevens)", klikType };
+    return met({ soort: "overslaan", reden: "testinzending (eigen contactgegevens)", klikType });
   }
 
   // Statusimport van 25-09: het logtijdstip is het importmoment, niet het echte
@@ -244,16 +275,16 @@ export function beslis(
   // klikleeftijd) tot de datum in lead_status_log is gecorrigeerd — dan wordt
   // tijdstip_bron weer 'log' en gaat de rij vanzelf mee.
   if (rij.tijdstip_bron === "migratie") {
-    return {
+    return met({
       soort: "wachten",
       reden: "event-tijdstip komt uit de statusimport van 25-09; datum nog corrigeren",
       klikType,
-    };
+    });
   }
 
   // Dubbele aanvraag (zelfde contact binnen 7 dagen): alleen de eerste telt.
   if (rij.duplicaat_van) {
-    return { soort: "overslaan", reden: `duplicaat van ${rij.duplicaat_van.slice(0, 8)}`, klikType };
+    return met({ soort: "overslaan", reden: `duplicaat van ${rij.duplicaat_van.slice(0, 8)}`, klikType });
   }
 
   // aanvraag_ontvangen: altijd de vaste leadwaarde; de view levert daar geen waarde.
@@ -265,19 +296,19 @@ export function beslis(
         ? NaN
         : Number(rij.waarde);
   if (!Number.isFinite(waarde) || waarde <= 0) {
-    return { soort: "overslaan", reden: "waarde ontbreekt of is 0", klikType };
+    return met({ soort: "overslaan", reden: "waarde ontbreekt of is 0", klikType });
   }
 
   if (!klik && !email && !telefoon) {
-    return { soort: "overslaan", reden: "geen click-ID en geen bruikbare e-mail/telefoon", klikType };
+    return met({ soort: "overslaan", reden: "geen click-ID en geen bruikbare e-mail/telefoon", klikType });
   }
 
   if (klik && dagenTussen(rij.created_at, rij.event_tijdstip) > MAX_KLIK_LEEFTIJD_DAGEN) {
-    return {
+    return met({
       soort: "overslaan",
       reden: `klik ouder dan ${MAX_KLIK_LEEFTIJD_DAGEN} dagen op het conversiemoment`,
       klikType,
-    };
+    });
   }
 
   // Geweigerd = niet versturen. De bezoeker heeft nee gezegd tegen het delen
@@ -285,7 +316,7 @@ export function beslis(
   // klik-ID of gehashte contactgegevens na. (Google verwerkt EER-conversies
   // zonder CONSENT_GRANTED op adUserData sowieso niet.) De bannertekst belooft dit.
   if (rij.consent_ad_user_data === false || rij.consent_ad_personalization === false) {
-    return { soort: "overslaan", reden: "consent geweigerd", klikType };
+    return met({ soort: "overslaan", reden: "consent geweigerd", klikType });
   }
 
   const consentOnbekend = rij.consent_ad_user_data === null || rij.consent_ad_personalization === null;
@@ -296,10 +327,10 @@ export function beslis(
   // dus mee met CONSENT_STATUS_UNSPECIFIED. Alleen nieuwe rijen volgen het beleid.
   if (consentOnbekend && !historisch) {
     if (opties.consentOnbekend === "wachten") {
-      return { soort: "wachten", reden: "consent onbekend; beleid nog niet vastgesteld", klikType };
+      return met({ soort: "wachten", reden: "consent onbekend; beleid nog niet vastgesteld", klikType });
     }
     if (opties.consentOnbekend === "overslaan") {
-      return { soort: "overslaan", reden: "consent onbekend", klikType };
+      return met({ soort: "overslaan", reden: "consent onbekend", klikType });
     }
   }
 
@@ -321,7 +352,7 @@ export function beslis(
   if (klik) event.adIdentifiers = { [klik.type]: klik.waarde };
   if (userIdentifiers.length) event.userData = { userIdentifiers };
 
-  return { soort: "versturen", event, klikType };
+  return met({ soort: "versturen", event, klikType });
 }
 
 // ---------------------------------------------------------------------------

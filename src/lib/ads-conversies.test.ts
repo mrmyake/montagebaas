@@ -5,7 +5,9 @@ import {
   ADS_LEAD_WAARDE_STANDAARD,
   beslis,
   bouwIngestRequest,
+  isGeldigKlikId,
   kiesKlikId,
+  ongeldigeKlikIds,
   normaliseerEmail,
   normaliseerTelefoon,
   parseUitgeslotenContacten,
@@ -21,7 +23,7 @@ const basis: TeVersturenRij = {
   waarde: "2700.00",
   created_at: "2026-09-20T08:00:00+00:00",
   lead_status: "gewonnen",
-  gclid: "Cj0KCQ-test",
+  gclid: "Cj0KCQ-test-0123456789abcdef",
   gbraid: null,
   wbraid: null,
   email: " Jan.Jansen+keuken@Gmail.com ",
@@ -64,11 +66,57 @@ test("sha256 hex komt overeen met bekende waarde", () => {
   );
 });
 
+const G = "Cj0KCQjw-gclid_0123456789ABCDEF"; // 31 tekens, geldig
+const B = "ABCDEFGHIJKLMNOPQRST"; // precies 20 tekens, geldig
+const W = "w-" + "x".repeat(30);
+
 test("klik-id: voorrang gclid > gbraid > wbraid", () => {
-  assert.deepEqual(kiesKlikId({ gclid: "a", gbraid: "b", wbraid: "c" }), { type: "gclid", waarde: "a" });
-  assert.deepEqual(kiesKlikId({ gclid: null, gbraid: "b", wbraid: "c" }), { type: "gbraid", waarde: "b" });
-  assert.deepEqual(kiesKlikId({ gclid: null, gbraid: null, wbraid: "c" }), { type: "wbraid", waarde: "c" });
+  assert.deepEqual(kiesKlikId({ gclid: G, gbraid: B, wbraid: W }), { type: "gclid", waarde: G });
+  assert.deepEqual(kiesKlikId({ gclid: null, gbraid: B, wbraid: W }), { type: "gbraid", waarde: B });
+  assert.deepEqual(kiesKlikId({ gclid: null, gbraid: null, wbraid: W }), { type: "wbraid", waarde: W });
   assert.equal(kiesKlikId({ gclid: null, gbraid: null, wbraid: null }), null);
+});
+
+test("klik-id formaat: alleen [A-Za-z0-9_-] en minimaal 20 tekens", () => {
+  assert.equal(isGeldigKlikId(B), true);
+  assert.equal(isGeldigKlikId("ABCDEFGHIJKLMNOPQRS"), false); // 19
+  assert.equal(isGeldigKlikId("ABCDEFGHIJKLMNOPQRS T"), false); // spatie
+  assert.equal(isGeldigKlikId("ABCDEFGHIJKLMNOPQRS."), false); // punt
+  assert.equal(isGeldigKlikId("{gclid}{gclid}{gclid}{gclid}"), false); // onvervangen placeholder
+  assert.equal(isGeldigKlikId(null), false);
+  assert.equal(isGeldigKlikId(""), false);
+});
+
+test("klik-id: ongeldige waarde wordt overgeslagen, volgende geldige wint", () => {
+  assert.deepEqual(kiesKlikId({ gclid: "kort", gbraid: B, wbraid: null }), { type: "gbraid", waarde: B });
+  assert.equal(kiesKlikId({ gclid: null, gbraid: "abc.1234", wbraid: null }), null);
+  assert.deepEqual(ongeldigeKlikIds({ gclid: "kort", gbraid: "abc.1234", wbraid: W }), ["gclid", "gbraid"]);
+  assert.deepEqual(ongeldigeKlikIds({ gclid: G, gbraid: null, wbraid: null }), []);
+});
+
+test("beslis: ongeldige gbraid → versturen zonder click-ID, met waarschuwing, niet blokkeren", () => {
+  const b = beslis({ ...basis, gclid: null, gbraid: "abc.1234" }, { consentOnbekend: "wachten" });
+  assert.equal(b.soort, "versturen");
+  if (b.soort !== "versturen") return;
+  assert.equal(b.event.adIdentifiers, undefined);
+  assert.equal(b.klikType, null);
+  assert.equal(b.event.userData?.userIdentifiers.length, 2);
+  assert.equal(b.waarschuwingen?.length, 1);
+  assert.match(b.waarschuwingen![0], /gbraid.*ongeldig.*8 tekens/);
+});
+
+test("beslis: ongeldig click-ID en geen contact → overslaan, waarschuwing blijft staan", () => {
+  const b = beslis(
+    { ...basis, gclid: "kort", email: "kapot", telefoon: "x" },
+    { consentOnbekend: "wachten" }
+  );
+  assert.equal(b.soort, "overslaan");
+  assert.equal(b.waarschuwingen?.length, 1);
+});
+
+test("beslis: geldig click-ID → geen waarschuwingen-veld", () => {
+  const b = beslis(basis, { consentOnbekend: "wachten" });
+  assert.equal(b.waarschuwingen, undefined);
 });
 
 test("beslis: volledig event met gclid, gehashte e-mail en telefoon", () => {
@@ -79,7 +127,7 @@ test("beslis: volledig event met gclid, gehashte e-mail en telefoon", () => {
   assert.equal(b.event.eventTimestamp, "2026-10-01T10:00:00.000Z");
   assert.equal(b.event.conversionValue, 2700);
   assert.equal(b.event.currency, "EUR");
-  assert.deepEqual(b.event.adIdentifiers, { gclid: "Cj0KCQ-test" });
+  assert.deepEqual(b.event.adIdentifiers, { gclid: "Cj0KCQ-test-0123456789abcdef" });
   assert.deepEqual(b.event.userData, {
     userIdentifiers: [
       { emailAddress: sha256Hex("janjansen@gmail.com") },
