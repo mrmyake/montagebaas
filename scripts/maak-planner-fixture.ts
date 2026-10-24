@@ -3,7 +3,7 @@
 //   node scripts/maak-planner-fixture.ts <planner-url of uuid>
 //
 // Schrijft naar src/lib/ikea-planner/__fixtures__/:
-//   ontwerp.json   — bom_ruw (exacte string) + projectvelden zonder account-id's
+//   ontwerp.json   — bom_ruw (exacte string), opstelling + projectvelden zonder account-id's
 //   producten.json — ProductInfo per id (alleen de ids uit dit ontwerp)
 //   verwacht.json  — uuid, bom-hash en de telling; de dagelijkse monitor vergelijkt hiermee
 // Daarna: `npm test` en de verwachte telling in verwacht.json met de hand nalopen.
@@ -13,6 +13,7 @@ import { bomIds, leesBom, positieIds, referentieIds } from "../src/lib/ikea-plan
 import { productUitApi, type ProductInfo } from "../src/lib/ikea-planner/product.ts";
 import { parsePlannerLink } from "../src/lib/ikea-planner/link.ts";
 import { bomNaarTelling } from "../src/lib/ikea-planner/telling.ts";
+import { leesOpstelling } from "../src/lib/ikea-planner/opstelling.ts";
 
 const arg = process.argv[2] ?? "";
 const uuid = parsePlannerLink(arg).ok
@@ -34,7 +35,9 @@ await voegToe([...bomIds(bom), ...positieIds(bom)]);
 const refs = referentieIds(bom, producten);
 if (refs.length) await voegToe(refs);
 
+const opstelling = leesOpstelling(ontwerp.metadata);
 const { telling } = bomNaarTelling(bom, producten, {
+  opstelling,
   projectNaam: ontwerp.projectNaam,
   datumOpgeslagen: ontwerp.datumOpgeslagen,
 });
@@ -55,6 +58,8 @@ schrijf("ontwerp.json", {
   },
   bom_sha256: ontwerp.bomSha256,
   bom_ruw: ontwerp.bomRuw,
+  // Alleen muren en posities (uuid, plaats, ruggelings): genoeg voor de eilanddetectie.
+  opstelling,
 });
 schrijf("producten.json", producten);
 schrijf("verwacht.json", { uuid, bom_sha256: ontwerp.bomSha256, telling });

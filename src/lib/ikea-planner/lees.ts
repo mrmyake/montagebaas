@@ -5,6 +5,7 @@
 import { haalOntwerp, type OpgehaaldOntwerp } from "./client.ts";
 import { bomIds, leesBom, positieIds, referentieIds, type BomNode } from "./bom.ts";
 import { haalProducten } from "./producten.ts";
+import { leesOpstelling } from "./opstelling.ts";
 import { bomNaarTelling, type PlannerTelling } from "./telling.ts";
 import type { ProductInfo } from "./product.ts";
 
@@ -31,6 +32,7 @@ export async function leesOntwerp(uuid: string): Promise<GelezenOntwerp> {
   const resultaat = bomNaarTelling(bom, producten, {
     projectNaam: ontwerp.projectNaam,
     datumOpgeslagen: ontwerp.datumOpgeslagen,
+    opstelling: leesOpstelling(ontwerp.metadata),
   });
   if (zonderProductgegevens.length) {
     resultaat.telling.aannames.push(

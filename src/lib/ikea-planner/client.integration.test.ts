@@ -8,6 +8,7 @@ import { haalOntwerp, haalProductenRuw } from "./client.ts";
 import { bomIds, leesBom, positieIds, referentieIds } from "./bom.ts";
 import { productUitApi, type ProductInfo } from "./product.ts";
 import { bomNaarTelling } from "./telling.ts";
+import { leesOpstelling } from "./opstelling.ts";
 import { valideerTelling } from "../rekenen.ts";
 
 const aan = process.env.IKEA_INTEGRATIE === "1";
@@ -26,7 +27,12 @@ test("echte keten: ophalen → BOM → producten → geldige telling", { skip: !
   if (refs.length) for (const [id, p] of Object.entries(await haalProductenRuw(refs))) producten[id] = productUitApi(id, p);
   for (const id of bomIds(bom)) assert.ok(producten[id]?.omschrijving, `geen omschrijving voor ${id}`);
 
-  const r = bomNaarTelling(bom, producten, { projectNaam: o.projectNaam, datumOpgeslagen: o.datumOpgeslagen });
+  const r = bomNaarTelling(bom, producten, {
+    projectNaam: o.projectNaam,
+    datumOpgeslagen: o.datumOpgeslagen,
+    opstelling: leesOpstelling(o.metadata),
+  });
+  assert.ok(leesOpstelling(o.metadata), "geen opstelling (appData.projectInfo) in metadata/2");
   assert.equal(valideerTelling(r.telling).ok, true);
   assert.ok(r.telling.onderkasten > 0);
   assert.equal(r.prijscontrole.verschil, 0);
