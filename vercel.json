@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/ads-conversies",
       "schedule": "13 5 * * *"
+    },
+    {
+      "path": "/api/cron/planner-monitor",
+      "schedule": "17 6 * * *"
     }
   ]
 }

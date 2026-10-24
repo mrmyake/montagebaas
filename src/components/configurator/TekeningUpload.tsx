@@ -2,10 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, FileCheck2, Loader2, X, Plus } from "lucide-react";
+import { UploadCloud, FileCheck2, Loader2, X, Plus, Link2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, inputClass } from "@/components/configurator/parts";
-import { OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
+import { INVOERMETHODE_KEY, OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
+import { parsePlannerLink } from "@/lib/ikea-planner/link";
 import { bewaarConsentKeuze, huidigeConsentKeuze, type ConsentBron } from "@/lib/consent";
 import { ConsentCheckbox } from "@/components/analytics/ConsentCheckbox";
 
@@ -23,15 +24,19 @@ function valideerBestand(f: File): string | null {
 }
 
 /**
- * De "snelweg" bovenaan /offerte: sleep/kies één of meer bestanden van je IKEA
- * Keukenplanner-ontwerp (PDF of foto's) + minimale contactgegevens. Bij succes →
- * zelfde conversie-flow als het formulier (sessionStorage-vlag + redirect naar
- * /bedankt?a=<id>, waar de prijsindicatie wordt opgehaald). Mislukte upload → fallback.
+ * De "snelweg" bovenaan /offerte: plak de deellink van je IKEA Keukenplanner-
+ * ontwerp (aanbevolen), en/of sleep/kies één of meer bestanden (PDF of foto's),
+ * + minimale contactgegevens. Bij succes → zelfde conversie-flow als het
+ * formulier (sessionStorage-vlag + redirect naar /bedankt). Upload-pad gaat naar
+ * /bedankt?a=<id>, waar de prijsindicatie wordt opgehaald; het link-pad toont
+ * (nog) geen bedrag en gaat naar /bedankt zonder id. Mislukt → fallback.
  */
 export function TekeningUpload() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [plannerTekst, setPlannerTekst] = useState("");
+  const [linkGeraakt, setLinkGeraakt] = useState(false); // foutmelding pas na blur
   const [files, setFiles] = useState<File[]>([]);
   const [naam, setNaam] = useState("");
   const [email, setEmail] = useState("");
@@ -41,6 +46,18 @@ export function TekeningUpload() {
   const [sleep, setSleep] = useState(false);
   const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState<string | null>(null);
+
+  const link = parsePlannerLink(plannerTekst);
+  const heeftLink = link.ok;
+  const linkOngeldig = plannerTekst.trim() !== "" && !heeftLink;
+  const heeftInvoer = heeftLink || files.length > 0;
+
+  // Plakken uit WhatsApp/mail: tekst en witruimte rond de link meteen wegfilteren.
+  function wijzigLink(waarde: string) {
+    const herkend = parsePlannerLink(waarde);
+    setPlannerTekst(herkend.ok ? herkend.url : waarde);
+    if (herkend.ok) setFout(null);
+  }
 
   const contactGeldig =
     naam.trim().length > 1 &&
@@ -72,7 +89,7 @@ export function TekeningUpload() {
   }
 
   async function verstuur() {
-    if (!files.length || !contactGeldig || bezig) return;
+    if (!heeftInvoer || linkOngeldig || !contactGeldig || bezig) return;
     setBezig(true);
     setFout(null);
     // Geen bannerkeuze? Dan telt de checkbox: aangevinkt = accepteren, uitgevinkt
@@ -92,15 +109,26 @@ export function TekeningUpload() {
       fd.append("website", website); // honeypot
       fd.append("consent", huidigeConsentKeuze() ?? "");
       fd.append("consent_bron", consentBron);
-      const res = await fetch("/api/offerte-upload", { method: "POST", body: fd });
+      if (link.ok) fd.append("planner_url", link.url);
+      const res = await fetch(link.ok ? "/api/offerte-link" : "/api/offerte-upload", {
+        method: "POST",
+        body: fd,
+      });
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; error?: string; id?: string }
         | null;
       if (res.ok && data?.ok) {
+        const methode = link.ok
+          ? "link"
+          : files.some((f) => f.type === "application/pdf")
+            ? "pdf"
+            : "foto";
         try {
           window.sessionStorage.setItem(OFFERTE_VERZONDEN_KEY, "1");
+          window.sessionStorage.setItem(INVOERMETHODE_KEY, methode);
         } catch {}
-        router.push(data.id ? `/bedankt?a=${data.id}` : "/bedankt");
+        // Link-pad: (nog) geen prijsindicatie op /bedankt, dus niets te pollen.
+        router.push(!link.ok && data.id ? `/bedankt?a=${data.id}` : "/bedankt");
         return;
       }
       setFout(data?.error || FALLBACK);
@@ -117,9 +145,61 @@ export function TekeningUpload() {
         Heb je een ontwerp uit de IKEA Keukenplanner?
       </h2>
       <p className="mt-1 text-sm text-ink-soft">
-        Sleep de PDF of foto&apos;s van je IKEA Keukenplanner-ontwerp hierheen (of tik om te
-        kiezen). Je krijgt meteen een prijsindicatie; je exacte vaste prijs volgt binnen 24 uur.
-        Tip: exporteer mét de artikellijst — dan is je indicatie het nauwkeurigst.
+        Plak de link naar je ontwerp: dan lezen we je complete artikellijst in en krijg je binnen
+        24 uur een exacte vaste prijs. Geen link bij de hand? Upload dan de PDF of foto&apos;s.
+      </p>
+
+      {/* Planner-link (aanbevolen) */}
+      <div className="mt-4">
+        <label htmlFor="planner-link" className="mb-1.5 block text-sm font-semibold text-ink">
+          Link naar je IKEA keukenplanner{" "}
+          <span className="font-medium text-accent">(aanbevolen)</span>
+        </label>
+        <div className="relative">
+          <Link2 size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <input
+            id="planner-link"
+            className={`${inputClass} pl-10`}
+            type="url"
+            inputMode="url"
+            autoComplete="off"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="done"
+            placeholder="https://kitchen.planner.ikea.com/…"
+            value={plannerTekst}
+            onChange={(e) => wijzigLink(e.target.value)}
+            onBlur={() => setLinkGeraakt(true)}
+            aria-invalid={linkGeraakt && linkOngeldig}
+            aria-describedby="planner-link-hulp"
+          />
+        </div>
+        {heeftLink && (
+          <p className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-trust">
+            <CheckCircle2 size={16} /> Ontwerp herkend
+          </p>
+        )}
+        {linkGeraakt && linkOngeldig && (
+          <p className="mt-1.5 text-sm font-medium text-accent">
+            Dit lijkt geen link naar een IKEA Keukenplanner-ontwerp. Kopieer de deellink opnieuw
+            (zie hieronder), of upload je PDF.
+          </p>
+        )}
+        <details id="planner-link-hulp" className="mt-2 text-sm text-ink-soft">
+          <summary className="cursor-pointer font-medium text-ink-soft hover:text-ink">
+            Hoe kopieer ik de link?
+          </summary>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>Open je ontwerp in de IKEA Keukenplanner en klik op <strong>Opslaan</strong>.</li>
+            <li>Kies <strong>Delen</strong> en daarna <strong>Link kopiëren</strong>.</li>
+            <li>Plak de link hierboven. Tekst eromheen (bijv. uit WhatsApp of mail) mag blijven staan.</li>
+          </ol>
+        </details>
+      </div>
+
+      <p className="mt-5 text-sm font-medium text-muted">
+        {heeftLink ? "Eventueel ook je PDF of foto’s meesturen:" : "Of upload je PDF of foto’s:"}
       </p>
 
       {/* Dropzone */}
@@ -136,7 +216,7 @@ export function TekeningUpload() {
           setSleep(false);
           voegToe(e.dataTransfer.files);
         }}
-        className={`mt-4 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors ${
+        className={`mt-2 flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
           sleep ? "border-accent bg-accent-soft" : "border-line-strong bg-paper hover:border-accent"
         }`}
       >
@@ -194,8 +274,8 @@ export function TekeningUpload() {
         </ul>
       )}
 
-      {/* Contactvelden — pas tonen zodra er minstens één bestand is gekozen */}
-      {files.length > 0 && (
+      {/* Contactvelden — pas tonen zodra er een geldige link of minstens één bestand is */}
+      {heeftInvoer && (
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <Field label="Naam">
             <input className={inputClass} value={naam} onChange={(e) => setNaam(e.target.value)} placeholder="Voor- en achternaam" autoComplete="name" />
@@ -221,16 +301,16 @@ export function TekeningUpload() {
         <p className="mt-4 rounded-xl bg-accent-soft px-4 py-3 text-sm font-medium text-accent">{fout}</p>
       )}
 
-      {files.length > 0 && (
+      {heeftInvoer && (
         <div className="mt-5">
           <ConsentCheckbox checked={consentVink} onChange={setConsentVink} className="mb-4" />
-          <Button onClick={verstuur} disabled={!contactGeldig || bezig} className="w-full sm:w-auto">
+          <Button onClick={verstuur} disabled={!contactGeldig || linkOngeldig || bezig} className="w-full sm:w-auto">
             {bezig ? (
               <>
                 <Loader2 size={18} className="animate-spin" /> Bezig met versturen…
               </>
             ) : (
-              <>Verstuur ontwerp &amp; bekijk je indicatie</>
+              <>{heeftLink ? "Verstuur ontwerp" : "Verstuur ontwerp & bekijk je indicatie"}</>
             )}
           </Button>
           {!contactGeldig && (

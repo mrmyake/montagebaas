@@ -1,11 +1,17 @@
 import { NextResponse, after } from "next/server";
-import { headers, cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
-import { attributieVoorInsertMetConsent } from "@/lib/attributie";
-import { consentVoorInsert } from "@/lib/consent";
 import { stuurNtfy } from "@/lib/ntfy";
-import { rateLimit } from "@/lib/rate-limit";
 import { verwerkTekening } from "@/lib/tekening-verwerker";
+import {
+  bestandenUit,
+  bewaarBestanden,
+  binnenLimiet,
+  honeypotGevuld,
+  insertAanvraag,
+  leesContact,
+  methodeVoorBestanden,
+  valideerBestanden,
+} from "@/lib/aanvraag-intake";
 
 /**
  * Upload-pad van /offerte: ontvangt een IKEA-tekening + minimale contactgegevens,
@@ -13,27 +19,16 @@ import { verwerkTekening } from "@/lib/tekening-verwerker";
  * de lead naar dezelfde aanvragen-tabel (tekening_geupload=true) en notificeert.
  *
  * Bewust een route handler i.p.v. server-action: server-actions hebben een kleine
- * body-limiet, hier komt een bestand binnen.
+ * body-limiet, hier komt een bestand binnen. De gedeelde intake (validatie,
+ * Storage, insert) staat in lib/aanvraag-intake.ts, ook gebruikt door de link-route.
  */
-
-const BUCKET = "offerte-tekeningen";
-const MAX_BYTES = 8 * 1024 * 1024; // 8 MB per bestand — moet matchen met de bucket-limiet
-const MAX_FILES = 8;
-const EXT_VOOR_TYPE: Record<string, string> = {
-  "application/pdf": "pdf",
-  "image/png": "png",
-  "image/jpeg": "jpg",
-};
 
 function fout(error: string, status: number) {
   return NextResponse.json({ ok: false, error }, { status });
 }
 
 export async function POST(req: Request) {
-  // Rate-limit per IP (best-effort) — zelfde bescherming als het formulier.
-  const ip =
-    (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "onbekend";
-  if (!rateLimit(`upload:${ip}`, 5, 60_000).allowed) {
+  if (!(await binnenLimiet("upload"))) {
     return fout("Je hebt net al een aanvraag verstuurd. Wacht even of bel ons.", 429);
   }
 
@@ -45,75 +40,46 @@ export async function POST(req: Request) {
   }
 
   // Honeypot
-  if ((form.get("website") as string | null)?.trim()) {
+  if (honeypotGevuld(form)) {
     return fout("Er ging iets mis. Probeer het opnieuw.", 400);
   }
 
-  const naam = ((form.get("naam") as string | null) ?? "").trim();
-  const email = ((form.get("email") as string | null) ?? "").trim();
-  const telefoon = ((form.get("telefoon") as string | null) ?? "").trim();
-  const files = form.getAll("file").filter((f): f is File => f instanceof File && f.size > 0);
+  const contact = leesContact(form);
+  const files = bestandenUit(form);
 
-  if (!naam || !telefoon || !/^\S+@\S+\.\S+$/.test(email)) {
+  if (!contact) {
     return fout("Vul je naam, telefoon en een geldig e-mailadres in.", 400);
   }
   if (files.length === 0) {
     return fout("Geen geldig bestand ontvangen.", 400);
   }
-  if (files.length > MAX_FILES) {
-    return fout(`Maximaal ${MAX_FILES} bestanden per keer.`, 400);
-  }
-  for (const f of files) {
-    if (!EXT_VOOR_TYPE[f.type]) return fout(`Alleen PDF, PNG of JPG (${f.name}).`, 400);
-    if (f.size > MAX_BYTES) return fout(`Bestand te groot, max 8 MB (${f.name}).`, 400);
-  }
+  const bestandFout = valideerBestanden(files);
+  if (bestandFout) return fout(bestandFout, 400);
 
   const db = supabaseAdmin();
 
   // 1. Alle bestanden naar Storage (buffer bewaren we meteen voor de e-mailbijlage,
   // zodat we ze niet opnieuw hoeven te downloaden uit Storage)
-  const paden: string[] = [];
-  const geuploadeBestanden: { naam: string; buffer: Buffer }[] = [];
-  for (const f of files) {
-    const ext = EXT_VOOR_TYPE[f.type];
-    const veiligeNaam = f.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80) || `tekening.${ext}`;
-    const p = `aanvragen/${crypto.randomUUID()}-${veiligeNaam}`;
-    const buffer = Buffer.from(await f.arrayBuffer());
-    const up = await db.storage.from(BUCKET).upload(p, buffer, { contentType: f.type, upsert: false });
-    if (up.error) {
-      console.error("[upload] Storage mislukt:", up.error);
-      return fout("Opslaan van je bestand(en) mislukte. Gebruik het formulier hieronder.", 500);
-    }
-    paden.push(p);
-    geuploadeBestanden.push({ naam: f.name, buffer });
+  const bewaard = await bewaarBestanden(db, files);
+  if (!bewaard) {
+    return fout("Opslaan van je bestand(en) mislukte. Gebruik het formulier hieronder.", 500);
   }
-  const tekeningPad = JSON.stringify(paden); // meerdere paden → JSON-array in tekening_pad
-  const bestandsnamen = files.map((f) => f.name).join(", ");
+  const { naam, email, telefoon } = contact;
 
-  // 2. Lead wegschrijven (zelfde tabel). Attributie komt uit onze eigen cookie,
-  // die de browser automatisch meestuurt, en telt alleen bij geaccepteerde
-  // banner — die keuze zit wél in de FormData.
-  const attributie = attributieVoorInsertMetConsent(await cookies(), form.get("consent"));
-  const { data, error } = await db
-    .from("aanvragen")
-    .insert({
-      ...attributie,
-      ...consentVoorInsert(form.get("consent"), form.get("consent_bron")),
-      naam,
-      telefoon,
-      email,
-      tekening_geupload: true,
-      tekening_pad: tekeningPad,
-      extras: [],
-      status: "tekening_verwerken", // /bedankt pollt hierop tot de indicatie klaar is
-    })
-    .select("id")
-    .single();
-  if (error || !data) {
-    console.error("[upload] Insert mislukt:", error);
+  // 2. Lead wegschrijven (zelfde tabel).
+  const id = await insertAanvraag(db, form, {
+    naam,
+    telefoon,
+    email,
+    tekening_geupload: true,
+    tekening_pad: bewaard.tekeningPad,
+    extras: [],
+    invoermethode: methodeVoorBestanden(files),
+    status: "tekening_verwerken", // /bedankt pollt hierop tot de indicatie klaar is
+  });
+  if (!id) {
     return fout("Opslaan mislukte. Gebruik het formulier hieronder.", 500);
   }
-  const id = data.id as string;
 
   // 3. Ntfy-push — instant mobiele melding, best-effort. De owner-mail (mét AI-resultaat
   // + bijlagen) volgt pas na schakel 2, zie hieronder.
@@ -125,7 +91,7 @@ export async function POST(req: Request) {
   after(() =>
     stuurNtfy({
       title: `Nieuwe aanvraag MET tekening: ${naam}`,
-      body: `${naam}\nTel: ${telefoon}\nEmail: ${email}\nBestanden (${files.length}): ${bestandsnamen}`,
+      body: `${naam}\nTel: ${telefoon}\nEmail: ${email}\nBestanden (${files.length}): ${bewaard.bestandsnamen}`,
       tags: "house,paperclip",
       priority: "high",
     })
@@ -136,7 +102,9 @@ export async function POST(req: Request) {
   // (mét indicatie + disclaimer) gaan dáárna pas uit.
   // Upload-pad heeft geen postcode → regio null → landelijke tarieven.
   after(() =>
-    verwerkTekening(id, tekeningPad, null, { naam, email, telefoon }, geuploadeBestanden)
+    verwerkTekening(id, bewaard.tekeningPad, null, { naam, email, telefoon }, bewaard.bestanden, {
+      methode: methodeVoorBestanden(files),
+    })
   );
 
   return NextResponse.json({ ok: true, id });
