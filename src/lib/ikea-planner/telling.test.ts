@@ -402,7 +402,7 @@ test("eigen apparaten zonder ASL-namen: terugval op de ART-regels", () => {
 // Eiland (opstelling)
 // ---------------------------------------------------------------------------
 
-const EILAND_WATER = (wat: string) => `Eiland met ${wat}: water, afvoer en stroom moeten vóór de montage in de vloer liggen.`;
+const EILAND_MET = (wat: string, aansluiting: string) => `Eiland met ${wat}: ${aansluiting} vóór de montage in de vloer liggen.`;
 const EILAND_DROOG = "Eiland/vrijstaand blok in het ontwerp.";
 const FRAME_ZONDER_EILAND = "Verankeringsframe voor kookeiland besteld, maar geen eiland in het ontwerp: te veel besteld?";
 const EILAND_ZONDER_FRAME = "Eiland zonder verankeringsframe: controleren of dat nodig is.";
@@ -431,7 +431,7 @@ test("eiland, ruggelings, met spoelbak + frame: alleen de water-aanname", () => 
     op(["Onderkast voor spoelbak", 2000, 1500, true], ["Onderkast met lades", 2000, 375])
   );
   assert.equal(t.eiland, 1);
-  assert.deepEqual(eilandAannames(t.aannames), [EILAND_WATER("spoelbak")]);
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_MET("spoelbak", "water en afvoer moeten")]);
 });
 
 test("eiland, vrijstaand (> 80 cm van elke muur), met spoelbak en kookplaat, zonder frame", () => {
@@ -444,7 +444,35 @@ test("eiland, vrijstaand (> 80 cm van elke muur), met spoelbak en kookplaat, zon
     op(["Onderkast voor spoelbak", 1600, 1500], ["Onderkast voor kookplaat", 2200, 1500])
   );
   assert.equal(t.eiland, 1);
-  assert.deepEqual(eilandAannames(t.aannames), [EILAND_WATER("spoelbak en kookplaat"), EILAND_ZONDER_FRAME]);
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_MET("spoelbak en kookplaat", "water, afvoer en stroom moeten"), EILAND_ZONDER_FRAME]);
+});
+
+test("eiland met alleen een kookplaat: stroom (Perilex)", () => {
+  const t = metOpstelling(
+    [{ omschrijving: "inductiekookplaat, zwart", positie: "Onderkast voor kookplaat" }, FRAME],
+    op(["Onderkast voor kookplaat", 2000, 1500, true])
+  );
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_MET("kookplaat", "stroom (Perilex) moet")]);
+});
+
+test("eiland met alleen een vaatwasser: water en afvoer", () => {
+  const t = metOpstelling(
+    [{ omschrijving: "inbouwvaatwasser, IKEA 500", positie: "Vaatwasser met 2 ladefronten" }, FRAME],
+    op(["Vaatwasser met 2 ladefronten", 2000, 1500, true])
+  );
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_MET("vaatwasser", "water en afvoer moeten")]);
+});
+
+test("eiland met vaatwasser en kookplaat: water, afvoer en stroom", () => {
+  const t = metOpstelling(
+    [
+      { omschrijving: "inbouw vaatwasser, IKEA 500", positie: "Vaatwasser met 2 ladefronten" },
+      { omschrijving: "inductiekookplaat, zwart", positie: "Onderkast voor kookplaat" },
+      FRAME,
+    ],
+    op(["Vaatwasser met 2 ladefronten", 1800, 1500, true], ["Onderkast voor kookplaat", 2400, 1500, true])
+  );
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_MET("vaatwasser en kookplaat", "water, afvoer en stroom moeten")]);
 });
 
 test("eiland zonder spoelbak/kookplaat (die staan tegen de muur): droog eiland", () => {
@@ -518,7 +546,7 @@ const spikeAanwezig = existsSync(new URL("raw/", SPIKE));
 test("spike 9C9EB523 (bevestigd eiland): vrijstaand blok met kookplaat", { skip: !spikeAanwezig && "spike-data niet lokaal" }, () => {
   const t = spikeOntwerp("9C9EB523")!;
   assert.equal(t.eiland, 1);
-  assert.deepEqual(eilandAannames(t.aannames), [EILAND_WATER("kookplaat")]);
+  assert.deepEqual(eilandAannames(t.aannames), [EILAND_MET("kookplaat", "stroom (Perilex) moet")]);
 });
 
 test("spike 62ED0CF3 (geen eiland, wel frame): te veel besteld?", { skip: !spikeAanwezig && "spike-data niet lokaal" }, () => {

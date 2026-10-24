@@ -88,6 +88,9 @@ type Apparaat = (typeof APPARAAT_POSITIES)[number]["apparaat"];
 const eigenApparaat = (apparaat: Apparaat) =>
   `Geen ${apparaat} in de lijst: eigen apparaat of nog niet besteld? Merk en type nodig voor nismaten.`;
 
+/** ["a", "b", "c"] → "a, b en c" */
+const opsomming = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} en ${xs.at(-1)}`);
+
 const STEEN = /porselein|keramiek|composiet|kwarts|steen(?!patroon)/i;
 const HOUT = /massief|fineer|eiken(?!patroon|effect)|walnoot|bamboe/i;
 
@@ -141,6 +144,7 @@ export function bomNaarTelling(
   // Niet 'ondergelijmde spoelbak': dat is de HACKBOL-/YTTERVÄGGA-dienst voor maatwerk, de spoelbak zelf staat apart.
   const isSpoelbak = (soort: string) => /^(inbouw|opbouw|onderbouw)?spoelbak/.test(soort);
   const isKookplaat = (soort: string) => /kookplaat/.test(soort) && !/recirculatie|scheiding/.test(soort);
+  const isVaatwasser = (soort: string) => /^inbouw ?vaatwasser|^vaatwasser/.test(soort);
   const spoelbakken = som((a) => isSpoelbak(a.soort));
   const kranen = som(soortMatch(/keukenmengkraan/));
   const kookplaten = som((a) => isKookplaat(a.soort));
@@ -201,7 +205,7 @@ export function bomNaarTelling(
     koppeling,
     spatwand_meter,
     spoelbak_kraan,
-    vaatwasser: som(soortMatch(/^inbouw ?vaatwasser|^vaatwasser/)),
+    vaatwasser: som((a) => isVaatwasser(a.soort)),
     inductie,
     gaskookplaat: som(soortMatch(/^gaskookplaat/)),
     afzuigkap: som(soortMatch(/^[a-z]*afzuigkap/)),
@@ -236,13 +240,22 @@ export function bomNaarTelling(
     if (frame) aannames.push("Verankeringsframe voor kookeiland in de lijst: eiland in het ontwerp, of te veel besteld? Controleren.");
   } else if (eiland) {
     const inEiland = pos.filter((p) => p.uuid && eilandUuids.has(p.uuid)).flatMap((p) => p.soorten);
-    const water = [
+    // Per aansluiting: spoelbak en vaatwasser → water en afvoer, kookplaat → stroom (Perilex).
+    const erin = [
       ...(inEiland.some(isSpoelbak) ? ["spoelbak"] : []),
+      ...(inEiland.some(isVaatwasser) ? ["vaatwasser"] : []),
       ...(inEiland.some(isKookplaat) ? ["kookplaat"] : []),
     ];
+    const nat = erin.includes("spoelbak") || erin.includes("vaatwasser");
+    const stroom = erin.includes("kookplaat");
+    const aansluiting = nat && stroom
+      ? "water, afvoer en stroom moeten"
+      : nat
+        ? "water en afvoer moeten"
+        : "stroom (Perilex) moet";
     aannames.push(
-      water.length
-        ? `Eiland met ${water.join(" en ")}: water, afvoer en stroom moeten vóór de montage in de vloer liggen.`
+      erin.length
+        ? `Eiland met ${opsomming(erin)}: ${aansluiting} vóór de montage in de vloer liggen.`
         : "Eiland/vrijstaand blok in het ontwerp."
     );
     if (!frame) aannames.push("Eiland zonder verankeringsframe: controleren of dat nodig is.");

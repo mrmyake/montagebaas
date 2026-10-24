@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -18,11 +19,13 @@ const sans = Inter({
   display: "swap",
 });
 
-const display = Space_Grotesk({
+// Lokaal gehost (variabel, latin; OFL, zie fonts/SpaceGrotesk-OFL.txt): de build
+// hangt zo niet af van Google Fonts. Bron: @fontsource-variable/space-grotesk 5.3.0.
+const display = localFont({
+  src: "./fonts/SpaceGrotesk-latin-wght.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
   display: "swap",
-  weight: ["500", "600", "700"],
+  weight: "300 700",
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
