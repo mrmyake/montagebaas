@@ -135,7 +135,7 @@ export function bomNaarTelling(
     koppeling,
     spatwand_meter,
     spoelbak_kraan,
-    vaatwasser: som(soortMatch(/^inbouwvaatwasser|^vaatwasser/)),
+    vaatwasser: som(soortMatch(/^inbouw ?vaatwasser|^vaatwasser/)),
     inductie,
     gaskookplaat: som(soortMatch(/^gaskookplaat/)),
     afzuigkap: som(soortMatch(/^[a-z]*afzuigkap/)),
