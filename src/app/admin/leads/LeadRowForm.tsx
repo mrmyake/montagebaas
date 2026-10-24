@@ -29,6 +29,7 @@ export function LeadRowForm({
   initieleStatus,
   initieelOfferteBedrag,
   initieelGefactureerdBedrag,
+  initieleWerkelijkeDagen,
   initieleRedenVerloren,
   initieleNotitie,
 }: {
@@ -36,6 +37,7 @@ export function LeadRowForm({
   initieleStatus: LeadStatus;
   initieelOfferteBedrag: number | null;
   initieelGefactureerdBedrag: number | null;
+  initieleWerkelijkeDagen: number | null;
   initieleRedenVerloren: string | null;
   initieleNotitie: string | null;
 }) {
@@ -152,6 +154,19 @@ export function LeadRowForm({
         disabled={!magFactuur}
         defaultValue={magFactuur ? (initieelGefactureerdBedrag ?? "") : ""}
         title={magFactuur ? undefined : "Alleen bij status Gewonnen of Uitgevoerd"}
+        className="w-32 rounded border border-[var(--color-line-strong)] px-2 py-1 text-sm disabled:cursor-not-allowed disabled:bg-[var(--color-paper)] disabled:text-[var(--color-muted)]"
+      />
+
+      <input
+        type="number"
+        step="0.5"
+        min="0.5"
+        max="30"
+        name="werkelijke_dagen"
+        placeholder="Dagen gewerkt"
+        disabled={!magFactuur}
+        defaultValue={initieleWerkelijkeDagen ?? ""}
+        title={magFactuur ? "Werkelijk gewerkte dagen, in halve dagen" : "Alleen te wijzigen bij status Gewonnen of Uitgevoerd"}
         className="w-32 rounded border border-[var(--color-line-strong)] px-2 py-1 text-sm disabled:cursor-not-allowed disabled:bg-[var(--color-paper)] disabled:text-[var(--color-muted)]"
       />
 
