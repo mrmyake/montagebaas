@@ -39,6 +39,11 @@ export interface Merk {
   /** groet: begin van vooringevulde WhatsApp-berichten ("Hoi Montagebaas"). */
   whatsapp: { nummer: string; groet: string; standaardBericht: string };
   email: string;
+  /**
+   * Reply-to van klantmails. Zonder waarde: LEAD_NOTIFY_TO, zoals bij Montagebaas.
+   * LEAD_NOTIFY_TO blijft de ontvanger van de meldingen aan Ilja.
+   */
+  replyTo?: string;
   /** Onderwerp van de bevestigingsmail aan de klant (formulierroute). */
   onderwerpBevestiging: string;
   /** Afzender als RESEND_FROM_EMAIL ontbreekt. Het domein moet in Resend geverifieerd zijn. */

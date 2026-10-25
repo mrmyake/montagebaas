@@ -1,6 +1,10 @@
+Resend: HTTP 200 
+Resend: HTTP 200 
+Resend: HTTP 200 
+Resend: HTTP 200 
 --- Van: De Keukenheld <noreply@dekeukenheld.nl>
 Aan: me@ilja.com
-Antwoord aan: me@ilja.com
+Antwoord aan: ilja@dekeukenheld.nl
 Onderwerp: Je aanvraag bij De Keukenheld
 
 Bedankt voor je aanvraag, Test!
@@ -29,7 +33,7 @@ Met vriendelijke groet, De Keukenheld
 
 --- Van: De Keukenheld <noreply@dekeukenheld.nl>
 Aan: me@ilja.com
-Antwoord aan: me@ilja.com
+Antwoord aan: ilja@dekeukenheld.nl
 Onderwerp: Je prijsindicatie voor je IKEA-keuken
 
 Plan ontvangen, Test!
@@ -43,7 +47,7 @@ Met vriendelijke groet, De Keukenheld
 
 --- Van: De Keukenheld <noreply@dekeukenheld.nl>
 Aan: me@ilja.com
-Antwoord aan: me@ilja.com
+Antwoord aan: ilja@dekeukenheld.nl
 Onderwerp: Ontwerp ontvangen — je vaste prijs volgt binnen 24 uur
 
 Ontwerp ontvangen, Test!
@@ -60,7 +64,7 @@ Met vriendelijke groet, De Keukenheld
 
 --- Van: De Keukenheld <noreply@dekeukenheld.nl>
 Aan: me@ilja.com
-Antwoord aan: me@ilja.com
+Antwoord aan: ilja@dekeukenheld.nl
 Onderwerp: Aanvraag ontvangen — nog één vraag over je ontwerp
 
 Ontwerp ontvangen, Test!
@@ -76,4 +80,4 @@ Met vriendelijke groet, De Keukenheld
 
 ✓ geen oude naam
 
-4 klantmails gerenderd voor merk keukenheld (niet verstuurd).
+4 klantmails gerenderd voor merk keukenheld en verstuurd.

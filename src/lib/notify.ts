@@ -121,12 +121,12 @@ export async function stuurLeadNotificatie(lead: LeadNotificatie): Promise<void>
 /**
  * Stuurt de KLANT een vriendelijke bevestiging van zijn offerteaanvraag.
  * Best-effort, identiek aan de owner-notificatie: faalt nooit hard.
- * reply_to wijst naar de eigenaar (LEAD_NOTIFY_TO) zodat klantreacties bij jou komen.
+ * reply_to wijst naar de eigenaar (merk.replyTo, anders LEAD_NOTIFY_TO) zodat klantreacties bij jou komen.
  */
 export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = afzender();
-  const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
+  const replyTo = huidigMerk().replyTo ?? process.env.LEAD_NOTIFY_TO ?? site.email;
 
   if (!apiKey || !from || !lead.email) {
     console.warn(
@@ -404,7 +404,7 @@ export async function stuurTekeningKlantBevestiging(klant: {
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = afzender();
-  const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
+  const replyTo = huidigMerk().replyTo ?? process.env.LEAD_NOTIFY_TO ?? site.email;
   if (!apiKey || !from || !klant.email) return;
 
   const voornaam = klant.naam.split(/\s+/)[0] || klant.naam;
@@ -716,7 +716,7 @@ export async function stuurLinkKlantBevestiging(klant: {
   prijs?: { min: number; max: number };
 }): Promise<void> {
   const from = afzender();
-  const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
+  const replyTo = huidigMerk().replyTo ?? process.env.LEAD_NOTIFY_TO ?? site.email;
   if (!process.env.RESEND_API_KEY || !from || !klant.email) return;
 
   const voornaam = esc(klant.naam.split(/\s+/)[0] || klant.naam);

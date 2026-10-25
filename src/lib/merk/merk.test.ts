@@ -21,6 +21,8 @@ test("keukenheld: domein, mail en afzender horen bij dekeukenheld.nl", () => {
   const k = MERKEN.keukenheld;
   assert.equal(k.url, `https://${k.domein}`);
   assert.match(k.email, /@dekeukenheld\.nl$/);
+  assert.equal(k.replyTo, "ilja@dekeukenheld.nl");
+  assert.equal(MERKEN.montagebaas.replyTo, undefined);
   assert.match(k.afzender, /^De Keukenheld <[^>]+@dekeukenheld\.nl>$/);
   assert.equal(k.kvk, MERKEN.montagebaas.kvk);
 });
