@@ -1,0 +1,10 @@
+✓ 0019 draait foutloos
+merk per waarde na backfill: [{"merk":"montagebaas","n":93}] van 93
+lead_overzicht: zelfde kolommen + merk achteraan: true
+✓ insert met productiecode (service_role) werkt; merk = montagebaas
+✓ insert met merk keukenheld werkt; merk = keukenheld
+✓ onbekend merk geweigerd door check: true
+✓ lead_overzicht: 3 rijen, laatste kolom: merk [{"merk":"montagebaas"},{"merk":"keukenheld"},{"merk":"montagebaas"}]
+✓ roi_per_maand: 3 rijen
+✓ ads_conversies_te_versturen leesbaar, 1 rij(en) in steekproef
+ROLLBACK: aanvragen 93 → 93 | merk bestaat nog: false
