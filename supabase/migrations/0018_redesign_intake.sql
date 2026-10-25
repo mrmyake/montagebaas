@@ -23,7 +23,9 @@ begin;
 -- ---------------------------------------------------------------------------
 
 alter table montagebaas.aanvragen
-  add column site_versie        text check (site_versie in ('v1-oud', 'v2-redesign')),
+  -- Default v1-oud: bestaande rijen en alles wat de huidige productiecode schrijft
+  -- (tot de merge) is van de oude site. De nieuwe code schrijft de versie expliciet.
+  add column site_versie        text not null default 'v1-oud' check (site_versie in ('v1-oud', 'v2-redesign')),
   add column pakket_gekozen     text check (pakket_gekozen in ('compleet', 'montageklaar')),
   add column demontage_gekozen  boolean,
   -- Exact wat de klant zag, incl. btw. Bij een vaste prijs zijn beide gelijk;
@@ -34,10 +36,6 @@ alter table montagebaas.aanvragen
     (prijs_getoond_laag is null) = (prijs_getoond_hoog is null)
     and (prijs_getoond_laag is null or prijs_getoond_laag <= prijs_getoond_hoog)
   );
-
--- Alles van vóór deze migratie kwam van de oude site. Geen default: de app
--- schrijft de versie expliciet (v2-redesign nieuw, v1-oud vanaf /offerte-oud).
-update montagebaas.aanvragen set site_versie = 'v1-oud' where site_versie is null;
 
 create index aanvragen_site_versie_idx on montagebaas.aanvragen (site_versie);
 
