@@ -1,5 +1,6 @@
 import { euro } from "@/lib/pricing";
 import { site, whatsappDefault, whatsappUrl } from "@/lib/site";
+import { huidigMerk } from "@/lib/merk";
 import type { Invoermethode, PlannerStatus } from "@/lib/db.types";
 import { PLANNER_FOUT_UITLEG } from "@/lib/ikea-planner/fouten";
 import { herinneringTekst, type KlusZonderDagen } from "@/lib/werkelijke-dagen";
@@ -11,9 +12,20 @@ import { supabaseAdmin } from "@/lib/supabase";
  * of de call faalt, wordt dit gelogd maar NOOIT gegooid — de lead is al opgeslagen en mag
  * niet verloren gaan (ntfy-push gaat sowieso door).
  *
- * Eigen Resend-account voor montagebaas; afzenderdomein montagebaas.com is geverifieerd.
+ * Eén gratis Resend-account per merkdomein. RESEND_API_KEY en RESEND_FROM_EMAIL horen
+ * bij elkaar en wisselen samen met MERK (docs/keukenheld/LIVEGANG.md).
  * reply_to = het e-mailadres van de lead, zodat je direct kunt antwoorden.
  */
+
+/** Afzender: RESEND_FROM_EMAIL, anders die van het merk. Waarschuwt als het domein niet bij het merk past. */
+function afzender(): string {
+  const merk = huidigMerk();
+  const from = process.env.RESEND_FROM_EMAIL || merk.afzender;
+  if (!from.toLowerCase().includes(`@${merk.domein}`)) {
+    console.warn(`[mail] Afzender ${from} hoort niet bij merk ${merk.id} (${merk.domein}); controleer RESEND_FROM_EMAIL.`);
+  }
+  return from;
+}
 
 interface LeadNotificatie {
   id: string;
@@ -35,7 +47,7 @@ interface LeadNotificatie {
 export async function stuurLeadNotificatie(lead: LeadNotificatie): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.LEAD_NOTIFY_TO;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
 
   if (!apiKey || !to || !from) {
     console.warn(
@@ -113,7 +125,7 @@ export async function stuurLeadNotificatie(lead: LeadNotificatie): Promise<void>
  */
 export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
   const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
 
   if (!apiKey || !from || !lead.email) {
@@ -199,7 +211,7 @@ export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void
         from,
         to: [lead.email],
         reply_to: replyTo,
-        subject: `Bedankt voor je aanvraag bij ${site.naam}`,
+        subject: huidigMerk().onderwerpBevestiging,
         html,
         text,
       }),
@@ -247,7 +259,7 @@ export async function stuurTekeningIndicatieNotificatie(
 ): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.LEAD_NOTIFY_TO;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
   if (!apiKey || !to || !from) {
     console.warn(`[lead] Geen indicatie-e-mail verstuurd; lead ${input.aanvraagId} staat wel in de database.`);
     return;
@@ -391,7 +403,7 @@ export async function stuurTekeningKlantBevestiging(klant: {
   aanvraagId?: string;
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
   const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
   if (!apiKey || !from || !klant.email) return;
 
@@ -400,7 +412,7 @@ export async function stuurTekeningKlantBevestiging(klant: {
   const v2 = await getoondOpV2(klant.aanvraagId);
   const p = v2 ? (v2.band ? { ...v2.band, ruw: false } : undefined) : klant.prijs;
   const artikellijstWa = whatsappUrl(
-    "Hoi Montagebaas, hier is de deellink of artikellijst van mijn IKEA-keukenontwerp."
+    `${site.whatsappGroet}, hier is de deellink of artikellijst van mijn IKEA-keukenontwerp.`
   );
 
   const disclaimer = v2
@@ -570,7 +582,7 @@ const KALIBRATIE_WAARSCHUWING = "Dagenmodel 2026-10, indicatie. Controleer altij
  */
 export async function stuurPlannerNotificatie(input: PlannerNotificatie): Promise<void> {
   const to = process.env.LEAD_NOTIFY_TO;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
   if (!process.env.RESEND_API_KEY || !to || !from) {
     console.warn(`[lead] Geen planner-e-mail verstuurd; lead ${input.aanvraagId} staat wel in de database.`);
     return;
@@ -703,13 +715,13 @@ export async function stuurLinkKlantBevestiging(klant: {
   plannerStatus: PlannerStatus;
   prijs?: { min: number; max: number };
 }): Promise<void> {
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
   const replyTo = process.env.LEAD_NOTIFY_TO ?? site.email;
   if (!process.env.RESEND_API_KEY || !from || !klant.email) return;
 
   const voornaam = esc(klant.naam.split(/\s+/)[0] || klant.naam);
   const s = klant.plannerStatus;
-  const pdfWa = whatsappUrl("Hoi Montagebaas, hier is de artikellijst (PDF) van mijn IKEA-keukenontwerp.");
+  const pdfWa = whatsappUrl(`${site.whatsappGroet}, hier is de artikellijst (PDF) van mijn IKEA-keukenontwerp.`);
 
   const inleiding =
     s === "ok"
@@ -792,7 +804,7 @@ export async function stuurPlannerMonitorAlarm(input: {
   details: Record<string, unknown>;
 }): Promise<void> {
   const to = process.env.PLANNER_MONITOR_TO || "ilja@montagebaas.com";
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
   if (!process.env.RESEND_API_KEY || !from) {
     console.error("[planner-monitor] Geen alarm-mail mogelijk (RESEND_API_KEY/RESEND_FROM_EMAIL ontbreekt):", input.problemen);
     return;
@@ -827,12 +839,12 @@ export async function stuurPlannerMonitorAlarm(input: {
  */
 export async function stuurWerkelijkeDagenHerinnering(klussen: KlusZonderDagen[]): Promise<boolean> {
   const to = process.env.LEAD_NOTIFY_TO;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const from = afzender();
   if (!process.env.RESEND_API_KEY || !to || !from) {
     console.error("[werkelijke-dagen] Geen herinnering verstuurd (RESEND_API_KEY, LEAD_NOTIFY_TO of RESEND_FROM_EMAIL ontbreekt).");
     return false;
   }
-  const { subject, text } = herinneringTekst(klussen, process.env.NEXT_PUBLIC_SITE_URL ?? site.url);
+  const { subject, text } = herinneringTekst(klussen, site.url);
   await verstuurViaResend(
     {
       from,

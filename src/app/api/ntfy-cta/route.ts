@@ -1,5 +1,6 @@
 import { NextResponse, after } from "next/server";
 import { stuurNtfy } from "@/lib/ntfy";
+import { huidigMerk } from "@/lib/merk";
 
 /**
  * Realtime push als bezoekers op bel-/WhatsApp-/e-mail-knoppen klikken — ook
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
     timeZone: "Europe/Amsterdam",
   });
   const where = location ? ` (${location})` : "";
-  const message = `${LABELS[type as CtaType]} op montagebaas.com${where} - ${time}`;
+  const message = `${LABELS[type as CtaType]} op ${huidigMerk().domein}${where} - ${time}`;
 
   // Via after(): de client stuurt dit met sendBeacon tijdens een page-unload en
   // wacht sowieso niet op het antwoord. Zo houdt een trage ntfy.sh de functie
