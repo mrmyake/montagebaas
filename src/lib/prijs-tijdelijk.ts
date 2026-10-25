@@ -28,6 +28,6 @@ export const PRIJS_TIJDELIJK = {
     werkblad_zagen: 350, // laminaat op standaardlengte, op locatie zagen
     apparaten: 0, // inbegrepen
     spoelbak: 0, // inbegrepen
-    leiding: 125, // lichte leidingaanpassing (mockup; stond niet in de beslissing van 25-10)
+    // Lichte leidingaanpassing: geen bedrag. Ilja prijst aan- en afvoer alleen na een opname ter plekke.
   },
 } as const;

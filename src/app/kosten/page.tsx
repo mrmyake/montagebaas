@@ -142,7 +142,7 @@ export default function KostenPage() {
               aansluiten van apparaten, spoelbak en kraan zit er al in. Daarbovenop komen alleen de
               extra&apos;s die je kiest: je oude keuken eruit ({b.demontage}, inclusief container),
               een laminaat werkblad op maat zagen ({b.werkbladZagen}) of een lichte
-              leidingaanpassing.
+              leidingaanpassing. Die laatste prijzen we pas na een opname ter plekke.
             </p>
             <p>
               Wat <strong>niet</strong> standaard is inbegrepen, is groter leidingwerk, elektra-
