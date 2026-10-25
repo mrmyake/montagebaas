@@ -49,7 +49,8 @@ export function KeuzeKaart({
 }) {
   return (
     <button type="button" aria-pressed={aan} onClick={onKies} className={`${kaart(aan)} flex items-start gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5`}>
-      <span className={compact ? "hidden sm:block" : ""}>
+      {/* Mobiele mockup: kaarten zonder bolletje */}
+      <span className="hidden flex-none sm:block">
         <Rondje aan={aan} />
       </span>
       <span className="min-w-0">
