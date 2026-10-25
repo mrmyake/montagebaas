@@ -81,7 +81,7 @@ export interface Tarieven {
 }
 
 export interface IndicatieBand {
-  kasten: string; // "<8" | "8-15" | "15+"
+  kasten: string; // "<8" | "8-14" | "15+"
   laag: number; // incl. btw
   hoog: number;
   laag_dagen: number;

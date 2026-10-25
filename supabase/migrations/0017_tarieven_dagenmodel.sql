@@ -12,7 +12,9 @@
 -- inbegrepen: wat in de pakketprijs zit zonder eigen minuten (voor de site-teksten).
 -- indicatiebanden: Compleet-band per keukengrootte (onder- + bovenkasten) voor de
 -- vragenroute zonder telling, afgeleid door het model op de 36 gelezen ontwerpen
--- uit de spike te draaien (zie de PR-beschrijving). Afmonteren en losse klussen
+-- uit de spike te draaien (zie de PR-beschrijving). Klein begint op het minimum
+-- (2,5 dag) in plaats van de modeluitkomst (3 dagen): liever laag dan hoog.
+-- Grenzen zonder overlap: klein <8, gemiddeld 8–14, groot 15+. Afmonteren en losse klussen
 -- hebben geen band: die vervallen in de nieuwe intake.
 --
 -- PAS TOEPASSEN NA DE DEPLOY van de code die basis.vaste_minuten kent: oude code
@@ -52,8 +54,8 @@ values (
     },
     "inbegrepen": ["apparaten", "spoelbak_kraan"],
     "indicatiebanden": {
-      "klein":     { "kasten": "<8",   "laag": 2095, "hoog": 2475, "laag_dagen": 3, "hoog_dagen": 3.5 },
-      "gemiddeld": { "kasten": "8-15", "laag": 2095, "hoog": 2775, "laag_dagen": 3, "hoog_dagen": 4 },
+      "klein":     { "kasten": "<8",   "laag": 1775, "hoog": 2475, "laag_dagen": 2.5, "hoog_dagen": 3.5 },
+      "gemiddeld": { "kasten": "8-14", "laag": 2095, "hoog": 2775, "laag_dagen": 3, "hoog_dagen": 4 },
       "groot":     { "kasten": "15+",  "laag": 2775, "hoog": 3475, "laag_dagen": 4, "hoog_dagen": 5 }
     }
   }'::jsonb
