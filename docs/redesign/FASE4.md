@@ -34,4 +34,18 @@ Buiten productie laadt gtag.js niet; events komen in `window.dataLayer`. Per rou
 
 ## Lighthouse
 
-`lighthouse-mobiel.report.html` (lokaal, productiebuild, vóór de tarieven-ombouw): performance 95, accessibility 100, best practices 100, SEO 100.
+`lighthouse-mobiel.report.html` (lokaal, productiebuild mét de tarievenrij Dagenmodel 2026-10): performance 96, accessibility 100, best practices 100, SEO 100. LCP 2,8 s, TBT 10 ms, CLS 0,023.
+
+## Mails op de preview
+
+Op Preview staan `RESEND_API_KEY`, `RESEND_FROM_EMAIL` en `ANTHROPIC_API_KEY` niet (alleen Production). Op de preview gaan er dus geen mails uit (de mailfuncties stoppen stil) en draait de PDF-lezing niet (daarom staat de PDF-testlead op controle_tekening). ntfy werkt wel (NTFY_TOPIC staat op Preview).
+
+De klantmail van de PDF-route is lokaal verstuurd tegen de testlead (`node scripts/verstuur-pdf-klantmail.mjs 808b9bc5-…`, Resend HTTP 200):
+
+```
+Onderwerp: Je prijsindicatie voor je IKEA-keuken
+Plan ontvangen, Test!
+Je indicatie: € 1.075 – € 1.775
+Dit is de indicatie die je op de site zag. Je exacte vaste prijs maken we op basis van je ontwerp.
+We nemen binnen 24 uur contact met je op voor je exacte vaste prijs op maat.
+```
