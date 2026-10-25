@@ -71,6 +71,21 @@ export interface Tarieven {
     prijs_eindigt_op?: number[]; // incl. btw naar boven afronden op een bedrag dat hierop eindigt
   };
   minuten: Record<string, { tijd: number; asm: number }>;
+  // Losse posten incl. btw, buiten de dagen om (dagenmodel).
+  toeslagen?: { sloop_incl?: number; werkblad_zagen_incl?: number };
+  // Wat in de pakketprijs zit zonder eigen minuten (voor de site-teksten).
+  inbegrepen?: string[];
+  // Prijsband Compleet per keukengrootte (onder- + bovenkasten), voor de vragenroute
+  // zonder telling. Afgeleid uit het dagenmodel.
+  indicatiebanden?: Record<"klein" | "gemiddeld" | "groot", IndicatieBand>;
+}
+
+export interface IndicatieBand {
+  kasten: string; // "<8" | "8-15" | "15+"
+  laag: number; // incl. btw
+  hoog: number;
+  laag_dagen: number;
+  hoog_dagen: number;
 }
 
 export interface PakketPrijs {
@@ -86,6 +101,8 @@ export interface PrijsResultaat {
   compleet: PakketPrijs;
   montageklaar: PakketPrijs;
   besparing_incl: number;
+  // Losse posten buiten de pakketprijs (bv. sloop), incl. btw. Alleen bij het dagenmodel.
+  toeslagen: { naam: string; incl: number }[];
   vertrouwen: KeukenTelling["vertrouwen"];
   aannames: string[];
 }
@@ -183,12 +200,14 @@ function berekenDagenmodel(t: KeukenTelling, tar: Tarieven): PrijsResultaat {
   };
   const compleet = pakket(dagenCompleet);
   const montageklaar = pakket(dagenCompleet - verschil);
+  const sloop = tar.toeslagen?.sloop_incl;
   return {
     totaal_minuten: totaal,
     assembly_minuten: verschil * minPerDag,
     compleet,
     montageklaar,
     besparing_incl: naarCenten(compleet.incl - montageklaar.incl),
+    toeslagen: t.sloop > 0 && sloop ? [{ naam: "sloop oude keuken", incl: sloop }] : [],
     vertrouwen: t.vertrouwen,
     aannames: t.aannames,
   };
@@ -219,6 +238,7 @@ export function berekenPrijsUitTelling(t: KeukenTelling, tar: Tarieven): PrijsRe
     compleet,
     montageklaar,
     besparing_incl: naarCenten(compleet.incl - montageklaar.incl),
+    toeslagen: [],
     vertrouwen: t.vertrouwen,
     aannames: t.aannames,
   };

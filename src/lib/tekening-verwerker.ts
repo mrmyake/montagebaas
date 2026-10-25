@@ -96,6 +96,11 @@ export async function verwerkTekening(
 
       const { id: tarievenId, tarieven } = await laadTarieven(regio);
       const prijs = berekenPrijsUitTelling(telling, tarieven);
+      // Losse posten (bv. sloop) staan niet in de pakketprijs; wel in de owner-notificatie.
+      const aannames = [
+        ...telling.aannames,
+        ...prijs.toeslagen.map((t) => `Toeslag ${t.naam}: ${euro(t.incl)}, niet in de prijs hierboven`),
+      ];
 
       const min = hoog
         ? Math.round(prijs.montageklaar.incl)
@@ -125,7 +130,7 @@ export async function verwerkTekening(
           title: hoog
             ? `Tekening: prijs berekend (hoog vertrouwen)`
             : `Tekening: indicatie (vertrouwen ${telling.vertrouwen})`,
-          body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${telling.aannames.join("\n- ")}\n${hoog ? "Controleer en stuur de exacte offerte." : "→ Klant is per mail gevraagd de IKEA-artikellijst te sturen voor een exacte prijs."}`,
+          body: `Lead ${aanvraagId}\nIndicatie: ${euro(min)} – ${euro(max)}\nVertrouwen: ${telling.vertrouwen}\nAannames:\n- ${aannames.join("\n- ")}\n${hoog ? "Controleer en stuur de exacte offerte." : "→ Klant is per mail gevraagd de IKEA-artikellijst te sturen voor een exacte prijs."}`,
           tags: hoog ? "house,heavy_check_mark" : "house,warning",
           priority: "high",
         }),
@@ -142,7 +147,7 @@ export async function verwerkTekening(
           min,
           max,
           vertrouwen: telling.vertrouwen,
-          aannames: telling.aannames,
+          aannames,
         }),
       ]);
     }

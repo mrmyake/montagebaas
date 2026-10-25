@@ -6,8 +6,14 @@
 --   Compleet    = +½ dag, naar boven op een halve dag, max. tot de volgende hele dag, min. 2,5
 --   Montageklaar = Compleet − 1 dag
 --   prijs       = (dagen × 560 + 45) × 1,21, naar boven op een bedrag eindigend op 25/75/95
--- Velden zonder minuten (apparaten, werkblad, eiland, binneninrichting, …) wegen 0;
--- toeslagen (laminaat op locatie zagen, hout) blijven los.
+-- Velden zonder minuten (apparaten, werkblad, eiland, binneninrichting, …) wegen 0.
+-- Losse posten (toeslagen, incl. btw): sloop oude keuken €995 (incl. container),
+-- laminaat op locatie zagen €350. Hout blijft maatwerk (€400–525, handmatig).
+-- inbegrepen: wat in de pakketprijs zit zonder eigen minuten (voor de site-teksten).
+-- indicatiebanden: Compleet-band per keukengrootte (onder- + bovenkasten) voor de
+-- vragenroute zonder telling, afgeleid door het model op de 36 gelezen ontwerpen
+-- uit de spike te draaien (zie de PR-beschrijving). Afmonteren en losse klussen
+-- hebben geen band: die vervallen in de nieuwe intake.
 --
 -- PAS TOEPASSEN NA DE DEPLOY van de code die basis.vaste_minuten kent: oude code
 -- zou van deze rij alleen de kastminuten zien, zonder vaste basis.
@@ -39,6 +45,16 @@ values (
       "bovenkasten":    { "tijd": 37.5, "asm": 0 },
       "hoge_kasten":    { "tijd": 62.5, "asm": 0 },
       "lade_elementen": { "tijd": 15,   "asm": 0 }
+    },
+    "toeslagen": {
+      "sloop_incl": 995,
+      "werkblad_zagen_incl": 350
+    },
+    "inbegrepen": ["apparaten", "spoelbak_kraan"],
+    "indicatiebanden": {
+      "klein":     { "kasten": "<8",   "laag": 2095, "hoog": 2475, "laag_dagen": 3, "hoog_dagen": 3.5 },
+      "gemiddeld": { "kasten": "8-15", "laag": 2095, "hoog": 2775, "laag_dagen": 3, "hoog_dagen": 4 },
+      "groot":     { "kasten": "15+",  "laag": 2775, "hoog": 3475, "laag_dagen": 4, "hoog_dagen": 5 }
     }
   }'::jsonb
 );

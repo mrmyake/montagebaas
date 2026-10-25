@@ -23,8 +23,6 @@ export type WerkbladSoort =
   | "hout" // massief hout/fineer: toeslag €400–525
   | "overig";
 
-/** prijs.md: laminaat dat op locatie gezaagd moet worden = halve dag, ongeveer €350. */
-export const TOESLAG_LAMINAAT_OP_LOCATIE = 350;
 
 export interface PlannerTelling {
   telling: KeukenTelling;
@@ -164,7 +162,8 @@ export function bomNaarTelling(
     uitsparing_spoelbak = 0;
     uitsparing_kookplaat = 0;
   } else if (werkblad === "laminaat_op_locatie") {
-    aannames.push(`Laminaat werkblad op standaardlengte: op locatie zagen, toeslag halve dag (~€${TOESLAG_LAMINAAT_OP_LOCATIE}) zit NIET in de berekende prijs`);
+    // Het bedrag staat in de tarieven (toeslagen.werkblad_zagen_incl); de notificatie telt het erbij.
+    aannames.push("Laminaat werkblad op standaardlengte: op locatie zagen, toeslag zit NIET in de berekende prijs");
   } else if (werkblad === "hout") {
     aannames.push("Houten werkblad (massief/fineer): toeslag €400–525 afhankelijk van complexiteit zit NIET in de berekende prijs");
   } else if (werkblad === "overig") {

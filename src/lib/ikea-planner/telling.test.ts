@@ -173,7 +173,7 @@ test("laminaat op standaardlengte + apparatuur: alles geteld, toeslag als aannam
   assert.equal(t.koelkast_vriezer, 1);
   assert.equal(t.afzuigkap, 1);
   assert.equal(t.vertrouwen, "hoog");
-  assert.ok(t.aannames.some((a) => /op locatie zagen/.test(a) && /350/.test(a)));
+  assert.ok(t.aannames.some((a) => /op locatie zagen, toeslag zit NIET in de berekende prijs/.test(a))); // bedrag staat in de tarieven
   assert.ok(!t.aannames.some((a) => /ophangrail|poot/i.test(a)));
   assert.equal(valideerTelling(t).ok, true);
 });
