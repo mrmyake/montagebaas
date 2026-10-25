@@ -66,7 +66,18 @@ export interface AanvraagRow {
   // backfill niet raakte; planner_status alleen gevuld bij invoermethode 'link'.
   invoermethode: Invoermethode | null;
   planner_status: PlannerStatus | null;
+  // Redesign-intake (0018). site_versie: v1-oud voor alles van vóór 0018 en van
+  // /offerte-oud. prijs_getoond_*: exact wat de klant zag (incl. btw), beide gelijk
+  // bij een vaste prijs, beide null als er geen bedrag getoond is.
+  site_versie: SiteVersie | null;
+  pakket_gekozen: Pakket | null;
+  demontage_gekozen: boolean | null;
+  prijs_getoond_laag: number | null;
+  prijs_getoond_hoog: number | null;
 }
+
+export type SiteVersie = "v1-oud" | "v2-redesign";
+export type Pakket = "compleet" | "montageklaar";
 
 export type Invoermethode = "formulier" | "link" | "pdf" | "foto";
 export type PlannerStatus =
@@ -78,8 +89,11 @@ export type PlannerStatus =
   | "onverwachte_structuur";
 
 // Spiegelt montagebaas.planner_snapshots (0013). Onveranderlijk: alleen insert.
+// aanvraag_id is null bij een lezing vóór het verzenden (/api/ontwerp-lezen, 0018);
+// de link-route koppelt hem dan eenmalig via lees_token.
 export interface PlannerSnapshotInsert {
-  aanvraag_id: string;
+  aanvraag_id: string | null;
+  lees_token?: string | null;
   planner_url: string;
   ontwerp_uuid: string;
   status: PlannerStatus;
@@ -177,6 +191,11 @@ export interface LeadOverzichtRow {
   invoermethode: Invoermethode | null; // sinds 0013
   planner_status: PlannerStatus | null; // sinds 0013
   werkelijke_dagen: number | null; // sinds 0016
+  site_versie: SiteVersie | null; // sinds 0018
+  pakket_gekozen: Pakket | null; // sinds 0018
+  demontage_gekozen: boolean | null; // sinds 0018
+  prijs_getoond_laag: number | null; // sinds 0018
+  prijs_getoond_hoog: number | null; // sinds 0018
 }
 
 // Spiegelt montagebaas.roi_per_maand (0005_lead_status.sql).
