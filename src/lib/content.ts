@@ -1,6 +1,5 @@
-import { kostenKaarten, tekstBedragen } from "@/lib/prijs-weergave";
+import { kostenKaarten, tekstBedragen, type Prijsbron } from "@/lib/prijs-weergave";
 
-const bedragen = tekstBedragen();
 
 /** De drie pijlers — "waarom Montagebaas". */
 export const pijlers = [
@@ -46,8 +45,9 @@ export const stappen = [
 ] as const;
 
 /** Prijsscenario's voor de homepage-teaser. Bedragen komen uit de prijsadapter, nooit letterlijk. */
-const kaarten = kostenKaarten();
-export const prijsScenarios: { label: string; omschrijving: string; band: string }[] = [
+export function prijsScenarios(bron: Prijsbron): { label: string; omschrijving: string; band: string }[] {
+  const kaarten = kostenKaarten(bron);
+  return [
   {
     label: "Kleine keuken",
     omschrijving: "Tot 8 kasten, rechte opstelling. Apparaten, spoelbak en kraan aansluiten inbegrepen.",
@@ -55,7 +55,7 @@ export const prijsScenarios: { label: string; omschrijving: string; band: string
   },
   {
     label: "Gemiddelde keuken",
-    omschrijving: "8 tot 15 kasten, L- of U-vorm. Apparaten, spoelbak en kraan aansluiten inbegrepen.",
+    omschrijving: "8 tot 14 kasten, L- of U-vorm. Apparaten, spoelbak en kraan aansluiten inbegrepen.",
     band: kaarten[1].band,
   },
   {
@@ -63,10 +63,13 @@ export const prijsScenarios: { label: string; omschrijving: string; band: string
     omschrijving: "15 kasten of meer, met kookeiland. Apparaten, spoelbak en kraan aansluiten inbegrepen.",
     band: kaarten[2].band,
   },
-];
+  ];
+}
 
 /** FAQ — gedeeld door homepage-teaser en /veelgestelde-vragen (met FAQPage-schema). */
-export const faqItems = [
+export function faqItems(bron: Prijsbron) {
+  const bedragen = tekstBedragen(bron);
+  return [
   {
     vraag: "Wat kost het om een IKEA-keuken te laten plaatsen?",
     antwoord:
@@ -105,11 +108,12 @@ export const faqItems = [
   {
     vraag: "Hoelang duurt het plaatsen van een keuken?",
     antwoord:
-      "De meeste keukens plaatsen we in één tot twee werkdagen. Grotere keukens met kookeiland of extra werk kunnen iets langer duren. In je offerte staat een inschatting.",
+      `Een complete montage duurt meestal ${bedragen.dagen} werkdagen, afhankelijk van het aantal kasten. Met Montageklaar is het een dag korter. In je offerte staat hoeveel dagen we voor jouw keuken rekenen.`,
   },
   {
     vraag: "Wie voert de montage uit?",
     antwoord:
       "Ilja Goossens, de eigenaar van Montagebaas. Montagebaas is een eenmanszaak: Ilja maakt je offerte, plaatst je keuken zelf en is je aanspreekpunt van offerte tot oplevering.",
   },
-] as const;
+  ] as const;
+}

@@ -3,6 +3,9 @@ import { HomeV2 } from "@/components/v2/HomeV2";
 import { OudeOffertePagina } from "@/app/offerte/OudeOffertePagina";
 import { siteVersie } from "@/lib/site-versie";
 
+// Bedragen uit de actieve tarievenrij; elk uur opnieuw opgehaald.
+export const revalidate = 3600;
+
 export function generateMetadata(): Metadata {
   return {
     title: "Bereken je prijs — IKEA-keuken laten plaatsen",

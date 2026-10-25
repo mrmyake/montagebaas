@@ -3,7 +3,7 @@
  * via prijs-weergave.ts, alle keuzes via velden.ts.
  */
 import {
-  demontageBedrag,
+  type Prijsbron,
   euro,
   linkGetoond,
   ontwerpBand,
@@ -24,6 +24,7 @@ import { GROOTTE_OPTIES, KLUS_OPTIES, OPSTELLING_OPTIES, PAKKET_OPTIES, PERIODE_
 export type Route = "link" | "pdf" | "vragen";
 
 export interface BonInvoer {
+  bron: Prijsbron;
   route: Route;
   stap: number;
   link: { bon: BonRegel[]; prijzen: LinkPrijzen | null } | null;
@@ -76,7 +77,7 @@ export function bouwBon(inv: BonInvoer): Bon {
       ...inv.link.bon,
       { label: pakketNaam, waarde: p ? kort(euro(p[inv.pakket])) : "prijs volgt" },
       ...(p && p.werkbladZagen ? [{ label: "Werkblad op maat zagen", waarde: `+${kort(euro(p.werkbladZagen))}` }] : []),
-      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: p ? `+${kort(euro(demontageBedrag()))}` : "gekozen" }] : []),
+      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: p ? `+${kort(euro(inv.bron.demontage))}` : "gekozen" }] : []),
       ...planning(inv, 4),
     ];
     const ander = linkGetoond(p, anderPakket(inv.pakket), inv.demontage);
@@ -96,14 +97,14 @@ export function bouwBon(inv: BonInvoer): Bon {
   if (inv.route === "pdf") {
     if (inv.stap === 1) return leeg("Plak je link of upload je ontwerp. Dan rekenen we je bon uit.", "na een paar korte vragen");
     if (!inv.grootte) return leeg("Kies hoe groot je keuken is. Dan rekenen we je bon uit.", "kies je keukengrootte");
-    const getoond = ontwerpBand(inv.grootte, inv.pakket, inv.demontage);
-    const ander = ontwerpBand(inv.grootte, anderPakket(inv.pakket), inv.demontage);
+    const getoond = ontwerpBand(inv.bron, inv.grootte, inv.pakket, inv.demontage);
+    const ander = ontwerpBand(inv.bron, inv.grootte, anderPakket(inv.pakket), inv.demontage);
     const g = GROOTTE_OPTIES.find((o) => o.value === inv.grootte)!;
     const regels: BonRegel[] = [
       { label: "Ontwerp", waarde: inv.aantalBestanden === 1 ? "1 bestand" : `${inv.aantalBestanden} bestanden` },
       { label: "Keuken", waarde: [g.kort, inv.opstelling ? label(OPSTELLING_OPTIES, inv.opstelling).toLowerCase() : null].filter(Boolean).join(", ") },
-      { label: pakketNaam, waarde: kort(toonBedrag(ontwerpBand(inv.grootte, inv.pakket, false))).replace(" – € ", "–") },
-      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: `+${kort(euro(demontageBedrag()))}` }] : []),
+      { label: pakketNaam, waarde: kort(toonBedrag(ontwerpBand(inv.bron, inv.grootte, inv.pakket, false))).replace(" – € ", "–") },
+      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: `+${kort(euro(inv.bron.demontage))}` }] : []),
       ...planning(inv, 4),
     ];
     return {
@@ -121,7 +122,7 @@ export function bouwBon(inv: BonInvoer): Bon {
 
   // Vragenroute
   if (!inv.grootte) return leeg("Kies je klus en je keuken. Dan rekenen we je bon uit.", "kies je keuken");
-  const { getoond, regels: extraRegels } = vragenIndicatie({ klus: inv.klus, grootte: inv.grootte, extras: inv.extras });
+  const { getoond, regels: extraRegels } = vragenIndicatie(inv.bron, { klus: inv.klus, grootte: inv.grootte, extras: inv.extras });
   const klus = KLUS_OPTIES.find((o) => o.value === inv.klus)!;
   const g = GROOTTE_OPTIES.find((o) => o.value === inv.grootte)!;
   const basisLabel =
@@ -130,13 +131,14 @@ export function bouwBon(inv: BonInvoer): Bon {
       : [klus.kort, g.kort, inv.opstelling ? label(OPSTELLING_OPTIES, inv.opstelling).toLowerCase() : null].filter(Boolean).join(", ");
   return {
     leeg: null,
-    regels: [{ label: basisLabel, waarde: vragenBasisWaarde(inv.klus, inv.grootte) }, ...extraRegels, ...planning(inv, 4)],
+    regels: [{ label: basisLabel, waarde: vragenBasisWaarde(inv.bron, inv.klus, inv.grootte) }, ...extraRegels, ...planning(inv, 4)],
     prijsLabel: "Indicatie",
-    prijsTekst: toonBedrag(getoond),
+    // Afmonteren en losse klussen hebben geen band: prijs na overleg.
+    prijsTekst: getoond ? toonBedrag(getoond) : "Volgt binnen 24 uur",
     altTekst: null,
-    balkLabel: "Indicatie, incl. btw",
-    balkPrijs: toonBedrag(getoond),
-    gedempt: false,
+    balkLabel: getoond ? "Indicatie, incl. btw" : "Jouw prijs",
+    balkPrijs: getoond ? toonBedrag(getoond) : "volgt binnen 24 uur",
+    gedempt: !getoond,
     getoond,
   };
 }

@@ -10,7 +10,8 @@ import { rateLimit } from "@/lib/rate-limit";
 import { attributieVoorInsertMetConsent } from "@/lib/attributie";
 import { consentVoorInsert, type ConsentBron, type ConsentState } from "@/lib/consent";
 import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
-import { EXTRA_OPTIES, naarKolommen, toonBedrag, vragenIndicatie, type ExtraKey } from "@/lib/prijs-weergave";
+import { extraOpties, naarKolommen, toonBedrag, vragenIndicatie, type ExtraKey } from "@/lib/prijs-weergave";
+import { laadPrijsbron } from "@/lib/prijs-bron";
 import {
   isGeldigeEmail,
   isGeldigeNaam,
@@ -78,10 +79,16 @@ export async function verstuurVragenAanvraag(p: VragenPayload): Promise<VragenRe
   }
   const periode = leesPeriode(p.periode) ?? "weet_ik_nog_niet";
 
-  const extras = Object.fromEntries(EXTRA_OPTIES.map((e) => [e.key, p.extras?.[e.key] === true])) as Record<ExtraKey, boolean>;
-  const { getoond } = vragenIndicatie({ klus, grootte, extras });
+  // Mislukt het laden van de tarieven, dan zonder getoonde prijs: de lead gaat voor.
+  const bron = await laadPrijsbron().catch((e) => {
+    console.error("[intake] tarieven laden mislukt:", e);
+    return null;
+  });
+  const opties = bron ? extraOpties(bron) : [];
+  const extras = Object.fromEntries(opties.map((e) => [e.key, p.extras?.[e.key] === true])) as Record<ExtraKey, boolean>;
+  const getoond = bron ? vragenIndicatie(bron, { klus, grootte, extras }).getoond : null;
   const kolommen = naarKolommen(getoond);
-  const extrasLijst = EXTRA_OPTIES.filter((e) => extras[e.key]).map((e) => e.label);
+  const extrasLijst = opties.filter((e) => extras[e.key]).map((e) => e.label);
   const postcode = p.postcode.trim().toUpperCase();
   const regio = regioUitPostcode(postcode);
   const toelichting = p.toelichting?.trim().slice(0, 2000) || null;
@@ -135,7 +142,7 @@ export async function verstuurVragenAanvraag(p: VragenPayload): Promise<VragenRe
         `Grootte: ${grootte} · ${opstelling}`,
         `Extra's: ${extrasLijst.length ? extrasLijst.join(", ") : "geen"}`,
         `Periode: ${periodeLabel(periode)}`,
-        `Getoond: ${toonBedrag(getoond)} (nieuwe site)`,
+        `Getoond: ${getoond ? toonBedrag(getoond) : "geen bedrag (prijs volgt)"} (nieuwe site)`,
         "",
         toelichting || "Geen toelichting",
       ].join("\n"),

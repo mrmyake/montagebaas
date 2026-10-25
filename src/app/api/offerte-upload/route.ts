@@ -14,7 +14,8 @@ import {
 } from "@/lib/aanvraag-intake";
 import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
 import { leesIntakeVelden } from "@/lib/intake/server";
-import { naarKolommen, ontwerpBand } from "@/lib/prijs-weergave";
+import { naarKolommen, ontwerpBand, type Grootte } from "@/lib/prijs-weergave";
+import { laadPrijsbron } from "@/lib/prijs-bron";
 
 /**
  * Upload-pad van /offerte: ontvangt een IKEA-tekening + minimale contactgegevens,
@@ -77,9 +78,11 @@ export async function POST(req: Request) {
 
   // 2. Lead wegschrijven (zelfde tabel).
   const intake = leesIntakeVelden(form);
+  // Mislukt het laden van de tarieven, dan zonder getoonde prijs: de lead gaat voor.
+  const bron = intake.aantal_kasten_range && intake.pakket_gekozen ? await laadPrijsbron().catch(() => null) : null;
   const band =
-    intake.aantal_kasten_range && intake.pakket_gekozen
-      ? ontwerpBand(intake.aantal_kasten_range as "<8" | "8-15" | "15+", intake.pakket_gekozen, intake.demontage_gekozen === true)
+    bron && intake.aantal_kasten_range && intake.pakket_gekozen
+      ? ontwerpBand(bron, intake.aantal_kasten_range as Grootte, intake.pakket_gekozen, intake.demontage_gekozen === true)
       : null;
   const id = await insertAanvraag(db, form, {
     ...intake,

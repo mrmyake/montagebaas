@@ -24,8 +24,7 @@ import {
   type Periode,
 } from "@/lib/intake/velden";
 import {
-  EXTRA_OPTIES,
-  demontageBedrag,
+  extraOpties,
   euro,
   extraLabel,
   ontwerpBand,
@@ -35,6 +34,7 @@ import {
   type LinkPrijzen,
   type Opstelling,
   type Pakket,
+  type Prijsbron,
   type TypeKlus,
 } from "@/lib/prijs-weergave";
 import type { OntwerpLezenAntwoord } from "@/app/api/ontwerp-lezen/route";
@@ -67,6 +67,8 @@ export interface IntakeProps {
   telefoon: { weergave: string; link: string };
   whatsappUrl: string;
   reviewSamenvatting: string;
+  /** Bedragen uit de actieve tarievenrij, server-side geladen. */
+  bron: Prijsbron;
 }
 
 /**
@@ -77,7 +79,7 @@ export interface IntakeProps {
  * pakket) en vragen. Ingevulde gegevens blijven staan bij wisselen van route.
  * Na verzenden altijd naar /bedankt, waar de GA4-conversie vuurt.
  */
-export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: IntakeProps) {
+export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting, bron }: IntakeProps) {
   const router = useRouter();
   const kaartRef = useRef<HTMLDivElement>(null);
   const bestandRef = useRef<HTMLInputElement>(null);
@@ -121,6 +123,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
   const bon = useMemo(
     () =>
       bouwBon({
+        bron,
         route,
         stap,
         link: gelezen ? { bon: gelezen.bon, prijzen: gelezen.prijzen } : null,
@@ -133,7 +136,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
         extras,
         periode,
       }),
-    [route, stap, gelezen, bestanden.length, pakket, demontage, klus, grootte, opstelling, extras, periode]
+    [bron, route, stap, gelezen, bestanden.length, pakket, demontage, klus, grootte, opstelling, extras, periode]
   );
 
   const contactGeldig = isGeldigeNaam(naam) && isGeldigeTelefoon(telefoonNr) && isGeldigeEmail(email);
@@ -366,10 +369,10 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
       const pr: LinkPrijzen | null = gelezen?.prijzen ?? null;
       return pr ? euro(pr[p] + pr.werkbladZagen) : null;
     }
-    return grootte ? toonBedrag(ontwerpBand(grootte, p, false)) : null;
+    return grootte ? toonBedrag(ontwerpBand(bron, grootte, p, false)) : null;
   };
   // Link zonder bedrag (TOON_PRIJS_BIJ_LINK uit): ook demontage zonder bedrag.
-  const demontageLabel = route === "link" && !gelezen?.prijzen ? undefined : `+ ${euro(demontageBedrag())}`;
+  const demontageLabel = route === "link" && !gelezen?.prijzen ? undefined : `+ ${euro(bron.demontage)}`;
 
   return (
     <section id="offerte" className="mx-auto flex max-w-[1240px] flex-wrap items-start gap-[clamp(24px,4vw,48px)] px-4 pb-[clamp(40px,6vw,72px)] pt-5 sm:px-[clamp(16px,4vw,40px)] sm:pt-[clamp(28px,5vw,64px)]">
@@ -697,7 +700,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
               <div>
                 <StapKop titel="Wil je er nog iets bij?" sub="Kies wat van toepassing is. Overslaan kan ook." />
                 <div className="flex flex-col gap-2">
-                  {EXTRA_OPTIES.map((e) => (
+                  {extraOpties(bron).map((e) => (
                     <VinkKaart
                       key={e.key}
                       aan={!!extras[e.key]}

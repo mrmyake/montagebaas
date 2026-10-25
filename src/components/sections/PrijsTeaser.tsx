@@ -2,9 +2,10 @@ import { ArrowRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { prijsScenarios } from "@/lib/content";
+import { laadPrijsbron } from "@/lib/prijs-bron";
 
-export function PrijsTeaser() {
-  const scenarios = prijsScenarios;
+export async function PrijsTeaser() {
+  const scenarios = prijsScenarios(await laadPrijsbron());
 
   return (
     <Section className="bg-surface">
