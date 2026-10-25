@@ -9,7 +9,6 @@ import { verwerkTekening } from "@/lib/tekening-verwerker";
 import type { PlannerSnapshotInsert, PlannerStatus } from "@/lib/db.types";
 import { PLANNER_FOUT_UITLEG, PlannerFout, naarPlannerFout } from "./fouten.ts";
 import { leesOntwerp, type GelezenOntwerp } from "./lees.ts";
-import { TOESLAG_LAMINAAT_OP_LOCATIE } from "./telling.ts";
 
 /**
  * Verwerkt een aanvraag via planner-link NA de lead-capture (zelfde patroon als
@@ -65,11 +64,13 @@ export async function verwerkPlannerLink(a: PlannerAanvraag): Promise<void> {
   // gewoon staan zonder prijs.
   let prijs: ReturnType<typeof berekenPrijsUitTelling> | undefined;
   let tarievenId: string | null = null;
+  let werkbladZagen = 0;
   if (gelezen) {
     try {
       const { id, tarieven } = await laadTarieven(null);
       tarievenId = id;
       prijs = berekenPrijsUitTelling(gelezen.resultaat.telling, tarieven);
+      werkbladZagen = tarieven.toeslagen?.werkblad_zagen_incl ?? 0;
     } catch (e) {
       console.error(`[planner] tarieven/prijs mislukt (${a.aanvraagId}):`, e);
     }
@@ -128,7 +129,7 @@ export async function verwerkPlannerLink(a: PlannerAanvraag): Promise<void> {
 
   // 5. Notificaties.
   const r = gelezen?.resultaat;
-  const toeslag = r?.werkblad === "laminaat_op_locatie" ? TOESLAG_LAMINAAT_OP_LOCATIE : 0;
+  const toeslag = r?.werkblad === "laminaat_op_locatie" ? werkbladZagen : 0;
   const telling = r
     ? Object.fromEntries(TELVELDEN.map((k) => [k, r.telling[k] as number]).filter(([, v]) => v))
     : undefined;
@@ -174,7 +175,7 @@ export async function verwerkPlannerLink(a: PlannerAanvraag): Promise<void> {
           `${r?.artikelen.length ?? 0} artikelregels\n` +
           (prijs
             ? `Montageklaar ${euro(prijs.montageklaar.incl + toeslag)} / Compleet ${euro(prijs.compleet.incl + toeslag)}` +
-              `${toeslag ? ` (incl. €${toeslag} toeslag laminaat zagen)` : ""}\nModel nog niet gekalibreerd. Niet aan de klant getoond.`
+              `${toeslag ? ` (incl. €${toeslag} toeslag laminaat zagen)` : ""}\nDagenmodel 2026-10, indicatie. Controleer altijd. Niet aan de klant getoond.`
             : "Geen prijs (tarieven niet geladen)"),
       tags: fout ? "house,warning" : "house,link",
       priority: "high",

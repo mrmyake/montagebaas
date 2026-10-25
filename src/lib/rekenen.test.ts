@@ -172,3 +172,13 @@ test("dagenmodel: velden zonder tarief (apparaten, eiland, binneninrichting) weg
 test("zonder vaste_minuten blijft het oude urenmodel ongewijzigd", () => {
   assert.equal(berekenPrijsUitTelling(TELLING, TARIEVEN).compleet.incl, 2764.85);
 });
+
+test("dagenmodel: sloop is een losse toeslag uit de tarieven, niet in de pakketprijs", () => {
+  const metToeslagen: Tarieven = { ...DAGENMODEL, toeslagen: { sloop_incl: 995, werkblad_zagen_incl: 350 } };
+  const zonder = berekenPrijsUitTelling(keuken({ onderkasten: 6 }), metToeslagen);
+  const met = berekenPrijsUitTelling(keuken({ onderkasten: 6, sloop: 1 }), metToeslagen);
+  assert.deepEqual(zonder.toeslagen, []);
+  assert.deepEqual(met.toeslagen, [{ naam: "sloop oude keuken", incl: 995 }]);
+  assert.equal(met.compleet.incl, zonder.compleet.incl);
+  assert.deepEqual(berekenPrijsUitTelling(keuken({ onderkasten: 6, sloop: 1 }), DAGENMODEL).toeslagen, []); // zonder bedrag in de tarieven
+});
