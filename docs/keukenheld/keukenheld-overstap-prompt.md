@@ -83,13 +83,13 @@ De oude Montagebaas-iconen blijven staan, de merkconfig kiest.
 
 Lever `docs/keukenheld/LIVEGANG.md` met deze stappen, in deze volgorde, met de exacte DNS-records erbij:
 
-**Vooraf, kost een paar dagen:**
-1. KvK: handelsnaam "De Keukenheld" toevoegen.
-2. Google Workspace: dekeukenheld.nl als aliasdomein, MX-records, aliassen info@ en ilja@, "Verzenden als" in Gmail.
-3. Resend: dekeukenheld.nl verifiëren (SPF, DKIM, DMARC). Mail-tester moet 10/10 halen.
+**Vooraf (KvK, Google Workspace en DNS zijn al geregeld, controleer alleen):**
+1. Controleer met `dig` en rapporteer: A/CNAME van dekeukenheld.nl en www, MX, SPF, DKIM (Google en Resend), DMARC. Meld wat ontbreekt of botst, bijvoorbeeld twee SPF-records.
+2. Resend: is dekeukenheld.nl al geverifieerd? Zo niet, geef de exacte records. Mail-tester moet 10/10 halen.
+3. Google Workspace: bestaan info@ en ilja@dekeukenheld.nl, en staat "Verzenden als" aan? Vraag het mij; je kunt het niet zelf zien.
 4. Vercel: de huidige redirect van dekeukenheld.nl naar montagebaas.com weghalen, dekeukenheld.nl en www toevoegen aan het project.
 
-**Overstapdag (doordeweekse ochtend):**
+**Overstap (vandaag, zodra Fase 1 getest is en ik akkoord geef):**
 5. Env `MERK=keukenheld` en de nieuwe Resend-afzender op Production, redeploy.
 6. dekeukenheld.nl wordt het primaire domein, montagebaas.com en www sturen door met een 301, querystring blijft behouden. Test met een gclid-URL.
 7. Echte testaanvraag op de iPhone: rij, merk, mail, geen Ads-upload.
