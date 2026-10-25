@@ -10,7 +10,7 @@
  * ("onderkast, zwartgrijs" → "onderkast"). Frames tellen, fronten niet. Een
  * vaatwasserpositie heeft geen METOD-frame en telt dus vanzelf niet als onderkast.
  */
-import type { KeukenTelling } from "../rekenen.ts";
+import { STEENBLAD_AANNAME, type KeukenTelling } from "../rekenen.ts";
 import { artikelenUitBom, geprijsdeRegels, posities, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
 import type { ProductInfo } from "./product.ts";
 import { eilandPosities, type Opstelling } from "./opstelling.ts";
@@ -151,7 +151,9 @@ export function bomNaarTelling(
   let spoelbak_kraan = Math.max(spoelbakken, kranen ? 1 : 0);
 
   if (werkblad === "steen") {
-    aannames.push("Steen/keramiek/porselein/composiet werkblad: blad, uitsparingen, koppeling en (onderbouw)spoelbak buiten scope (leverancier meet in en plaatst)");
+    // Zelfde velden als steenbladBuitenScope (rekenen.ts); hier inline, zodat de
+    // koppeling-aanname hieronder niet ten onrechte verschijnt.
+    aannames.push(STEENBLAD_AANNAME);
     werkblad_meter = 0;
     koppeling = 0;
     uitsparing_spoelbak = 0;
