@@ -2,7 +2,8 @@ import { generateObject } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase";
-import { TELVELDEN, valideerTelling, type ValidatieResultaat } from "@/lib/rekenen";
+import { TELVELDEN, type ValidatieResultaat } from "@/lib/rekenen";
+import { verwerkLezing } from "@/lib/tekening-lezing";
 
 /**
  * Schakel 1 — tekening-lezer. Leest een IKEA-keukentekening (PDF/PNG/JPG) uit de
@@ -28,6 +29,8 @@ export const tellingSchema = z.object({
   // lezing zonder deze velden niet naar controle_tekening valt.
   binneninrichting: z.number().optional(),
   eiland: z.number().optional(),
+  // Geen telveld: bepaalt alleen of de steenbladregel (zie tekening-lezing.ts) geldt.
+  werkblad_materiaal: z.enum(["laminaat", "hout", "steen", "geen", "onbekend"]).optional(),
   aannames: z.array(z.string()),
   vertrouwen: z.enum(["hoog", "gemiddeld", "laag"]),
 });
@@ -46,7 +49,9 @@ TELLEN:
 - vertrouwen = "laag" zodra een PRIJSBEPALEND veld onzeker is (onderkasten/bovenkasten/hoge kasten, werkblad_meter, eiland/afvoer). "hoog" alleen bij een eenduidig leesbaar plan (vooral met itemlijst).
 
 VELD-UITLEG (kort):
-onderkasten = lage kasten op de grond; bovenkasten = hangkasten; hoge_kasten = kolomkasten (oven/koelkast/voorraad); lade_elementen = lade-fronten/binnenlades; zijwanden = zichtbare zijpanelen; plint_meter = plint in meters; lichtlijst_meter = bovenste sierlijst in meters; werkblad_meter = werkblad-lengte in meters; uitsparing_spoelbak/uitsparing_kookplaat = uitsparingen in het werkblad; koppeling = werkblad-koppeling/verstek (aantal); spatwand_meter = achterwand in meters; spoelbak_kraan/vaatwasser/inductie/gaskookplaat/afzuigkap/oven/koelkast_vriezer/magnetron = apparaten (aantal); sloop = oude keuken slopen (1=ja, 0=nee); scheve_muren = correctie scheve muren (1=ja, 0=nee); kraanboring = extra kraangat (aantal); afvoer_leidingwerk = afvoer/leiding aanpassen (aantal punten); onderkast_verlichting = onderbouwverlichting (meters of stuks); binneninrichting = uittrekbare kastinrichting, carrousel of inrichting voor een hoekkast, afvalsorteersysteem (aantal); eiland = 1 als er een kookeiland of vrijstaand blok in het ontwerp staat, anders 0.`;
+onderkasten = lage kasten op de grond; bovenkasten = hangkasten; hoge_kasten = kolomkasten (oven/koelkast/voorraad); lade_elementen = lade-fronten/binnenlades; zijwanden = zichtbare zijpanelen; plint_meter = plint in meters; lichtlijst_meter = bovenste sierlijst in meters; werkblad_meter = werkblad-lengte in meters; uitsparing_spoelbak/uitsparing_kookplaat = uitsparingen in het werkblad; koppeling = werkblad-koppeling/verstek (aantal); spatwand_meter = achterwand in meters; spoelbak_kraan/vaatwasser/inductie/gaskookplaat/afzuigkap/oven/koelkast_vriezer/magnetron = apparaten (aantal); sloop = oude keuken slopen (1=ja, 0=nee); scheve_muren = correctie scheve muren (1=ja, 0=nee); kraanboring = extra kraangat (aantal); afvoer_leidingwerk = afvoer/leiding aanpassen (aantal punten); onderkast_verlichting = onderbouwverlichting (meters of stuks); binneninrichting = uittrekbare kastinrichting, carrousel of inrichting voor een hoekkast, afvalsorteersysteem (aantal); eiland = 1 als er een kookeiland of vrijstaand blok in het ontwerp staat, anders 0.
+
+WERKBLAD_MATERIAAL: "steen" bij keramiek, porselein, composiet, kwarts of natuursteen (ook IKEA-maatwerk van een steenleverancier, bv. LOCKEBO, MÖCKLARP, SÄLJAN keramiek); "laminaat" bij laminaat (ook EKBACKEN, SÄLJAN laminaat, maatwerk laminaat); "hout" bij massief hout of fineer; "geen" als er geen werkblad in het ontwerp staat; anders "onbekend". Tel het werkblad zelf gewoon zoals het in het ontwerp staat.`;
 
 export interface LeesResultaat {
   validatie: ValidatieResultaat;
@@ -96,10 +101,5 @@ export async function leesTekening(tekeningPad: string): Promise<LeesResultaat> 
     messages: [{ role: "user", content: [{ type: "text", text: instructie }, ...delen] }],
   });
 
-  // valideerTelling is de autoriteit (Zod vormt alleen de output).
-  return { validatie: valideerTelling({
-      ...object,
-      binneninrichting: object.binneninrichting ?? 0,
-      eiland: object.eiland ?? 0,
-    }), ruw: object };
+  return { validatie: verwerkLezing(object), ruw: object };
 }

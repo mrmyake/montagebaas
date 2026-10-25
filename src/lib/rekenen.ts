@@ -144,6 +144,26 @@ export function isLegeTelling(t: KeukenTelling): boolean {
   return TELVELDEN.every((veld) => t[veld] === 0);
 }
 
+/**
+ * Steen/keramiek/porselein/composiet werkblad: de leverancier meet in en plaatst,
+ * inclusief uitsparingen en (onderbouw)spoelbak. Dat werk valt buiten de montage.
+ * Zelfde regel voor de planner-route (ikea-planner/telling.ts) en de tekeningroute.
+ */
+export const STEENBLAD_AANNAME =
+  "Steen/keramiek/porselein/composiet werkblad: blad, uitsparingen, koppeling en (onderbouw)spoelbak buiten scope (leverancier meet in en plaatst)";
+
+export function steenbladBuitenScope(t: KeukenTelling): KeukenTelling {
+  return {
+    ...t,
+    werkblad_meter: 0,
+    koppeling: 0,
+    uitsparing_spoelbak: 0,
+    uitsparing_kookplaat: 0,
+    spoelbak_kraan: 0,
+    aannames: t.aannames.includes(STEENBLAD_AANNAME) ? t.aannames : [...t.aannames, STEENBLAD_AANNAME],
+  };
+}
+
 /** Geld in centen afronden — voorkomt float-ruis en is correct voor bedragen. */
 function naarCenten(bedrag: number): number {
   return Math.round(bedrag * 100) / 100;
