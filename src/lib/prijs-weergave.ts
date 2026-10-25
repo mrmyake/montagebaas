@@ -31,7 +31,7 @@ export type Getoond = { soort: "band"; laag: number; hoog: number } | { soort: "
 /** Alle bedragen die de site nodig heeft, incl. btw. Serialiseerbaar (server → client). */
 export interface Prijsbron {
   tarievenId: string;
-  /** Compleet per keukengrootte, met de offertedagen die erbij horen. */
+  /** Compleet per keukengrootte. De dagen zijn alleen voor de Montageklaar-berekening: nooit aan klanten tonen. */
   banden: Record<Grootte, { laag: number; hoog: number; laag_dagen: number; hoog_dagen: number }>;
   /** Montageklaar per keukengrootte (Compleet min montageklaar_min_dagen). */
   montageklaarBanden: Record<Grootte, { laag: number; hoog: number }>;
@@ -255,7 +255,5 @@ export function tekstBedragen(bron: Prijsbron) {
     groot: band(bron.banden["15+"]),
     laagsteBand: euro(bron.banden["<8"].laag),
     hoogsteBand: euro(bron.banden["15+"].hoog),
-    // "2,5 tot 5 werkdagen" (Compleet, kleinste tot grootste band)
-    dagen: `${String(bron.banden["<8"].laag_dagen).replace(".", ",")} tot ${String(bron.banden["15+"].hoog_dagen).replace(".", ",")}`,
   };
 }

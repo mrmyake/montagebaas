@@ -46,7 +46,7 @@ test("prijsbron: Montageklaar = Compleet min 1 dag, afgerond zoals het dagenmode
   assert.deepEqual(bron.montageklaarBanden["<8"], { laag: 1075, hoog: 1775 });
   assert.deepEqual(bron.montageklaarBanden["15+"], { laag: 2095, hoog: 2775 });
   assert.equal(tekstBedragen(bron).montageklaarScheelt, "€ 700");
-  assert.equal(tekstBedragen(bron).dagen, "2,5 tot 5");
+  assert.ok(!Object.values(tekstBedragen(bron)).some((t) => /dag/i.test(t)), "geen dagen in klantteksten");
 });
 
 test("prijsbron: een rij zonder banden of toeslagen geeft een fout, geen verzonnen bedrag", () => {

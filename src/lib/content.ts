@@ -108,7 +108,7 @@ export function faqItems(bron: Prijsbron) {
   {
     vraag: "Hoelang duurt het plaatsen van een keuken?",
     antwoord:
-      `Een complete montage duurt meestal ${bedragen.dagen} werkdagen, afhankelijk van het aantal kasten. Met Montageklaar is het een dag korter. In je offerte staat hoeveel dagen we voor jouw keuken rekenen.`,
+      "Dat hangt vooral af van het aantal kasten. We spreken vooraf af wanneer we beginnen. Je vaste prijs verandert niet als het werk langer duurt.",
   },
   {
     vraag: "Wie voert de montage uit?",
