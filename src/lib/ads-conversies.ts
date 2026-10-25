@@ -80,6 +80,14 @@ export interface UitgeslotenContacten {
  * ook met een +tag of een ander adres op hetzelfde domein). Env ADS_UITSLUITEN,
  * kommagescheiden: "@domein.nl" sluit het hele domein uit, "naam@domein.nl" één adres.
  */
+/**
+ * Wachttijd (uren) voordat opdracht_gewonnen naar Google gaat: een per ongeluk
+ * op Gewonnen gezette lead (24-10: verkeerde Hans) kan dan nog terug zonder dat
+ * er een conversie bij Google staat. Env ADS_GEWONNEN_WACHTTIJD_UUR.
+ */
+export const ADS_GEWONNEN_WACHTTIJD_UUR_STANDAARD = 24;
+const GEWONNEN_STATUSSEN = ["gewonnen", "uitgevoerd"];
+
 export const ADS_UITSLUITEN_STANDAARD = "@ilja.com, @montagebaas.com, @gamundo.com, ilja.goossens@gmail.com";
 
 export interface Uitsluitregels {
@@ -280,6 +288,8 @@ export function beslis(
     uitgesloten?: UitgeslotenContacten;
     /** Eigen domeinen/adressen (ADS_UITSLUITEN). */
     uitsluiten?: Uitsluitregels;
+    /** Uren dat een lead op gewonnen/uitgevoerd moet staan voordat opdracht_gewonnen gaat; standaard 24. */
+    gewonnenWachttijdUur?: number;
     /** Waarde voor aanvraag_ontvangen; standaard ADS_LEAD_WAARDE_STANDAARD. */
     leadWaarde?: number;
     nu?: Date;
@@ -307,6 +317,20 @@ export function beslis(
   }
   if (opties.uitsluiten && valtOnderUitsluiting(rij.email, opties.uitsluiten)) {
     return met({ soort: "overslaan", reden: "testinzending (eigen domein of adres, ADS_UITSLUITEN)", klikType });
+  }
+
+  // Opdracht gewonnen: alleen als de lead nú nog gewonnen/uitgevoerd is én dat al
+  // de wachttijd lang is (gemeten vanaf de eerste keer gewonnen/uitgevoerd in het
+  // log). Wachten, niet overslaan: de cron kijkt elke dag opnieuw.
+  if (rij.conversie_actie === "opdracht_gewonnen") {
+    if (!GEWONNEN_STATUSSEN.includes(rij.lead_status)) {
+      return met({ soort: "wachten", reden: `status is niet (meer) gewonnen/uitgevoerd (${rij.lead_status})`, klikType });
+    }
+    const wachttijd = opties.gewonnenWachttijdUur ?? ADS_GEWONNEN_WACHTTIJD_UUR_STANDAARD;
+    const uren = ((opties.nu ?? new Date()).getTime() - new Date(rij.event_tijdstip).getTime()) / 3_600_000;
+    if (uren < wachttijd) {
+      return met({ soort: "wachten", reden: `nog geen ${wachttijd} uur op gewonnen (${Math.floor(uren)} uur)`, klikType });
+    }
   }
 
   // Statusimport van 25-09: het logtijdstip is het importmoment, niet het echte
