@@ -57,7 +57,19 @@ export const TELVELDEN: readonly (keyof KeukenTelling)[] = [
 const VERTROUWEN_WAARDEN = ["hoog", "gemiddeld", "laag"] as const;
 
 export interface Tarieven {
-  basis: { dagtarief_excl: number; effectieve_uren_dag: number; voorrij_excl: number; btw: number };
+  basis: {
+    dagtarief_excl: number;
+    effectieve_uren_dag: number;
+    voorrij_excl: number;
+    btw: number;
+    // Dagenmodel (spike dagenmodel, 2026-10). Aanwezig → berekenDagenmodel, anders
+    // het oorspronkelijke urenmodel (hele dagen, Montageklaar via asm-minuten).
+    vaste_minuten?: number; // per klus, ongeacht de telling (apparaten, spoelbak, werkblad, afwerking)
+    buffer_dagen?: number; // bovenop de geschatte echte werkdagen, max. tot de eerstvolgende hele dag
+    minimum_dagen?: number; // Compleet
+    montageklaar_min_dagen?: number; // Montageklaar = Compleet − dit
+    prijs_eindigt_op?: number[]; // incl. btw naar boven afronden op een bedrag dat hierop eindigt
+  };
   minuten: Record<string, { tijd: number; asm: number }>;
 }
 
@@ -120,11 +132,8 @@ function naarCenten(bedrag: number): number {
   return Math.round(bedrag * 100) / 100;
 }
 
-/**
- * PUUR. Geen import van tarieven, geen DB-call. Itereert over de tarief-minuten
- * (de bron bepaalt welke velden meetellen) en leest de bijbehorende aantallen.
- */
-export function berekenPrijsUitTelling(t: KeukenTelling, tar: Tarieven): PrijsResultaat {
+/** Telling × tarief-minuten; de tarievenset bepaalt welke velden meetellen. */
+function telMinuten(t: KeukenTelling, tar: Tarieven): { totaal: number; assembly: number } {
   let totaal = 0;
   let assembly = 0;
   for (const key of Object.keys(tar.minuten)) {
@@ -133,6 +142,66 @@ export function berekenPrijsUitTelling(t: KeukenTelling, tar: Tarieven): PrijsRe
     totaal += aantal * tar.minuten[key].tijd;
     assembly += aantal * tar.minuten[key].asm;
   }
+  return { totaal, assembly };
+}
+
+/** Naar boven op het eerstvolgende bedrag dat eindigt op een van `eindes` (bv. 25/75/95). */
+export function rondPrijsAf(bedrag: number, eindes: number[]): number {
+  const gesorteerd = [...eindes].sort((a, b) => a - b);
+  const honderd = Math.floor(bedrag / 100) * 100;
+  for (const e of gesorteerd) if (honderd + e >= bedrag - 1e-9) return honderd + e;
+  return honderd + 100 + gesorteerd[0];
+}
+
+/**
+ * Van geschatte echte werkdagen naar offertedagen: buffer erbij, naar boven op een
+ * halve dag, maar nooit verder dan de eerstvolgende hele dag; met een minimum.
+ * 3,0 → 3,5 · 3,3 → 4 · 3,6 → 4 (afgetopt) · 2,2 → 3.
+ */
+export function offerteDagen(echteDagen: number, buffer: number, minimum: number): number {
+  const metBuffer = Math.ceil((echteDagen + buffer) * 2 - 1e-9) / 2;
+  return Math.max(minimum, Math.min(metBuffer, Math.floor(echteDagen) + 1));
+}
+
+/**
+ * Dagenmodel: vaste minuten per klus + minuten per telveld → echte werkdagen →
+ * offertedagen (buffer, afronding) → prijs, afgerond op een bedrag eindigend op
+ * 25/75/95. Montageklaar = Compleet − een vast aantal dagen.
+ */
+function berekenDagenmodel(t: KeukenTelling, tar: Tarieven): PrijsResultaat {
+  const b = tar.basis;
+  const minPerDag = b.effectieve_uren_dag * 60;
+  const totaal = (b.vaste_minuten ?? 0) + telMinuten(t, tar).totaal;
+  const dagenCompleet = offerteDagen(totaal / minPerDag, b.buffer_dagen ?? 0, b.minimum_dagen ?? 0);
+  const verschil = b.montageklaar_min_dagen ?? 1;
+  const eindes = b.prijs_eindigt_op ?? [25, 75, 95];
+
+  const pakket = (dagen: number): PakketPrijs => {
+    const incl = rondPrijsAf((dagen * b.dagtarief_excl + b.voorrij_excl) * (1 + b.btw), eindes);
+    const excl = naarCenten(incl / (1 + b.btw));
+    return { dagen, excl, btw: naarCenten(incl - excl), incl };
+  };
+  const compleet = pakket(dagenCompleet);
+  const montageklaar = pakket(dagenCompleet - verschil);
+  return {
+    totaal_minuten: totaal,
+    assembly_minuten: verschil * minPerDag,
+    compleet,
+    montageklaar,
+    besparing_incl: naarCenten(compleet.incl - montageklaar.incl),
+    vertrouwen: t.vertrouwen,
+    aannames: t.aannames,
+  };
+}
+
+/**
+ * PUUR. Geen import van tarieven, geen DB-call. Itereert over de tarief-minuten
+ * (de bron bepaalt welke velden meetellen) en leest de bijbehorende aantallen.
+ * Tarieven met `basis.vaste_minuten` rekenen met het dagenmodel.
+ */
+export function berekenPrijsUitTelling(t: KeukenTelling, tar: Tarieven): PrijsResultaat {
+  if (tar.basis.vaste_minuten !== undefined) return berekenDagenmodel(t, tar);
+  const { totaal, assembly } = telMinuten(t, tar);
 
   const dagen = (min: number) => Math.ceil(min / 60 / tar.basis.effectieve_uren_dag);
   const pakket = (min: number): PakketPrijs => {
