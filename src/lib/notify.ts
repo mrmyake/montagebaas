@@ -531,7 +531,7 @@ export interface PlannerNotificatie {
   artikelen?: { aantal: number; artikelnummer: string; naam: string; omschrijving: string }[];
 }
 
-const KALIBRATIE_WAARSCHUWING = "Model nog niet gekalibreerd, wijkt af van eerdere offertes.";
+const KALIBRATIE_WAARSCHUWING = "Dagenmodel 2026-10, indicatie. Controleer altijd.";
 
 /**
  * Notificatie aan de eigenaar voor een aanvraag via planner-link: methode, de
