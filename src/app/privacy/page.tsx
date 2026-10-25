@@ -109,9 +109,10 @@ export default function PrivacyPage() {
               Alleen als je de cookies hebt geaccepteerd: kom je via een advertentie of een link met
               campagneparameters binnen, dan bewaren we de klik-ID van die advertentie
               (bijvoorbeeld een <em>gclid</em>) en de campagneparameters in een eigen cookie
-              (<em>mb_attributie</em>, maximaal 90 dagen). Accepteer je pas later, dan leggen we
-              de herkomst vanaf dat moment vast, zolang die parameters nog in het adres van de
-              pagina staan. Deze cookie deelt zelf niets met derden; we gebruiken hem om bij een
+              (<em>mb_attributie</em>, maximaal 90 dagen). Accepteer je pas later tijdens hetzelfde
+              bezoek (via de cookiebalk of het vinkje bij je aanvraag), dan leggen we op dat moment
+              de herkomst vast van de pagina waarop je binnenkwam; tot die keuze onthoudt alleen het
+              geopende tabblad die herkomst en slaan we niets op je apparaat op. Deze cookie deelt zelf niets met derden; we gebruiken hem om bij een
               offerteaanvraag vast te leggen via welke advertentie je ons vond, en slaan die
               herkomst samen met je aanvraag op. Weiger je, of heb je nog niet gekozen, dan
               plaatsen we deze cookie niet en bewaren we geen herkomst bij je aanvraag.

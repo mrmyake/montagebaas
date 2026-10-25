@@ -340,6 +340,15 @@ test("beslis: adres op een uitgesloten domein → overslaan, vóór alle andere 
   assert.equal(beslis(basis, { consentOnbekend: "versturen", uitsluiten: parseUitsluitregels(ADS_UITSLUITEN_STANDAARD) }).soort, "versturen");
 });
 
+test("beslis: klik-ID met TEST_ (attributietest) → overslaan, ook met een klantadres", () => {
+  for (const veld of ["gclid", "gbraid", "wbraid"] as const) {
+    const b = beslis({ ...basis, gclid: null, [veld]: "TEST_CC_1761400000_redirect" }, { consentOnbekend: "versturen" });
+    assert.equal(b.soort, "overslaan");
+    if (b.soort === "overslaan") assert.match(b.reden, /TEST_/);
+  }
+  assert.equal(beslis({ ...basis, gclid: "test_cc_klein" }, { consentOnbekend: "versturen" }).soort, "overslaan");
+});
+
 test("opdracht_gewonnen: pas na de wachttijd op gewonnen, en alleen als de status nog gewonnen/uitgevoerd is", () => {
   const nu = new Date("2026-10-25T08:00:00Z");
   const gewonnen = { ...basis, conversie_actie: "opdracht_gewonnen" as const, lead_status: "gewonnen" };

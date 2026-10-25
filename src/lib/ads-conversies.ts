@@ -318,6 +318,11 @@ export function beslis(
   if (opties.uitsluiten && valtOnderUitsluiting(rij.email, opties.uitsluiten)) {
     return met({ soort: "overslaan", reden: "testinzending (eigen domein of adres, ADS_UITSLUITEN)", klikType });
   }
+  // Attributietests zetten zelf een klik-ID in de URL (?gclid=TEST_…); die mogen
+  // nooit naar Google, ook niet als iemand ze met een ander adres invult.
+  if (KLIK_ID_VOLGORDE.some((t) => rij[t]?.toUpperCase().startsWith("TEST_"))) {
+    return met({ soort: "overslaan", reden: "testinzending (klik-ID begint met TEST_)", klikType });
+  }
 
   // Opdracht gewonnen: alleen als de lead nú nog gewonnen/uitgevoerd is én dat al
   // de wachttijd lang is (gemeten vanaf de eerste keer gewonnen/uitgevoerd in het
