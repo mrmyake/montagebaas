@@ -3,7 +3,7 @@
  * via prijs-weergave.ts, alle keuzes via velden.ts.
  */
 import {
-  EXTRA_OPTIES,
+  demontageBedrag,
   euro,
   linkGetoond,
   ontwerpBand,
@@ -76,7 +76,7 @@ export function bouwBon(inv: BonInvoer): Bon {
       ...inv.link.bon,
       { label: pakketNaam, waarde: p ? kort(euro(p[inv.pakket])) : "prijs volgt" },
       ...(p && p.werkbladZagen ? [{ label: "Werkblad op maat zagen", waarde: `+${kort(euro(p.werkbladZagen))}` }] : []),
-      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: p ? `+${kort(euro(EXTRA_OPTIES[0].bedrag))}` : "gekozen" }] : []),
+      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: p ? `+${kort(euro(demontageBedrag()))}` : "gekozen" }] : []),
       ...planning(inv, 4),
     ];
     const ander = linkGetoond(p, anderPakket(inv.pakket), inv.demontage);
@@ -103,7 +103,7 @@ export function bouwBon(inv: BonInvoer): Bon {
       { label: "Ontwerp", waarde: inv.aantalBestanden === 1 ? "1 bestand" : `${inv.aantalBestanden} bestanden` },
       { label: "Keuken", waarde: [g.kort, inv.opstelling ? label(OPSTELLING_OPTIES, inv.opstelling).toLowerCase() : null].filter(Boolean).join(", ") },
       { label: pakketNaam, waarde: kort(toonBedrag(ontwerpBand(inv.grootte, inv.pakket, false))).replace(" – € ", "–") },
-      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: `+${kort(euro(EXTRA_OPTIES[0].bedrag))}` }] : []),
+      ...(inv.demontage ? [{ label: "Oude keuken eruit", waarde: `+${kort(euro(demontageBedrag()))}` }] : []),
       ...planning(inv, 4),
     ];
     return {

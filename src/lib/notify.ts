@@ -3,6 +3,7 @@ import { site, whatsappDefault, whatsappUrl } from "@/lib/site";
 import type { Invoermethode, PlannerStatus } from "@/lib/db.types";
 import { PLANNER_FOUT_UITLEG } from "@/lib/ikea-planner/fouten";
 import { herinneringTekst, type KlusZonderDagen } from "@/lib/werkelijke-dagen";
+import { supabaseAdmin } from "@/lib/supabase";
 
 /**
  * Stuurt een lead-notificatie per e-mail via Resend (https://resend.com).
@@ -359,10 +360,35 @@ export async function stuurTekeningIndicatieNotificatie(
  * Met `prijs` → toont de range + disclaimer (sterker bij `ruw`); zonder `prijs`
  * (lezing mislukt) → "exacte prijs volgt binnen 24 uur", geen bedrag.
  */
+/**
+ * Wat de klant van de nieuwe site (v2) op het scherm zag. Daar is de PDF niet
+ * gelezen vóór het verzenden; de klant zag een band uit grootte en pakket. De
+ * mail mag dan geen ander bedrag noemen: de band, of geen bedrag. null = geen
+ * v2-aanvraag (of niet te lezen), dan geldt de oude mail.
+ */
+async function getoondOpV2(aanvraagId: string | undefined): Promise<{ band: { min: number; max: number } | null } | null> {
+  if (!aanvraagId) return null;
+  try {
+    const { data } = await supabaseAdmin()
+      .from("aanvragen")
+      .select("site_versie, prijs_getoond_laag, prijs_getoond_hoog")
+      .eq("id", aanvraagId)
+      .maybeSingle();
+    if (data?.site_versie !== "v2-redesign") return null;
+    const laag = data.prijs_getoond_laag === null ? null : Number(data.prijs_getoond_laag);
+    const hoog = data.prijs_getoond_hoog === null ? null : Number(data.prijs_getoond_hoog);
+    return { band: laag !== null && hoog !== null ? { min: laag, max: hoog } : null };
+  } catch (err) {
+    console.error("[lead] site_versie ophalen mislukt, mail zonder bedrag:", err);
+    return { band: null }; // bij twijfel geen bedrag: nooit een ander bedrag dan op het scherm
+  }
+}
+
 export async function stuurTekeningKlantBevestiging(klant: {
   naam: string;
   email: string;
   prijs?: { min: number; max: number; ruw: boolean };
+  aanvraagId?: string;
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
@@ -370,18 +396,22 @@ export async function stuurTekeningKlantBevestiging(klant: {
   if (!apiKey || !from || !klant.email) return;
 
   const voornaam = klant.naam.split(/\s+/)[0] || klant.naam;
-  const p = klant.prijs;
+  // v2: de band van het scherm (zonder AI-disclaimer) of geen bedrag; v1: de AI-indicatie zoals voorheen.
+  const v2 = await getoondOpV2(klant.aanvraagId);
+  const p = v2 ? (v2.band ? { ...v2.band, ruw: false } : undefined) : klant.prijs;
   const artikellijstWa = whatsappUrl(
     "Hoi Montagebaas, hier is de deellink of artikellijst van mijn IKEA-keukenontwerp."
   );
 
-  const disclaimer = p?.ruw
+  const disclaimer = v2
+    ? "Dit is de indicatie die je op de site zag. Je exacte vaste prijs maken we op basis van je ontwerp."
+    : p?.ruw
     ? "Dit is een rúwe indicatie: je hebt alleen een tekening geüpload en die was lastig automatisch te lezen, dus we kennen nog niet alle exacte elementen."
     : "Dit is een indicatie op basis van je geüploade tekening; we kennen nog niet alle exacte elementen, dus de definitieve prijs kan afwijken.";
 
   const prijsBlokHtml = p
     ? `<div style="margin:0 0 12px;padding:14px 16px;background:#f4f1ea;border-radius:12px">
-         <div style="font-size:13px;color:#6b7178">Indicatie op basis van je tekening</div>
+         <div style="font-size:13px;color:#6b7178">${v2 ? "Je indicatie" : "Indicatie op basis van je tekening"}</div>
          <div style="font-size:22px;font-weight:700;margin-top:2px">${euro(p.min)} – ${euro(p.max)}</div>
        </div>
        <p style="margin:0 0 16px;color:#6b7178;font-size:13px;line-height:1.5">${disclaimer}</p>`
@@ -415,7 +445,7 @@ export async function stuurTekeningKlantBevestiging(klant: {
     `Plan ontvangen, ${voornaam}!`,
     "",
     p
-      ? `Indicatie op basis van je tekening: ${euro(p.min)} – ${euro(p.max)}`
+      ? `${v2 ? "Je indicatie" : "Indicatie op basis van je tekening"}: ${euro(p.min)} – ${euro(p.max)}`
       : "We hebben je IKEA-tekening ontvangen.",
     p ? disclaimer : "",
     "We nemen binnen 24 uur contact met je op voor je exacte vaste prijs op maat.",

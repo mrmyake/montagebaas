@@ -17,7 +17,7 @@ export type Grootte = "<8" | "8-15" | "15+";
 export type Opstelling = "recht" | "hoek" | "eiland";
 export type Pakket = "compleet" | "montageklaar";
 export type TypeKlus = "complete_ikea_keuken" | "andere_bouwpakketkeuken" | "alleen_afmonteren" | "losse_klus";
-export type ExtraKey = keyof typeof PRIJS_TIJDELIJK.extras;
+export type ExtraKey = keyof typeof PRIJS_TIJDELIJK.extras | "leiding";
 export type WerkbladSoort = "geen" | "steen" | "maatwerk_laminaat" | "laminaat_op_locatie" | "hout" | "overig";
 
 /** Wat de klant ziet: een band, een vaste prijs (laag = hoog) of een vanaf-prijs. */
@@ -54,7 +54,8 @@ export interface ExtraOptie {
   label: string;
   kort: string;
   sub: string;
-  bedrag: number;
+  /** null = geen bedrag vooraf ("Prijs na opname"); telt niet mee in de som. */
+  bedrag: number | null;
 }
 
 export const EXTRA_OPTIES: ExtraOptie[] = [
@@ -62,11 +63,12 @@ export const EXTRA_OPTIES: ExtraOptie[] = [
   { key: "apparaten", label: "Apparaten aansluiten", kort: "Apparaten aansluiten", sub: "Oven, kookplaat, vaatwasser, koelkast. Zit al in de prijs.", bedrag: PRIJS_TIJDELIJK.extras.apparaten },
   { key: "spoelbak", label: "Spoelbak en kraan aansluiten", kort: "Spoelbak en kraan", sub: "Op bestaande afvoer en water. Zit al in de prijs.", bedrag: PRIJS_TIJDELIJK.extras.spoelbak },
   { key: "werkblad_zagen", label: "Werkblad op maat zagen", kort: "Werkblad op maat zagen", sub: "Laminaat dat ter plekke gezaagd moet worden. Voorgezaagd is inbegrepen.", bedrag: PRIJS_TIJDELIJK.extras.werkblad_zagen },
-  { key: "leiding", label: "Lichte leidingaanpassing", kort: "Leidingaanpassing", sub: "Kleine aanpassing aan water of afvoer", bedrag: PRIJS_TIJDELIJK.extras.leiding },
+  { key: "leiding", label: "Lichte leidingaanpassing", kort: "Leidingaanpassing", sub: "Kleine aanpassing aan water of afvoer. Die prijzen we na een opname ter plekke.", bedrag: null },
 ];
 
 /** "+ € 995" of "Inbegrepen". */
-export const extraLabel = (bedrag: number) => (bedrag > 0 ? `+ ${euro(bedrag)}` : "Inbegrepen");
+export const extraLabel = (bedrag: number | null) =>
+  bedrag === null ? "Prijs na opname" : bedrag > 0 ? `+ ${euro(bedrag)}` : "Inbegrepen";
 
 export const demontageBedrag = (): number => PRIJS_TIJDELIJK.extras.demontage;
 
@@ -91,10 +93,10 @@ export interface VragenInvoer {
 
 /** Band (of vanaf-prijs) voor de vragenroute, plus de extra's als bonregels. */
 export function vragenIndicatie(inv: VragenInvoer): { getoond: Getoond; regels: BonRegel[] } {
-  const extraSom = EXTRA_OPTIES.filter((e) => inv.extras[e.key]).reduce((s, e) => s + e.bedrag, 0);
+  const extraSom = EXTRA_OPTIES.filter((e) => inv.extras[e.key]).reduce((s, e) => s + (e.bedrag ?? 0), 0);
   const regels: BonRegel[] = EXTRA_OPTIES.filter((e) => inv.extras[e.key]).map((e) => ({
     label: e.kort,
-    waarde: e.bedrag > 0 ? `+${euro(e.bedrag).replace("€ ", "€")}` : "inbegrepen",
+    waarde: e.bedrag === null ? "na opname" : e.bedrag > 0 ? `+${euro(e.bedrag).replace("€ ", "€")}` : "inbegrepen",
   }));
 
   if (inv.klus === "losse_klus") {

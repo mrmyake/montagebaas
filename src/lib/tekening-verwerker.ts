@@ -162,5 +162,5 @@ export async function verwerkTekening(
 
   // Klant-mail ALTIJD versturen (best-effort), mét prijs+disclaimer indien bekend,
   // anders "exacte prijs volgt binnen 24 uur" zonder bedrag.
-  await stuurTekeningKlantBevestiging({ naam: klant.naam, email: klant.email, prijs: prijsVoorKlant });
+  await stuurTekeningKlantBevestiging({ naam: klant.naam, email: klant.email, prijs: prijsVoorKlant, aanvraagId });
 }

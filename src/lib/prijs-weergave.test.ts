@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PRIJS_TIJDELIJK } from "./prijs-tijdelijk.ts";
-import { euro, linkGetoond, linkPrijzen, naarKolommen, ontwerpBand, toonBedrag, vragenIndicatie } from "./prijs-weergave.ts";
+import { EXTRA_OPTIES, euro, extraLabel, linkGetoond, linkPrijzen, naarKolommen, ontwerpBand, toonBedrag, vragenIndicatie } from "./prijs-weergave.ts";
 import type { PrijsResultaat } from "./rekenen.ts";
 
 const prijs = (vertrouwen: PrijsResultaat["vertrouwen"]): PrijsResultaat => ({
@@ -54,4 +54,14 @@ test("link: alleen een vaste prijs bij vlag aan en vertrouwen hoog", () => {
     bedrag: 2765 + PRIJS_TIJDELIJK.extras.werkblad_zagen + PRIJS_TIJDELIJK.extras.demontage,
   });
   assert.deepEqual(naarKolommen(linkGetoond(null, "compleet", false)), { prijs_getoond_laag: null, prijs_getoond_hoog: null });
+});
+
+test("leidingaanpassing: geen bedrag, telt niet mee, 'Prijs na opname'", () => {
+  const leiding = EXTRA_OPTIES.find((e) => e.key === "leiding")!;
+  assert.equal(leiding.bedrag, null);
+  assert.equal(extraLabel(leiding.bedrag), "Prijs na opname");
+  const met = vragenIndicatie({ klus: "complete_ikea_keuken", grootte: "<8", extras: { leiding: true } });
+  const zonder = vragenIndicatie({ klus: "complete_ikea_keuken", grootte: "<8", extras: {} });
+  assert.deepEqual(met.getoond, zonder.getoond);
+  assert.deepEqual(met.regels, [{ label: "Leidingaanpassing", waarde: "na opname" }]);
 });
