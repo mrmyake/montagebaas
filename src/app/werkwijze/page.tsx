@@ -6,7 +6,7 @@ import { SlotCta } from "@/components/sections/SlotCta";
 export const metadata: Metadata = {
   title: "Zo werkt het — keuken laten plaatsen in 4 stappen",
   description:
-    "Van aanvraag tot werkende keuken in vier stappen: configurator, exacte offerte binnen 24 uur, inplannen wanneer het jou uitkomt, en vakkundige montage door een gescreende monteur.",
+    "Van aanvraag tot werkende keuken in vier stappen: configurator, exacte offerte binnen 24 uur, inplannen wanneer het jou uitkomt, en een montage die Ilja zelf doet, netjes en compleet.",
   alternates: { canonical: "/werkwijze" },
 };
 
