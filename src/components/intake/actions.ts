@@ -24,6 +24,7 @@ import {
   periodeLabel,
 } from "@/lib/intake/velden";
 import type { AanvraagInsert } from "@/lib/db.types";
+import { huidigMerk } from "@/lib/merk";
 
 /**
  * Vragenroute van de nieuwe intake (redesign). Zelfde bescherming en nasleep als
@@ -114,6 +115,7 @@ export async function verstuurVragenAanvraag(p: VragenPayload): Promise<VragenRe
     toelichting,
     invoermethode: "formulier",
     site_versie: "v2-redesign",
+    merk: huidigMerk().id,
   };
 
   let id: string;

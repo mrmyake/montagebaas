@@ -4,6 +4,7 @@ import { consentVoorInsert } from "@/lib/consent";
 import { rateLimit } from "@/lib/rate-limit";
 import type { supabaseAdmin } from "@/lib/supabase";
 import type { AanvraagInsert } from "@/lib/db.types";
+import { huidigMerk } from "@/lib/merk";
 
 type Db = ReturnType<typeof supabaseAdmin>;
 
@@ -99,6 +100,7 @@ export async function insertAanvraag(
     .insert({
       ...attributie,
       ...consentVoorInsert(form.get("consent"), form.get("consent_bron")),
+      merk: huidigMerk().id,
       ...velden,
     })
     .select("id")

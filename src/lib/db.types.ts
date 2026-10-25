@@ -4,6 +4,7 @@
  */
 
 import type { Verwerking } from "@/lib/ads-verwerking";
+import type { MerkId } from "@/lib/merk/types";
 
 export interface AanvraagRow {
   id: string;
@@ -74,6 +75,8 @@ export interface AanvraagRow {
   demontage_gekozen: boolean | null;
   prijs_getoond_laag: number | null;
   prijs_getoond_hoog: number | null;
+  // Merkwissel (0019): onder welk merk de aanvraag binnenkwam. not null, default montagebaas.
+  merk: MerkId;
 }
 
 export type SiteVersie = "v1-oud" | "v2-redesign";
@@ -196,6 +199,7 @@ export interface LeadOverzichtRow {
   demontage_gekozen: boolean | null; // sinds 0018
   prijs_getoond_laag: number | null; // sinds 0018
   prijs_getoond_hoog: number | null; // sinds 0018
+  merk: MerkId; // sinds 0019
 }
 
 // Spiegelt montagebaas.roi_per_maand (0005_lead_status.sql).
