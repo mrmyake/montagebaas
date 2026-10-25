@@ -3,6 +3,13 @@ import type { FaqItem } from "@/components/sections/FaqList";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
 
+/** Werkgebied: tot ongeveer 75 km rond Loosdrecht (vestiging Tjalk 68). */
+const WERKGEBIED = {
+  "@type": "GeoCircle",
+  geoMidpoint: { "@type": "GeoCoordinates", latitude: 52.2036, longitude: 5.0703 },
+  geoRadius: 75000,
+} as const;
+
 /**
  * Schema.org / JSON-LD builders.
  *
@@ -57,9 +64,8 @@ export function localBusinessSchema(opts?: {
     name: opts?.naamSuffix ? `${site.naam} — ${opts.naamSuffix}` : site.naam,
     url: siteUrl,
     description: site.belofte,
-    areaServed: opts?.areaServed
-      ? { "@type": "City", name: opts.areaServed }
-      : { "@type": "Country", name: "Nederland" },
+    areaServed: opts?.areaServed ? { "@type": "City", name: opts.areaServed } : WERKGEBIED,
+    geo: { "@type": "GeoCoordinates", latitude: 52.2036, longitude: 5.0703 },
     telephone: site.telefoonLink.replace("tel:", ""),
     email: site.email,
     address: {
@@ -87,9 +93,7 @@ export function serviceSchema(opts?: { areaServed?: string }) {
     description:
       "Vakkundige montage van IKEA-keukens en andere bouwpakketkeukens, tegen een vaste prijs vooraf.",
     provider: { "@id": `${siteUrl}/#business` },
-    areaServed: opts?.areaServed
-      ? { "@type": "City", name: opts.areaServed }
-      : { "@type": "Country", name: "Nederland" },
+    areaServed: opts?.areaServed ? { "@type": "City", name: opts.areaServed } : WERKGEBIED,
   };
 }
 

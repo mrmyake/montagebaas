@@ -2,7 +2,13 @@ import { NextResponse, after } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stuurNtfy } from "@/lib/ntfy";
 import { parsePlannerLink } from "@/lib/ikea-planner/link";
-import { verwerkPlannerLink } from "@/lib/ikea-planner/verwerker";
+import { TOON_PRIJS_BIJ_LINK, verwerkPlannerLink } from "@/lib/ikea-planner/verwerker";
+import { werkbladUitTelling } from "@/lib/ikea-planner/klantweergave";
+import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
+import { leesIntakeVelden } from "@/lib/intake/server";
+import { laadTarieven } from "@/lib/tarieven";
+import { berekenPrijsUitTelling, valideerTelling } from "@/lib/rekenen";
+import { linkGetoond, linkPrijzen, naarKolommen } from "@/lib/prijs-weergave";
 import {
   bestandenUit,
   bewaarBestanden,
@@ -20,7 +26,49 @@ import {
  *
  * Het uitlezen van de link (~1 s, bij storing tot ~20 s) draait ná de respons
  * via after(); de lead staat dan al vast.
+ *
+ * Nieuwe intake (redesign): de link is dan al gelezen via /api/ontwerp-lezen. Die
+ * snapshot wordt hier via lees_token aan de lead gekoppeld, en de prijs die de
+ * klant zag wordt server-side opnieuw bepaald uit die snapshot (niet van de
+ * client overgenomen). De Ads-conversie 'aanvraag_ontvangen' gaat bij
+ * verzenden; de latere aanroep in verwerkPlannerLink is dan een no-op
+ * (unique aanvraag_id + actie, en een vaste transactionId bij Google).
  */
+
+/** Koppelt de snapshot van /api/ontwerp-lezen eenmalig aan de lead; geeft de telling terug. */
+async function koppelSnapshot(
+  db: ReturnType<typeof supabaseAdmin>,
+  leesToken: string,
+  uuid: string,
+  aanvraagId: string
+): Promise<unknown> {
+  if (!/^[0-9a-f-]{36}$/i.test(leesToken)) return null;
+  const { data, error } = await db
+    .from("planner_snapshots")
+    .update({ aanvraag_id: aanvraagId })
+    .eq("lees_token", leesToken)
+    .eq("ontwerp_uuid", uuid)
+    .is("aanvraag_id", null)
+    .select("telling")
+    .maybeSingle();
+  if (error) console.error(`[offerte-link] snapshot koppelen mislukt (${aanvraagId}):`, error.message);
+  return data?.telling ?? null;
+}
+
+/** De vaste prijs die de klant zag, opnieuw uit de gekoppelde telling; null als er geen bedrag getoond werd. */
+async function getoondePrijs(telling: unknown, pakket: "compleet" | "montageklaar" | undefined, demontage: boolean) {
+  if (!TOON_PRIJS_BIJ_LINK || !pakket || !telling) return null;
+  const v = valideerTelling(telling);
+  if (!v.ok) return null;
+  try {
+    const { tarieven } = await laadTarieven(null);
+    const werkblad = werkbladUitTelling(v.telling) ?? "geen";
+    return linkGetoond(linkPrijzen(berekenPrijsUitTelling(v.telling, tarieven), werkblad, true), pakket, demontage);
+  } catch (e) {
+    console.error("[offerte-link] getoonde prijs bepalen mislukt:", e);
+    return null;
+  }
+}
 
 function fout(error: string, status: number) {
   return NextResponse.json({ ok: false, error }, { status });
@@ -67,7 +115,9 @@ export async function POST(req: Request) {
   }
   const { naam, email, telefoon } = contact;
 
+  const intake = leesIntakeVelden(form);
   const id = await insertAanvraag(db, form, {
+    ...intake,
     naam,
     telefoon,
     email,
@@ -80,6 +130,19 @@ export async function POST(req: Request) {
   if (!id) {
     return fout("Opslaan mislukte. Probeer het opnieuw of bel ons.", 500);
   }
+
+  const leesToken = ((form.get("lees_token") as string | null) ?? "").trim();
+  if (leesToken) {
+    const telling = await koppelSnapshot(db, leesToken, link.uuid, id);
+    const getoond = await getoondePrijs(telling, intake.pakket_gekozen ?? undefined, intake.demontage_gekozen === true);
+    if (getoond) {
+      const { error } = await db.from("aanvragen").update(naarKolommen(getoond)).eq("id", id);
+      if (error) console.error(`[offerte-link] prijs_getoond opslaan mislukt (${id}):`, error.message);
+    }
+  }
+
+  // Precies één keer per lead, bij verzenden.
+  after(() => verstuurAdsConversieDirect(id));
 
   after(() =>
     stuurNtfy({

@@ -26,7 +26,7 @@ import { leesOntwerp, type GelezenOntwerp } from "./lees.ts";
  * (spike-RAPPORT §4b: €320–700 afwijking van verstuurde offertes). Aanzetten
  * vraagt ook een redirect naar /bedankt?a=<id> in TekeningUpload.tsx.
  */
-const TOON_PRIJS_BIJ_LINK = false;
+export const TOON_PRIJS_BIJ_LINK = false;
 
 // Resend limiteert een mail (incl. bijlagen) op 40 MB; zelfde grens als tekening-verwerker.
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;

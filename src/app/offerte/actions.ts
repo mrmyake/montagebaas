@@ -114,6 +114,7 @@ export async function verstuurAanvraag(
     gewenste_periode: payload.gewenste_periode,
     toelichting,
     invoermethode: "formulier",
+    site_versie: "v1-oud", // de oude configurator (/offerte-oud); de nieuwe intake heeft een eigen action
   };
 
   let id: string;

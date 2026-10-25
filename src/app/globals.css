@@ -41,8 +41,74 @@
   --shadow-cta: 0 8px 20px -6px rgba(232, 89, 12, 0.45);
 }
 
+/*
+  Redesign (v2): kleuren en type uit docs/design/PrijsEerstLink.dc.html. De
+  accentkleur komt uit de merkconfig (--merk-accent op <html>), zodat een tweede
+  merk alleen een config is.
+*/
+@theme inline {
+  --color-merk: var(--merk-accent, #0f7b6c);
+  --color-merk-donker: var(--merk-accent-donker, #0b5e53);
+  --color-v2-bg: #eef0ec;
+  --color-v2-ink: #15171a;
+  --color-v2-muted: #5b6168;
+  --color-v2-line: #d9dcd6;
+  --color-v2-line-strong: #c3c8c0;
+  --color-v2-soft: #e6f2f0;
+  --color-v2-chip: #0b4f46;
+  --color-v2-tab: #f4f5f2;
+  --color-v2-dot: #dde0da;
+  --color-v2-footer: #e2e5df;
+  --color-v2-footer-ink: #4a4f55;
+  --font-mono: var(--font-plex), ui-monospace, monospace;
+}
+
+/* Bestaande pagina's (kosten, werkwijze, stadspagina's) nemen in v2 de nieuwe kleuren en het nieuwe font over. */
+html[data-site="v2"] {
+  --color-paper: #eef0ec;
+  --color-ink: #15171a;
+  --color-ink-soft: #3f444a;
+  --color-muted: #5b6168;
+  --color-line: #d9dcd6;
+  --color-line-strong: #c3c8c0;
+  --color-accent: var(--merk-accent, #0f7b6c);
+  --color-accent-hover: var(--merk-accent-donker, #0b5e53);
+  --color-accent-soft: #e6f2f0;
+  --color-trust: var(--merk-accent, #0f7b6c);
+  --color-trust-soft: #e6f2f0;
+  --font-sans: var(--font-schibsted), system-ui, sans-serif;
+  --font-display: var(--font-schibsted), system-ui, sans-serif;
+  --shadow-cta: none;
+}
+
+html[data-site="v2"] :focus-visible {
+  outline: 3px solid #15171a;
+  outline-offset: 3px;
+}
+
+html[data-site="v2"] h1,
+html[data-site="v2"] h2,
+html[data-site="v2"] h3,
+html[data-site="v2"] h4 {
+  letter-spacing: -0.02em;
+}
+
 html {
   scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+html[data-site="v2"] details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+html[data-site="v2"] details > summary::-webkit-details-marker {
+  display: none;
 }
 
 body {
