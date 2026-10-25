@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 const usps = [
   { icon: Clock, text: "Offerte binnen 24 uur" },
   { icon: ShieldCheck, text: "Vaste prijs vooraf" },
-  { icon: MapPin, text: "Heel Nederland" },
+  { icon: MapPin, text: "Tot ca. 75 km rond Loosdrecht" },
 ];
 
 export function Hero({
@@ -75,7 +75,7 @@ export function Hero({
             <p className="mt-4 text-lg font-medium leading-relaxed text-ink">
               &ldquo;Fantastische service door Ilja! Hij heeft een kookeiland voor ons
               geïnstalleerd en het ziet er top uit. Denkt met je mee en gaat voor kwaliteit en een
-              tevreden klant.&rdquo;
+              tevreden klant. …&rdquo;
             </p>
             <p className="mt-3 text-sm text-muted">
               Stephan van den Hoek, Nijkerk — kookeiland geïnstalleerd
@@ -91,8 +91,8 @@ export function Hero({
                 <p className="text-xs text-muted">vaste prijs</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-ink">NL</p>
-                <p className="text-xs text-muted">landelijk</p>
+                <p className="text-2xl font-bold text-ink">75 km</p>
+                <p className="text-xs text-muted">rond Loosdrecht</p>
               </div>
             </div>
           </div>

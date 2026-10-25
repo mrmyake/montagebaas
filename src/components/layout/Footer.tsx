@@ -56,7 +56,7 @@ export function Footer() {
               <span>
                 {site.straat}, {site.postcode} {site.plaats}
                 <br />
-                <span className="text-white/60">Werkgebied: heel Nederland</span>
+                <span className="text-white/60">Werkgebied: tot ongeveer 75 km rond Loosdrecht</span>
               </span>
             </li>
           </ul>
@@ -83,7 +83,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <Container className="flex flex-col items-center justify-between gap-2 py-6 text-xs text-white/50 sm:flex-row">
           <p>© {new Date().getFullYear()} {site.naam}. Alle rechten voorbehouden.</p>
-          <p>Eén vast aanspreekpunt · Gescreende monteurs · Vaste prijs vooraf</p>
+          <p>Eén vast aanspreekpunt · Ilja plaatst je keuken zelf · Vaste prijs vooraf</p>
         </Container>
       </div>
     </footer>

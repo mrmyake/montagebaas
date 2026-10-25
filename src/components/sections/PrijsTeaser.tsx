@@ -2,13 +2,9 @@ import { ArrowRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { prijsScenarios } from "@/lib/content";
-import { berekenPrijs, euro } from "@/lib/pricing";
 
 export function PrijsTeaser() {
-  const scenarios = prijsScenarios.map((s) => ({
-    ...s,
-    range: berekenPrijs({ grootte: s.grootte, opstelling: s.opstelling, extras: s.extras }),
-  }));
+  const scenarios = prijsScenarios;
 
   return (
     <Section className="bg-surface">
@@ -34,9 +30,9 @@ export function PrijsTeaser() {
             <h3 className="text-lg font-bold text-ink">{s.label}</h3>
             <p className="mt-1 text-sm text-muted">{s.omschrijving}</p>
             <p className="mt-5 text-3xl font-bold text-ink">
-              {euro(s.range.min)} <span className="text-muted">–</span> {euro(s.range.max)}
+              {s.band}
             </p>
-            <p className="mt-1 text-sm text-muted">indicatie, inclusief montage</p>
+            <p className="mt-1 text-sm text-muted">indicatie, inclusief btw en reiskosten</p>
           </div>
         ))}
       </div>

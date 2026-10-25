@@ -1,28 +1,28 @@
 import type { Metadata } from "next";
-import { UserCheck, ShieldCheck, Handshake } from "lucide-react";
+import { UserCheck, MapPin, Handshake } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Container";
 import { SlotCta } from "@/components/sections/SlotCta";
 
 export const metadata: Metadata = {
-  title: "Over Montagebaas — hoe ons netwerk werkt",
+  title: "Over Montagebaas: Ilja Goossens, keukenmonteur uit Loosdrecht",
   description:
-    "Montagebaas verbindt klanten met gescreende, zelfstandige keukenmonteurs en bewaakt prijs en kwaliteit. Eén vast aanspreekpunt van offerte tot oplevering, in heel Nederland.",
+    "Montagebaas is de eenmanszaak van Ilja Goossens uit Loosdrecht. Ilja plaatst je IKEA-keuken zelf, netjes en compleet, en is je aanspreekpunt van offerte tot oplevering. Werkgebied tot ongeveer 75 km rond Loosdrecht.",
   alternates: { canonical: "/over" },
 };
 
 const punten = [
   {
     icon: UserCheck,
-    titel: "Gescreende monteurs",
+    titel: "Ilja plaatst zelf",
     tekst:
-      "We werken met zelfstandige vakmensen die we selecteren op kwaliteit en ervaring. Je krijgt een monteur uit je eigen regio.",
+      "Wie de offerte maakt, plaatst ook je keuken. Ilja doet het werk zelf en staat in voor het resultaat. Geen veiling, geen wisselende partijen.",
   },
   {
-    icon: ShieldCheck,
-    titel: "Wij bewaken prijs én kwaliteit",
+    icon: MapPin,
+    titel: "Dichtbij Loosdrecht",
     tekst:
-      "Montagebaas bepaalt de prijs vooraf en blijft verantwoordelijk voor het resultaat. Geen veiling, geen wisselende partijen.",
+      "We werken tot ongeveer 75 km rond Loosdrecht: Utrecht, Hilversum, Amsterdam, Amersfoort en omgeving. Woon je verder weg? Bel of app even.",
   },
   {
     icon: Handshake,
@@ -37,8 +37,8 @@ export default function OverPage() {
     <>
       <PageHeader
         eyebrow="Over ons"
-        titel="Eén aanspreekpunt, een netwerk van vakmensen"
-        intro="Montagebaas is geen eenmanszaak en geen anoniem platform. We halen de aanvraag binnen, bepalen de prijs en bewaken de kwaliteit — de montage doet een gescreende monteur dicht bij jou."
+        titel="Eén vakman, van offerte tot oplevering"
+        intro="Montagebaas is een eenmanszaak uit Loosdrecht. Ilja Goossens maakt je offerte, plaatst je keuken zelf en is je vaste aanspreekpunt. Geen anoniem platform."
       />
 
       <section className="py-12 sm:py-16">
@@ -50,14 +50,14 @@ export default function OverPage() {
               geen idee wie er straks voor je deur staat. Dat kan beter.
             </p>
             <p>
-              Bij Montagebaas regelen wíj het. We beoordelen je aanvraag, geven je een vaste prijs
-              vooraf, en koppelen je aan een vakkundige, gescreende keukenmonteur uit je eigen
-              regio. Jij hebt gedurende het hele traject één vast aanspreekpunt — van offerte tot
-              oplevering.
+              Bij Montagebaas weet je wie er komt: Ilja. Hij beoordeelt je aanvraag, geeft je vooraf
+              een vaste prijs en plaatst je keuken zelf, netjes en compleet. Je hebt het hele traject
+              één aanspreekpunt, en dat is ook de vakman die het werk doet.
             </p>
             <p>
-              Zo combineren we het beste van twee werelden: de betrouwbaarheid en grip van één merk,
-              met de snelheid en lokale aanwezigheid van een landelijk netwerk.
+              Omdat Ilja zelf plaatst, werken we in een overzichtelijk gebied: tot ongeveer 75 km
+              rond Loosdrecht. Denk aan Utrecht, Hilversum, Amsterdam, Amersfoort en omgeving. Woon
+              je verder weg? Bel of app even, dan kijken we of het past.
             </p>
           </div>
 

@@ -3,9 +3,9 @@ import { Section, SectionHeading } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 
 const grotePlaatsen = [
-  "Amsterdam", "Rotterdam", "Den Haag", "Utrecht", "Eindhoven", "Groningen",
-  "Tilburg", "Almere", "Breda", "Nijmegen", "Haarlem", "Arnhem",
-  "Amersfoort", "Zwolle", "Apeldoorn", "Leiden",
+  "Loosdrecht", "Hilversum", "Utrecht", "Amsterdam", "Amersfoort", "Almere",
+  "Bussum", "Zeist", "Soest", "Baarn", "Maarssen", "Huizen",
+  "Haarlem", "Leiden", "Den Haag", "Rotterdam",
 ];
 
 export function WerkgebiedTeaser() {
@@ -15,8 +15,8 @@ export function WerkgebiedTeaser() {
         <div>
           <SectionHeading
             eyebrow="Werkgebied"
-            titel="Een gescreende monteur door heel Nederland"
-            intro="Via ons netwerk werken we landelijk. Je krijgt een vakman uit je eigen regio, met Montagebaas als vast aanspreekpunt."
+            titel="Tot ongeveer 75 km rond Loosdrecht"
+            intro="Ilja plaatst je keuken zelf. Hij werkt in Utrecht, Hilversum, Amsterdam, Amersfoort en omgeving. Woon je verder weg? Bel of app even, dan kijken we of het past."
           />
           <div className="mt-6">
             <ButtonLink href="/werkgebied" variant="secondary">
@@ -36,7 +36,7 @@ export function WerkgebiedTeaser() {
             </span>
           ))}
           <span className="inline-flex items-center rounded-full bg-ink px-3 py-1.5 text-sm font-medium text-white">
-            + heel NL
+            + omgeving
           </span>
         </div>
       </div>

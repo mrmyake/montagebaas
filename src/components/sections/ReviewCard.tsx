@@ -34,7 +34,7 @@ export function ReviewCard({ name, location, quote, rating, date, source, projec
       <figcaption className="mt-5 text-sm">
         <span className="font-semibold text-ink-soft">{name}</span>
         <span className="mt-0.5 block text-xs text-muted">
-          {[project_type, location, fmtShortDate(date)].filter(Boolean).join(" · ")}
+          {[project_type, location, date ? fmtShortDate(date) : null].filter(Boolean).join(" · ")}
         </span>
       </figcaption>
     </figure>

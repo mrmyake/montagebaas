@@ -1,11 +1,13 @@
-import type { Extras, Grootte, Opstelling } from "@/lib/pricing";
+import { kostenKaarten, tekstBedragen } from "@/lib/prijs-weergave";
+
+const bedragen = tekstBedragen();
 
 /** De drie pijlers — "waarom Montagebaas". */
 export const pijlers = [
   {
     titel: "Eén vast aanspreekpunt",
     tekst:
-      "Geen platform-veiling en geen wisselende partijen. Wij regelen alles van offerte tot oplevering — jij hebt één contact dat je keuken kent.",
+      "Geen platform-veiling en geen wisselende partijen. Ilja regelt alles van offerte tot oplevering. Jij hebt één contact dat je keuken kent.",
   },
   {
     titel: "Vaste prijs vooraf",
@@ -13,9 +15,9 @@ export const pijlers = [
       "Geen IKEA-verrassingen achteraf. Je krijgt een heldere offerte op maat. Wat je ziet, betaal je.",
   },
   {
-    titel: "Snel & landelijk",
+    titel: "Vakman uit Loosdrecht",
     tekst:
-      "Offerte binnen 24 uur, een gescreende monteur uit je eigen regio, en planning wanneer het jou uitkomt. In heel Nederland.",
+      "Ilja plaatst je keuken zelf, netjes en compleet. Hij werkt tot ongeveer 75 km rond Loosdrecht en je hebt binnen 24 uur een offerte.",
   },
 ] as const;
 
@@ -39,51 +41,27 @@ export const stappen = [
   {
     nummer: 4,
     titel: "Vakkundige montage",
-    tekst: "Een gescreende monteur uit jouw regio plaatst je keuken netjes en compleet.",
+    tekst: "Ilja plaatst je keuken zelf, netjes en compleet.",
   },
 ] as const;
 
-/** Prijsscenario's voor de homepage-teaser (ranges worden live berekend uit pricing). */
-export const prijsScenarios: {
-  label: string;
-  omschrijving: string;
-  grootte: Grootte;
-  opstelling: Opstelling;
-  extras: Extras;
-}[] = [
+/** Prijsscenario's voor de homepage-teaser. Bedragen komen uit de prijsadapter, nooit letterlijk. */
+const kaarten = kostenKaarten();
+export const prijsScenarios: { label: string; omschrijving: string; band: string }[] = [
   {
     label: "Kleine keuken",
-    omschrijving: "Tot 8 kasten, rechte opstelling, apparaten aansluiten",
-    grootte: "<8",
-    opstelling: "recht",
-    extras: { apparaat_aansluiten: true, apparaat_aantal: 2, spoelbak_kraan: true },
+    omschrijving: "Tot 8 kasten, rechte opstelling. Apparaten, spoelbak en kraan aansluiten inbegrepen.",
+    band: kaarten[0].band,
   },
   {
     label: "Gemiddelde keuken",
-    omschrijving: "8–15 kasten, hoekopstelling, oude keuken eruit + apparaten + werkblad",
-    grootte: "8-15",
-    opstelling: "hoek",
-    extras: {
-      demontage_afvoer: true,
-      apparaat_aansluiten: true,
-      apparaat_aantal: 3,
-      werkblad_monteren: true,
-      spoelbak_kraan: true,
-    },
+    omschrijving: "8 tot 15 kasten, L- of U-vorm. Apparaten, spoelbak en kraan aansluiten inbegrepen.",
+    band: kaarten[1].band,
   },
   {
     label: "Grote keuken",
-    omschrijving: "15+ kasten met kookeiland, compleet inclusief demontage en aansluiten",
-    grootte: "15+",
-    opstelling: "eiland",
-    extras: {
-      demontage_afvoer: true,
-      apparaat_aansluiten: true,
-      apparaat_aantal: 4,
-      werkblad_monteren: true,
-      spoelbak_kraan: true,
-      lichte_leidingaanpassing: true,
-    },
+    omschrijving: "15 kasten of meer, met kookeiland. Apparaten, spoelbak en kraan aansluiten inbegrepen.",
+    band: kaarten[2].band,
   },
 ];
 
@@ -92,17 +70,17 @@ export const faqItems = [
   {
     vraag: "Wat kost het om een IKEA-keuken te laten plaatsen?",
     antwoord:
-      "Een IKEA-keuken laten plaatsen kost in Nederland doorgaans €1.100 tot €2.500 voor de montage, exclusief leidingwerk. De exacte prijs hangt af van het aantal kasten, de opstelling en extra's zoals het aansluiten van apparaten of het afvoeren van je oude keuken. Via onze configurator zie je in een minuut een indicatie.",
+      `Een complete montage van een IKEA-keuken kost bij Montagebaas ongeveer ${bedragen.laagsteBand} tot ${bedragen.hoogsteBand}, inclusief btw en reiskosten. Een kleine keuken zit rond ${bedragen.klein}, een gemiddelde rond ${bedragen.gemiddeld} en een grote met eiland rond ${bedragen.groot}. Apparaten, spoelbak en kraan aansluiten zitten daar al in. Je exacte prijs staat in je offerte.`,
   },
   {
     vraag: "Hoe snel kunnen jullie komen?",
     antwoord:
-      "Je ontvangt binnen 24 uur een offerte. Na akkoord plannen we de montage op een moment dat jou uitkomt — vaak binnen één tot twee weken, afhankelijk van je regio en planning.",
+      "Je ontvangt binnen 24 uur een offerte. Na akkoord plannen we de montage op een moment dat jou uitkomt. Vaak lukt dat binnen één tot twee weken, afhankelijk van de planning.",
   },
   {
-    vraag: "Werken jullie in heel Nederland?",
+    vraag: "In welk gebied werken jullie?",
     antwoord:
-      "Ja. Via ons netwerk van gescreende, zelfstandige monteurs werken we door heel Nederland. Je krijgt een vakman uit je eigen regio, met Montagebaas als vast aanspreekpunt.",
+      "We werken tot ongeveer 75 km rond Loosdrecht. Denk aan Utrecht, Hilversum, Amsterdam, Amersfoort en omgeving. Woon je verder weg? Bel of app even, dan kijken we of het past. Parkeerkosten in Amsterdam zitten niet in de prijs.",
   },
   {
     vraag: "Plaatsen jullie ook niet-IKEA keukens?",
@@ -112,12 +90,12 @@ export const faqItems = [
   {
     vraag: "Demonteren jullie ook de oude keuken?",
     antwoord:
-      "Ja, dat kan. Het demonteren én afvoeren van je oude keuken kun je als extra optie toevoegen in de configurator, zodat het meteen in je prijs is meegenomen.",
+      `Ja, dat kan. Je oude keuken demonteren en afvoeren kost ${bedragen.demontage}, inclusief container. Je kiest het als extra bij je aanvraag, zodat het meteen in je prijs zit.`,
   },
   {
     vraag: "Sluiten jullie ook apparaten en de kraan aan?",
     antwoord:
-      "Ja. Het aansluiten van apparaten (oven, kookplaat, vaatwasser, koelkast) en het aansluiten van spoelbak en kraan kun je als extra kiezen. Lichte leidingaanpassingen doen we ook; groter leidingwerk gaat in overleg.",
+      "Ja, en dat zit al in de prijs. Oven, kookplaat, vaatwasser en koelkast sluiten we aan, net als de spoelbak en kraan op de bestaande afvoer en water. Lichte leidingaanpassingen doen we ook. Groter leidingwerk gaat in overleg.",
   },
   {
     vraag: "Is de prijs vast of komen er kosten bij?",
@@ -132,6 +110,6 @@ export const faqItems = [
   {
     vraag: "Wie voert de montage uit?",
     antwoord:
-      "De montage wordt uitgevoerd door een gescreende, zelfstandige keukenmonteur uit jouw regio. Montagebaas selecteert de monteurs, bewaakt de prijs en kwaliteit, en is je vaste aanspreekpunt van offerte tot oplevering.",
+      "Ilja Goossens, de eigenaar van Montagebaas. Montagebaas is een eenmanszaak: Ilja maakt je offerte, plaatst je keuken zelf en is je aanspreekpunt van offerte tot oplevering.",
   },
 ] as const;

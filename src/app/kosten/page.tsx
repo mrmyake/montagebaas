@@ -7,28 +7,21 @@ import { ButtonLink } from "@/components/ui/Button";
 import { SlotCta } from "@/components/sections/SlotCta";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { serviceSchema, faqPageSchema } from "@/lib/schema";
-import { berekenPrijs, euro, pricing } from "@/lib/pricing";
+import { kostenKaarten, tekstBedragen, EXTRA_OPTIES, extraLabel } from "@/lib/prijs-weergave";
+
+const b = tekstBedragen();
+const openingszin = `Een complete montage van een IKEA-keuken kost bij Montagebaas ongeveer ${b.laagsteBand} tot ${b.hoogsteBand}, inclusief btw en reiskosten.`;
 
 export const metadata: Metadata = {
   title: "Wat kost een IKEA-keuken plaatsen? Prijzen 2026",
   description:
-    "Een IKEA-keuken laten plaatsen kost in Nederland doorgaans €1.100 tot €2.500 voor de montage. Bekijk de prijzen per keukengrootte en per losse klus, en wat wel en niet is inbegrepen.",
+    `${openingszin} Bekijk de prijzen per keukengrootte en per losse klus, en wat wel en niet is inbegrepen.`,
   alternates: { canonical: "/kosten" },
 };
 
-const grootteRijen = [
-  { label: "Kleine keuken (tot 8 kasten)", grootte: "<8" as const },
-  { label: "Gemiddelde keuken (8–15 kasten)", grootte: "8-15" as const },
-  { label: "Grote keuken (15+ kasten)", grootte: "15+" as const },
-];
-
 const lossePosten = [
-  { label: "Oude keuken demonteren + afvoeren", prijs: euro(pricing.extras.demontage_afvoer) },
-  { label: "Apparaat aansluiten (per stuk)", prijs: euro(pricing.extras.apparaat_aansluiten) },
-  { label: "Werkblad monteren", prijs: euro(pricing.extras.werkblad_monteren) },
-  { label: "Spoelbak / kraan aansluiten", prijs: euro(pricing.extras.spoelbak_kraan) },
-  { label: "Lichte leidingaanpassing (per punt)", prijs: euro(pricing.extras.lichte_leidingaanpassing) },
-  { label: "Tegelwerk / spatwand", prijs: "op aanvraag" },
+  ...EXTRA_OPTIES.map((e) => ({ label: e.label, sub: e.sub, prijs: extraLabel(e.bedrag) })),
+  { label: "Tegelwerk of spatwand", sub: "Maatwerk, apart in je offerte", prijs: "Op aanvraag" },
 ];
 
 // FAQ-subset specifiek over kosten (voor GEO / AI Overviews)
@@ -36,12 +29,16 @@ const kostenFaq = [
   {
     vraag: "Wat kost een IKEA-keuken laten plaatsen?",
     antwoord:
-      "Een IKEA-keuken laten plaatsen kost in Nederland doorgaans €1.100 tot €2.500 voor de montage, exclusief leidingwerk. De prijs hangt af van het aantal kasten, de opstelling en extra's.",
+      `${openingszin} Een kleine keuken kost ongeveer ${b.klein}, een gemiddelde ${b.gemiddeld} en een grote met eiland ${b.groot}. Zet je de kasten zelf in elkaar? Met Montageklaar betaal je ongeveer ${b.montageklaarScheelt} minder.`,
   },
   {
     vraag: "Zit het aansluiten van apparaten bij de prijs in?",
     antwoord:
-      "Het aansluiten van apparaten is een losse post (ongeveer €75 per apparaat). Je kiest in de configurator zelf of je dit meeneemt, zodat het meteen in je prijs zit.",
+      "Ja. Oven, kookplaat, vaatwasser en koelkast aansluiten zit in de prijs, net als het aansluiten van spoelbak en kraan op de bestaande afvoer en water.",
+  },
+  {
+    vraag: "Wat kost het om mijn oude keuken te laten weghalen?",
+    antwoord: `Je oude keuken demonteren en afvoeren kost ${b.demontage}, inclusief container.`,
   },
   {
     vraag: "Komen er achteraf kosten bij?",
@@ -54,10 +51,7 @@ const thClass = "border-b border-line px-4 py-3 text-left text-sm font-semibold 
 const tdClass = "border-b border-line px-4 py-3 text-ink-soft";
 
 export default function KostenPage() {
-  const rijen = grootteRijen.map((r) => ({
-    ...r,
-    range: berekenPrijs({ grootte: r.grootte, opstelling: "recht", extras: {} }),
-  }));
+  const rijen = kostenKaarten();
 
   return (
     <>
@@ -71,18 +65,15 @@ export default function KostenPage() {
         <Container className="max-w-3xl">
           {/* Citeerbare openingszin (GEO) */}
           <p className="text-lg leading-relaxed text-ink">
-            <strong>
-              Een IKEA-keuken laten plaatsen kost in Nederland doorgaans €1.100 tot €2.500 voor de
-              montage, exclusief leidingwerk.
-            </strong>{" "}
-            De exacte prijs hangt af van het aantal kasten, de opstelling (recht, hoek of eiland) en
-            extra&apos;s zoals het aansluiten van apparaten of het afvoeren van je oude keuken.
+            <strong>{openingszin}</strong> De exacte prijs hangt vooral af van het aantal kasten.
+            Apparaten, spoelbak en kraan aansluiten zitten er al in. Zet je de kasten zelf in elkaar?
+            Met Montageklaar betaal je ongeveer {b.montageklaarScheelt} minder.
           </p>
 
           {/* Prijstabel per grootte */}
           <h2 className="mt-12 text-2xl font-bold text-ink">Richtprijzen per keukengrootte</h2>
           <p className="mt-2 text-ink-soft">
-            Indicatie voor de montage van een rechte opstelling, exclusief extra&apos;s.
+            Indicatie voor complete montage, inclusief btw en reiskosten, exclusief extra&apos;s.
           </p>
           <div className="mt-5 overflow-x-auto rounded-2xl border border-line bg-surface">
             <table className="w-full border-collapse">
@@ -95,10 +86,11 @@ export default function KostenPage() {
               <tbody>
                 {rijen.map((r) => (
                   <tr key={r.grootte}>
-                    <td className={tdClass}>{r.label}</td>
-                    <td className={`${tdClass} font-semibold text-ink`}>
-                      {euro(r.range.min)} – {euro(r.range.max)}
+                    <td className={tdClass}>
+                      {r.titel}
+                      <span className="block text-sm text-muted">{r.sub}</span>
                     </td>
+                    <td className={`${tdClass} font-semibold text-ink`}>{r.band}</td>
                   </tr>
                 ))}
               </tbody>
@@ -106,22 +98,25 @@ export default function KostenPage() {
           </div>
 
           {/* Losse posten */}
-          <h2 className="mt-12 text-2xl font-bold text-ink">Prijzen per losse post</h2>
+          <h2 className="mt-12 text-2xl font-bold text-ink">Extra&apos;s en wat al inbegrepen is</h2>
           <p className="mt-2 text-ink-soft">
-            Extra&apos;s die je los kunt toevoegen. In de configurator tel je ze meteen bij je prijs op.
+            Sommige onderdelen zitten al in de prijs. Andere kies je er los bij.
           </p>
           <div className="mt-5 overflow-x-auto rounded-2xl border border-line bg-surface">
             <table className="w-full border-collapse">
               <thead>
                 <tr>
                   <th className={thClass}>Onderdeel</th>
-                  <th className={thClass}>Vanaf</th>
+                  <th className={thClass}>Prijs</th>
                 </tr>
               </thead>
               <tbody>
                 {lossePosten.map((p) => (
                   <tr key={p.label}>
-                    <td className={tdClass}>{p.label}</td>
+                    <td className={tdClass}>
+                      {p.label}
+                      <span className="block text-sm text-muted">{p.sub}</span>
+                    </td>
                     <td className={`${tdClass} font-semibold text-ink`}>{p.prijs}</td>
                   </tr>
                 ))}
@@ -129,8 +124,8 @@ export default function KostenPage() {
             </table>
           </div>
           <p className="mt-3 text-sm text-muted">
-            {/* EIGENAAR: kalibreer deze bedragen met echte kostprijzen vóór livegang. */}
-            Bedragen zijn indicaties. Je exacte prijs staat in je offerte.
+            Bedragen zijn indicaties, inclusief btw. Je exacte prijs staat in je offerte. Parkeerkosten
+            in Amsterdam zitten niet in de prijs.
           </p>
 
           <div className="mt-8">
@@ -143,11 +138,11 @@ export default function KostenPage() {
           <h2 className="mt-14 text-2xl font-bold text-ink">Waaruit is de prijs opgebouwd?</h2>
           <div className="mt-4 space-y-4 text-lg text-ink-soft">
             <p>
-              De montageprijs bestaat vooral uit het aantal kasten dat geplaatst moet worden en de
-              opstelling. Een hoek- of eilandopstelling kost iets meer werk dan een rechte wand.
-              Daarbovenop komen de extra&apos;s die je kiest: het afvoeren van je oude keuken, het
-              aansluiten van apparaten, het monteren van het werkblad en het aansluiten van spoelbak
-              en kraan.
+              De montageprijs hangt vooral af van het aantal kasten dat geplaatst moet worden. Het
+              aansluiten van apparaten, spoelbak en kraan zit er al in. Daarbovenop komen alleen de
+              extra&apos;s die je kiest: je oude keuken eruit ({b.demontage}, inclusief container),
+              een laminaat werkblad op maat zagen ({b.werkbladZagen}) of een lichte
+              leidingaanpassing.
             </p>
             <p>
               Wat <strong>niet</strong> standaard is inbegrepen, is groter leidingwerk, elektra-
@@ -167,7 +162,7 @@ export default function KostenPage() {
             <div className="rounded-2xl border border-trust/30 bg-trust-soft p-5">
               <h3 className="font-bold text-ink">Bij Montagebaas</h3>
               <ul className="mt-3 space-y-2 text-sm text-ink-soft">
-                {["Vaste prijs vooraf", "Eén vast aanspreekpunt", "Offerte binnen 24 uur", "Gescreende monteur uit je regio"].map((t) => (
+                {["Vaste prijs vooraf", "Eén vast aanspreekpunt", "Offerte binnen 24 uur", "Ilja plaatst je keuken zelf"].map((t) => (
                   <li key={t} className="flex items-start gap-2">
                     <Check size={17} className="mt-0.5 shrink-0 text-trust" /> {t}
                   </li>
@@ -198,7 +193,7 @@ export default function KostenPage() {
             <p>
               Laat je het doen, dan heb je zekerheid: een vakkundige montage, een vaste prijs en
               iemand die verantwoordelijk is voor het resultaat. Twijfel je over een deel van het
-              werk? Je kunt ook alleen het lastige laten afmonteren.
+              werk? Je kunt ook alleen het lastige laten afmonteren, voor ongeveer {b.afmonteren}.
             </p>
           </div>
 

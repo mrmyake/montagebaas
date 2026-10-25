@@ -16,16 +16,18 @@ import {
   REVIEW_AGGREGATES,
   TOTAL_REVIEW_COUNT,
   COMBINED_RATING,
+  REVIEW_SAMENVATTING,
+  cijfer,
 } from "@/lib/testimonials";
 
 export const metadata: Metadata = {
-  title: "Reviews — wat klanten zeggen",
-  description: `Beoordeeld met ${REVIEW_AGGREGATES.google.rating.toFixed(1)} op Google en ${REVIEW_AGGREGATES.werkspot.rating.toFixed(1)} op Werkspot. Echte klantervaringen over het vakwerk van Ilja Goossens (Montagebaas, Loosdrecht).`,
+  title: `Reviews: ${REVIEW_SAMENVATTING}`,
+  description: `${REVIEW_SAMENVATTING}. Echte reviews over het werk van Ilja Goossens (Montagebaas, Loosdrecht), letterlijk overgenomen.`,
   alternates: { canonical: "/reviews" },
   openGraph: {
-    title: `Montagebaas reviews — ${REVIEW_AGGREGATES.google.rating.toFixed(1)} op Google, ${REVIEW_AGGREGATES.werkspot.rating.toFixed(1)} op Werkspot`,
+    title: `Montagebaas reviews: ${REVIEW_SAMENVATTING}`,
     description:
-      "Echte, verifieerbare klantervaringen over het maatwerk en de montage van Ilja Goossens.",
+      "Echte, verifieerbare reviews over het werk van Ilja Goossens, letterlijk overgenomen van Google en Werkspot.",
     type: "website",
     locale: "nl_NL",
   },
@@ -59,13 +61,12 @@ export default function ReviewsPage() {
 
       {/* sr-only samenvatting voor AI / voice search */}
       <section className="sr-only" aria-label="Reviews samenvatting">
-        Montagebaas (Ilja Goossens, Loosdrecht) is beoordeeld met{" "}
-        {REVIEW_AGGREGATES.google.rating.toFixed(1)} sterren op Google uit{" "}
-        {REVIEW_AGGREGATES.google.count} reviews en{" "}
-        {REVIEW_AGGREGATES.werkspot.rating.toFixed(1)} op Werkspot uit{" "}
-        {REVIEW_AGGREGATES.werkspot.count} reviews. Klanten roemen het vakmanschap,
-        het meedenken, de eerlijke prijzen en de strakke afwerking — van IKEA-ombouw
-        en maatwerk tot cinewalls.
+        Montagebaas (Ilja Goossens, Loosdrecht) heeft een {REVIEW_SAMENVATTING}:{" "}
+        {cijfer(REVIEW_AGGREGATES.google.rating)} op Google uit {REVIEW_AGGREGATES.google.count}{" "}
+        reviews en {cijfer(REVIEW_AGGREGATES.werkspot.rating)} op Werkspot uit{" "}
+        {REVIEW_AGGREGATES.werkspot.count} reviews. Een deel van die reviews gaat over ander
+        timmerwerk dan keukens. Hieronder staan de reviews over keukenmontage en over het werk in
+        het algemeen.
       </section>
 
       {/* Hero met aggregaat-badges */}
@@ -75,26 +76,28 @@ export default function ReviewsPage() {
             Klantervaringen
           </p>
           <h1 className="mt-2 max-w-3xl text-4xl font-bold text-ink sm:text-5xl">
-            Wat klanten zeggen
+            {REVIEW_SAMENVATTING}
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-ink-soft">
-            Vertrouwen verdien je met goed werk. Hieronder echte, verifieerbare reviews
-            van het vakwerk van Ilja — van IKEA-ombouw en maatwerk tot complete wanden.
+            Vertrouwen verdien je met goed werk. Hieronder echte reviews over het werk van Ilja,
+            letterlijk overgenomen. Eerst de reviews over keukenmontage, daarna de reviews over
+            zijn werk in het algemeen. De cijfers gelden voor al zijn werk, niet alleen keukens.
           </p>
 
           <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3 sm:gap-5">
             <RatingBadge
               label="Google"
-              waarde={REVIEW_AGGREGATES.google.rating.toFixed(1)}
+              waarde={cijfer(REVIEW_AGGREGATES.google.rating)}
               meta={`${REVIEW_AGGREGATES.google.count} reviews`}
+              href={REVIEW_AGGREGATES.google.profileUrl}
             />
             <RatingBadge
               label="Werkspot"
-              waarde={REVIEW_AGGREGATES.werkspot.rating.toFixed(1)}
+              waarde={cijfer(REVIEW_AGGREGATES.werkspot.rating)}
               meta={`${REVIEW_AGGREGATES.werkspot.count} reviews`}
               href={REVIEW_AGGREGATES.werkspot.profileUrl}
             />
-            <RatingBadge label="Projecten" waarde="100+" meta="Gerealiseerd" />
+            <RatingBadge label="Samen" waarde={cijfer(COMBINED_RATING)} meta={`${TOTAL_REVIEW_COUNT} reviews`} />
           </div>
         </Container>
       </section>
@@ -128,7 +131,7 @@ function RatingBadge({
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">{label}</p>
       <div className="mt-1 flex items-baseline gap-1.5">
         <span className="text-2xl font-bold tabular-nums text-ink sm:text-3xl">{waarde}</span>
-        {waarde !== "100+" && <Star size={16} className="fill-accent text-accent" />}
+        <Star size={16} className="fill-accent text-accent" />
       </div>
       <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-soft">
         {meta}

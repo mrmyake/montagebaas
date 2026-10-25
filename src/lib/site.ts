@@ -13,7 +13,8 @@ export const site = {
 
   // Kernbelofte — rode draad door de hele site
   tagline: "Je IKEA-keuken vakkundig geplaatst",
-  belofte: "Vaste prijs vooraf, geen verrassingen, offerte binnen 24 uur. In heel Nederland.",
+  belofte: "Vaste prijs vooraf, geen verrassingen, offerte binnen 24 uur. Ilja plaatst je keuken zelf, tot ongeveer 75 km rond Loosdrecht.",
+  werkgebied: "Tot ongeveer 75 km rond Loosdrecht",
 
   // Contact
   telefoonWeergave: "06 - 2917 3468",
