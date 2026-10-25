@@ -1,4 +1,3 @@
-import Script from "next/script";
 import { GtagLoader } from "@/components/analytics/GtagLoader";
 
 /**
@@ -6,8 +5,19 @@ import { GtagLoader } from "@/components/analytics/GtagLoader";
  * Laadt NIETS zonder NEXT_PUBLIC_GA_ID. De consent-default staat op 'denied'
  * vóór gtag.js laadt; de ConsentBanner upgradet naar 'granted' bij akkoord.
  * gtag.js zelf wordt lui geladen (GtagLoader) zodat het de pagespeed niet raakt.
+ *
+ * Twee delen: AnalyticsHead (inline script in <head>) en Analytics (body).
  */
-export function Analytics() {
+
+/**
+ * Definieert window.gtag en zet de consent-default, vóór alle Next-code.
+ *
+ * Bewust een gewone inline <script> in <head> en geen next/script met
+ * beforeInteractive: dat zette het script client-side alsnog in <head> vlak vóór
+ * de hydration, waarna React een onverwacht element in <head> vond, fout #418
+ * gooide en de hele pagina opnieuw in de browser renderde (25-10-2026).
+ */
+export function AnalyticsHead() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const adsId = process.env.NEXT_PUBLIC_ADS_ID;
   if (!gaId) return null;
@@ -17,24 +27,28 @@ export function Analytics() {
   // events controleerbaar in window.dataLayer belanden (Fase 4-controle).
   if (process.env.VERCEL_ENV !== "production") {
     return (
-      <Script id="ga-uit" strategy="beforeInteractive">
-        {`
+      <script
+        id="ga-uit"
+        dangerouslySetInnerHTML={{
+          __html: `
           window.dataLayer = window.dataLayer || [];
           window.gtag = function(){ window.dataLayer.push(arguments); };
           window.__mbGaUit = true;
-        `}
-      </Script>
+        `,
+        }}
+      />
     );
   }
 
   const debug = process.env.NODE_ENV === "development";
 
+  // Consent Mode v2 — DEFAULT denied vóór gtag.js. Definieert window.gtag
+  // en queue't calls in dataLayer tot GtagLoader het script injecteert.
   return (
-    <>
-      {/* Consent Mode v2 — DEFAULT denied vóór gtag.js. Definieert window.gtag
-          en queue't calls in dataLayer tot GtagLoader het script injecteert. */}
-      <Script id="ga-consent-default" strategy="beforeInteractive">
-        {`
+    <script
+      id="ga-consent-default"
+      dangerouslySetInnerHTML={{
+        __html: `
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
@@ -51,8 +65,17 @@ export function Analytics() {
           gtag('js', new Date());
           gtag('config', '${gaId}', { send_page_view: true${debug ? ", debug_mode: true" : ""} });
           ${adsId ? `gtag('config', '${adsId}');` : ""}
-        `}
-      </Script>
+        `,
+      }}
+    />
+  );
+}
+
+export function Analytics() {
+  if (!process.env.NEXT_PUBLIC_GA_ID || process.env.VERCEL_ENV !== "production") return null;
+
+  return (
+    <>
       <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
       <link rel="dns-prefetch" href="https://www.google-analytics.com" />
       <GtagLoader />
