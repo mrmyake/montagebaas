@@ -10,7 +10,7 @@ import { site, whatsappDefault } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Werkgebied: tot ongeveer 75 km rond Loosdrecht",
   description:
-    "Ilja van Montagebaas plaatst IKEA-keukens zelf, tot ongeveer 75 km rond Loosdrecht: Utrecht, Hilversum, Amsterdam, Amersfoort en omgeving. Bekijk de plaatsen en bereken je prijs.",
+    `Ilja van ${site.naam} plaatst IKEA-keukens zelf, tot ongeveer 75 km rond Loosdrecht: Utrecht, Hilversum, Amsterdam, Amersfoort en omgeving. Bekijk de plaatsen en bereken je prijs.`,
   alternates: { canonical: "/werkgebied" },
 };
 

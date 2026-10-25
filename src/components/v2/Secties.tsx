@@ -147,6 +147,16 @@ export function Werkwijze() {
   );
 }
 
+/** Profiellink; zonder bekende URL alleen de tekst. */
+function ReviewLink({ url, children }: { url: string | null; children: React.ReactNode }) {
+  if (!url) return <span className="text-v2-ink">{children}</span>;
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="text-v2-ink">
+      {children}
+    </a>
+  );
+}
+
 export function Reviews({ merk }: { merk: Merk }) {
   const r = merk.reviews;
   return (
@@ -159,13 +169,9 @@ export function Reviews({ merk }: { merk: Merk }) {
             <span className="text-v2-muted">uit {r.totaal.aantal} reviews</span>
           </p>
           <p className="mt-1.5 text-v2-muted">
-            <a href={r.google.url} target="_blank" rel="noopener noreferrer" className="text-v2-ink">
-              {r.google.score} op Google
-            </a>{" "}
+            <ReviewLink url={r.google.url}>{r.google.score} op Google</ReviewLink>{" "}
             ({r.google.aantal}) en{" "}
-            <a href={r.werkspot.url} target="_blank" rel="noopener noreferrer" className="text-v2-ink">
-              {r.werkspot.score} op Werkspot
-            </a>{" "}
+            <ReviewLink url={r.werkspot.url}>{r.werkspot.score} op Werkspot</ReviewLink>{" "}
             ({r.werkspot.aantal})
           </p>
           <Link href="/reviews" className="mt-2 inline-flex min-h-11 items-center font-bold text-v2-ink">

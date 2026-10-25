@@ -9,12 +9,13 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { serviceSchema, faqPageSchema } from "@/lib/schema";
 import { kostenKaarten, tekstBedragen, extraOpties, extraLabel, type Prijsbron } from "@/lib/prijs-weergave";
 import { laadPrijsbron } from "@/lib/prijs-bron";
+import { site } from "@/lib/site";
 
 // Bedragen uit de actieve tarievenrij; elk uur opnieuw opgehaald.
 export const revalidate = 3600;
 
 const openingszinVoor = (b: ReturnType<typeof tekstBedragen>) =>
-  `Een complete montage van een IKEA-keuken kost bij Montagebaas ongeveer ${b.laagsteBand} tot ${b.hoogsteBand}, inclusief btw en reiskosten.`;
+  `Een complete montage van een IKEA-keuken kost bij ${site.naam} ongeveer ${b.laagsteBand} tot ${b.hoogsteBand}, inclusief btw en reiskosten.`;
 
 export async function generateMetadata(): Promise<Metadata> {
   const b = tekstBedragen(await laadPrijsbron());
@@ -163,7 +164,7 @@ export default async function KostenPage() {
           </div>
 
           {/* Vergelijking IKEA */}
-          <h2 className="mt-14 text-2xl font-bold text-ink">Montagebaas vs. de montage van IKEA zelf</h2>
+          <h2 className="mt-14 text-2xl font-bold text-ink">{site.naam} vs. de montage van IKEA zelf</h2>
           <p className="mt-2 text-ink-soft">
             IKEA werkt met een opbouw van starttarief, een bedrag per kast, per apparaat en
             inmeetkosten, plus vaak onaangekondigd &ldquo;voorbereidend werk&rdquo;. Dat maakt de
@@ -171,7 +172,7 @@ export default async function KostenPage() {
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-trust/30 bg-trust-soft p-5">
-              <h3 className="font-bold text-ink">Bij Montagebaas</h3>
+              <h3 className="font-bold text-ink">Bij {site.naam}</h3>
               <ul className="mt-3 space-y-2 text-sm text-ink-soft">
                 {["Vaste prijs vooraf", "Eén vast aanspreekpunt", "Offerte binnen 24 uur", "Ilja plaatst je keuken zelf"].map((t) => (
                   <li key={t} className="flex items-start gap-2">

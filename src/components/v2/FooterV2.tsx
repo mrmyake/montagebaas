@@ -19,13 +19,29 @@ export function FooterV2() {
       <div className="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-6 px-[clamp(16px,4vw,40px)] py-10">
         <div className="min-w-0 flex-[1_1_280px]">
           <p className="m-0 text-[19px] font-extrabold">{merk.naam}</p>
-          <p className="mt-1.5 max-w-[28em] text-v2-footer-ink">
-            IKEA-keukens geplaatst voor een vaste prijs, tot ongeveer {merk.werkgebied.straalKm} km rond{" "}
-            {merk.werkgebied.centrum}. {merk.naam} is geen onderdeel van IKEA.
-          </p>
-          <p className="mt-3 text-v2-footer-ink">
-            {merk.adres.straat}, {merk.adres.postcode} {merk.adres.plaats} · KvK {merk.kvk}
-          </p>
+          {/* Twee volledige varianten: Montagebaas blijft tot op de tekstknoop gelijk. */}
+          {merk.footerJuridisch ? (
+            <>
+              <p className="mt-1.5 max-w-[28em] text-v2-footer-ink">
+                IKEA-keukens geplaatst voor een vaste prijs, tot ongeveer {merk.werkgebied.straalKm} km rond{" "}
+                {merk.werkgebied.centrum}.
+              </p>
+              <p className="mt-3 text-v2-footer-ink">
+                {merk.adres.straat}, {merk.adres.postcode} {merk.adres.plaats}
+              </p>
+              <p className="mt-1 text-v2-footer-ink">{merk.footerJuridisch}</p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1.5 max-w-[28em] text-v2-footer-ink">
+                IKEA-keukens geplaatst voor een vaste prijs, tot ongeveer {merk.werkgebied.straalKm} km rond{" "}
+                {merk.werkgebied.centrum}. {merk.naam} is geen onderdeel van IKEA.
+              </p>
+              <p className="mt-3 text-v2-footer-ink">
+                {merk.adres.straat}, {merk.adres.postcode} {merk.adres.plaats} · KvK {merk.kvk}
+              </p>
+            </>
+          )}
           <p className="mt-1 text-v2-footer-ink">
             <a href={merk.telefoon.link} className="font-semibold text-v2-ink">
               {merk.telefoon.weergave}

@@ -1,6 +1,7 @@
 import { UserCheck, BadgeEuro, Zap } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { pijlers } from "@/lib/content";
+import { site } from "@/lib/site";
 
 const iconen = [UserCheck, BadgeEuro, Zap];
 
@@ -8,7 +9,7 @@ export function Pijlers() {
   return (
     <Section>
       <SectionHeading
-        eyebrow="Waarom Montagebaas"
+        eyebrow={`Waarom ${site.naam}`}
         titel="Grip, kwaliteit en gemak — zonder verrassingen"
         intro="Geen prijsvechtersveiling en geen anoniem platform. Wel een vakman die zijn zaken op orde heeft."
       />

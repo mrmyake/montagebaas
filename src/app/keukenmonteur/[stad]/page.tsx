@@ -35,7 +35,7 @@ export async function generateMetadata({
   if (!data.binnenStraal) {
     return {
       title: `Keukenmonteur ${data.naam}? Ons werkgebied is rond Loosdrecht`,
-      description: `${data.naam} ligt buiten ons vaste werkgebied. Ilja van Montagebaas plaatst IKEA-keukens zelf, tot ongeveer 75 km rond Loosdrecht. Woon je in ${data.naam}? Bel of app even, dan kijken we of het past.`,
+      description: `${data.naam} ligt buiten ons vaste werkgebied. Ilja van ${site.naam} plaatst IKEA-keukens zelf, tot ongeveer 75 km rond Loosdrecht. Woon je in ${data.naam}? Bel of app even, dan kijken we of het past.`,
       alternates: { canonical: `/keukenmonteur/${data.slug}` },
     };
   }

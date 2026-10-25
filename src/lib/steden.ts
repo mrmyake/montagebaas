@@ -12,6 +12,8 @@
  * geen werk ter plaatse; de intro en de pagina vragen de bezoeker even te bellen of te appen.
  */
 
+import { site } from "@/lib/site";
+
 export interface Stad {
   slug: string;
   naam: string;
@@ -79,7 +81,7 @@ export const steden: Stad[] = [
     wijken: ["Strijp", "Woensel", "Gestel", "Tongelre", "Stratum"],
     nabij: ["Veldhoven", "Best", "Geldrop", "Nuenen"],
     intro:
-      "Eindhoven is een designstad met een neus voor strakke, functionele keukens, van de herontwikkelde panden op Strijp-S tot de gezinswijken in Woensel. Toch ligt Eindhoven buiten ons vaste werkgebied.\n\nMontagebaas is een eenmanszaak: Ilja plaatst elke keuken zelf. Hij werkt tot ongeveer 75 km rond Loosdrecht. Woon je in Eindhoven, Veldhoven of Best? Bel of app dan even, dan kijken we samen of het past.",
+      `Eindhoven is een designstad met een neus voor strakke, functionele keukens, van de herontwikkelde panden op Strijp-S tot de gezinswijken in Woensel. Toch ligt Eindhoven buiten ons vaste werkgebied.\n\n${site.naam} is een eenmanszaak: Ilja plaatst elke keuken zelf. Hij werkt tot ongeveer 75 km rond Loosdrecht. Woon je in Eindhoven, Veldhoven of Best? Bel of app dan even, dan kijken we samen of het past.`,
   },
   {
     slug: "groningen",
@@ -200,7 +202,7 @@ export const steden: Stad[] = [
     wijken: ["Wyck", "Céramique", "Sint Pieter", "Daalhof", "Heugem"],
     nabij: ["Meerssen", "Valkenburg", "Eijsden", "Margraten"],
     intro:
-      "Maastricht heeft een bijzondere woningvoorraad, van historische panden in Wyck tot de moderne architectuur van Céramique. Helaas ligt Maastricht ver buiten ons werkgebied.\n\nMontagebaas is een eenmanszaak met Ilja als vakman. Hij werkt tot ongeveer 75 km rond Loosdrecht, en Zuid-Limburg valt daar ruim buiten. Twijfel je? Bel of app even, dan zeggen we eerlijk of het kan.",
+      `Maastricht heeft een bijzondere woningvoorraad, van historische panden in Wyck tot de moderne architectuur van Céramique. Helaas ligt Maastricht ver buiten ons werkgebied.\n\n${site.naam} is een eenmanszaak met Ilja als vakman. Hij werkt tot ongeveer 75 km rond Loosdrecht, en Zuid-Limburg valt daar ruim buiten. Twijfel je? Bel of app even, dan zeggen we eerlijk of het kan.`,
   },
   {
     slug: "hilversum",
@@ -211,7 +213,7 @@ export const steden: Stad[] = [
     wijken: ["Kerkelanden", "Hilversumse Meent", "Oostereind", "Trompenberg", "Noordwest"],
     nabij: ["Loosdrecht", "Bussum", "Laren", "Baarn"],
     intro:
-      "Hilversum ligt om de hoek van Loosdrecht. Montagebaas zit op een paar kilometer afstand, dus voor een keuken in Hilversum is hij snel ter plaatse, ook voor een keer extra meten of een kleine nazorgklus.\n\nDe woningen in Hilversum lopen sterk uiteen. In Trompenberg en Noordwest staan ruime villa's en jaren-dertighuizen met hoge plafonds en niet altijd rechte muren. In Kerkelanden en de Hilversumse Meent wonen veel gezinnen in rijtjeshuizen uit de jaren zestig en zeventig, waar de oude keuken vaak voor het eerst vervangen wordt. Ook in Oostereind, Bussum, Laren en Baarn plaatst Ilja je keuken zelf, netjes en compleet.",
+      `Hilversum ligt om de hoek van Loosdrecht. ${site.naam} zit op een paar kilometer afstand, dus voor een keuken in Hilversum is hij snel ter plaatse, ook voor een keer extra meten of een kleine nazorgklus.\n\nDe woningen in Hilversum lopen sterk uiteen. In Trompenberg en Noordwest staan ruime villa's en jaren-dertighuizen met hoge plafonds en niet altijd rechte muren. In Kerkelanden en de Hilversumse Meent wonen veel gezinnen in rijtjeshuizen uit de jaren zestig en zeventig, waar de oude keuken vaak voor het eerst vervangen wordt. Ook in Oostereind, Bussum, Laren en Baarn plaatst Ilja je keuken zelf, netjes en compleet.`,
   },
 ];
 

@@ -6,15 +6,15 @@ import { Phone, Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { nav, site } from "@/lib/site";
+import { nav } from "@/lib/nav";
 
-export function Header() {
+export function Header({ naam, telefoon }: { naam: string; telefoon: { weergave: string; link: string } }) {
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur supports-[backdrop-filter]:bg-paper/75">
       <Container className="flex h-16 items-center justify-between gap-4">
-        <Logo />
+        <Logo naam={naam} />
 
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Hoofdmenu">
           {nav.map((item) => (
@@ -30,11 +30,11 @@ export function Header() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <a
-            href={site.telefoonLink}
+            href={telefoon.link}
             className="inline-flex items-center gap-2 text-sm font-semibold text-ink hover:text-accent"
           >
             <Phone size={16} />
-            <span>{site.telefoonWeergave}</span>
+            <span>{telefoon.weergave}</span>
           </a>
           <ButtonLink href="/offerte">Bereken je prijs</ButtonLink>
         </div>
@@ -68,11 +68,11 @@ export function Header() {
                 Bereken je prijs
               </ButtonLink>
               <a
-                href={site.telefoonLink}
+                href={telefoon.link}
                 className="inline-flex items-center justify-center gap-2 text-base font-semibold text-ink"
               >
                 <Phone size={18} />
-                {site.telefoonWeergave}
+                {telefoon.weergave}
               </a>
             </div>
           </Container>

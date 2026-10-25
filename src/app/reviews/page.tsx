@@ -19,13 +19,14 @@ import {
   REVIEW_SAMENVATTING,
   cijfer,
 } from "@/lib/testimonials";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: `Reviews: ${REVIEW_SAMENVATTING}`,
-  description: `${REVIEW_SAMENVATTING}. Echte reviews over het werk van Ilja Goossens (Montagebaas, Loosdrecht), letterlijk overgenomen.`,
+  description: `${REVIEW_SAMENVATTING}. Echte reviews over het werk van Ilja Goossens (${site.naam}, Loosdrecht), letterlijk overgenomen.`,
   alternates: { canonical: "/reviews" },
   openGraph: {
-    title: `Montagebaas reviews: ${REVIEW_SAMENVATTING}`,
+    title: `${site.naam} reviews: ${REVIEW_SAMENVATTING}`,
     description:
       "Echte, verifieerbare reviews over het werk van Ilja Goossens, letterlijk overgenomen van Google en Werkspot.",
     type: "website",
@@ -61,7 +62,7 @@ export default function ReviewsPage() {
 
       {/* sr-only samenvatting voor AI / voice search */}
       <section className="sr-only" aria-label="Reviews samenvatting">
-        Montagebaas (Ilja Goossens, Loosdrecht) heeft een {REVIEW_SAMENVATTING}:{" "}
+        {site.naam} (Ilja Goossens, Loosdrecht) heeft een {REVIEW_SAMENVATTING}:{" "}
         {cijfer(REVIEW_AGGREGATES.google.rating)} op Google uit {REVIEW_AGGREGATES.google.count}{" "}
         reviews en {cijfer(REVIEW_AGGREGATES.werkspot.rating)} op Werkspot uit{" "}
         {REVIEW_AGGREGATES.werkspot.count} reviews. Een deel van die reviews gaat over ander
@@ -89,13 +90,13 @@ export default function ReviewsPage() {
               label="Google"
               waarde={cijfer(REVIEW_AGGREGATES.google.rating)}
               meta={`${REVIEW_AGGREGATES.google.count} reviews`}
-              href={REVIEW_AGGREGATES.google.profileUrl}
+              href={REVIEW_AGGREGATES.google.profileUrl ?? undefined}
             />
             <RatingBadge
               label="Werkspot"
               waarde={cijfer(REVIEW_AGGREGATES.werkspot.rating)}
               meta={`${REVIEW_AGGREGATES.werkspot.count} reviews`}
-              href={REVIEW_AGGREGATES.werkspot.profileUrl}
+              href={REVIEW_AGGREGATES.werkspot.profileUrl ?? undefined}
             />
             <RatingBadge label="Samen" waarde={cijfer(COMBINED_RATING)} meta={`${TOTAL_REVIEW_COUNT} reviews`} />
           </div>

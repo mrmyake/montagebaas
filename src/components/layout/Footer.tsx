@@ -12,7 +12,7 @@ export function Footer() {
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2 lg:col-span-1">
           <div className="[&_*]:!text-white">
-            <Logo />
+            <Logo naam={site.naam} />
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
             {site.tagline}. {site.belofte}

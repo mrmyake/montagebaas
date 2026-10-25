@@ -41,13 +41,25 @@ export function Reviews(props: { compact?: boolean }) {
           Lees meer reviews
         </ButtonLink>
         <p className="mt-3 text-xs text-muted">
-          <a href={REVIEW_AGGREGATES.google.profileUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
-            Google {cijfer(REVIEW_AGGREGATES.google.rating)} uit {REVIEW_AGGREGATES.google.count}
-          </a>
+          {REVIEW_AGGREGATES.google.profileUrl ? (
+            <a href={REVIEW_AGGREGATES.google.profileUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+              Google {cijfer(REVIEW_AGGREGATES.google.rating)} uit {REVIEW_AGGREGATES.google.count}
+            </a>
+          ) : (
+            <span>
+              Google {cijfer(REVIEW_AGGREGATES.google.rating)} uit {REVIEW_AGGREGATES.google.count}
+            </span>
+          )}
           {" · "}
-          <a href={REVIEW_AGGREGATES.werkspot.profileUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
-            Werkspot {cijfer(REVIEW_AGGREGATES.werkspot.rating)} uit {REVIEW_AGGREGATES.werkspot.count}
-          </a>
+          {REVIEW_AGGREGATES.werkspot.profileUrl ? (
+            <a href={REVIEW_AGGREGATES.werkspot.profileUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+              Werkspot {cijfer(REVIEW_AGGREGATES.werkspot.rating)} uit {REVIEW_AGGREGATES.werkspot.count}
+            </a>
+          ) : (
+            <span>
+              Werkspot {cijfer(REVIEW_AGGREGATES.werkspot.rating)} uit {REVIEW_AGGREGATES.werkspot.count}
+            </span>
+          )}
         </p>
       </div>
     </Section>

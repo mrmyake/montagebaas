@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Woordmerk } from "@/components/merk/Beeldmerk";
-import { huidigMerk, whatsappUrl } from "@/lib/merk";
+import type { Merk } from "@/lib/merk";
 
 export const NAV_V2 = [
   { label: "Kosten", href: "/kosten" },
@@ -40,8 +40,15 @@ function Telefoon() {
  * homepage komt daar een menuknop bij, anders zijn de andere pagina's op een
  * telefoon niet te vinden.
  */
-export function HeaderV2() {
-  const merk = huidigMerk();
+/** Wat de header van het merk nodig heeft; de layout (server) geeft het door. */
+export interface HeaderMerk {
+  naam: string;
+  telefoon: Merk["telefoon"];
+  logo?: Merk["logo"];
+  whatsappUrl: string;
+}
+
+export function HeaderV2({ merk }: { merk: HeaderMerk }) {
   const thuis = usePathname() === "/";
   const [open, setOpen] = useState(false);
 
@@ -49,7 +56,7 @@ export function HeaderV2() {
     <header className="border-b border-v2-line bg-white">
       <div className="mx-auto flex h-14 max-w-[1240px] items-center justify-between gap-5 pl-4 pr-3 sm:h-auto sm:px-[clamp(16px,4vw,40px)] sm:py-3">
         <Link href="/" className="text-v2-ink no-underline" aria-label={`${merk.naam}, naar de homepage`}>
-          <Woordmerk naam={merk.naam} />
+          <Woordmerk naam={merk.naam} logo={merk.logo} />
         </Link>
 
         <nav aria-label="Hoofdmenu" className="hidden items-center gap-6 text-[15px] font-medium min-[901px]:flex">
@@ -74,7 +81,7 @@ export function HeaderV2() {
 
         <div className="flex gap-1 sm:hidden">
           <a
-            href={whatsappUrl(merk)}
+            href={merk.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Stuur een WhatsApp"
