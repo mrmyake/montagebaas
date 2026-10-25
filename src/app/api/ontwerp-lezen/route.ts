@@ -66,6 +66,7 @@ export type OntwerpLezenAntwoord =
       bon: { label: string; waarde: string }[];
       meldingen: string[];
       prijzen: LinkPrijzen | null;
+      vertrouwen: "hoog" | "gemiddeld" | "laag";
     }
   | { ok: false; fout: PlannerFoutCategorie | "limiet" | "invoer"; melding: string };
 
@@ -166,5 +167,6 @@ export async function POST(req: Request) {
     bon: w.bon,
     meldingen: w.meldingen,
     prijzen,
+    vertrouwen: gelezen.resultaat.telling.vertrouwen,
   });
 }

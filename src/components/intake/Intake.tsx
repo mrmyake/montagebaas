@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Bon } from "@/components/intake/Bon";
 import { KeuzeKaart, Melding, PakketKaart, StapKop, Veld, VinkKaart, invoerKlasse, postcodeKlasse } from "@/components/intake/ui";
 import { ConsentCheckbox } from "@/components/analytics/ConsentCheckbox";
-import { INVOERMETHODE_KEY, OFFERTE_VERZONDEN_KEY } from "@/components/analytics/ConversionTracker";
+import { INVOERMETHODE_KEY, OFFERTE_VERZONDEN_KEY, SITE_VERSIE_KEY } from "@/components/analytics/ConversionTracker";
+import { stuurStapEenmalig, stuurTrechterEvent } from "@/lib/ga-events";
 import { verstuurVragenAanvraag } from "@/components/intake/actions";
 import { bewaarConsentKeuze, huidigeConsentKeuze, type ConsentBron } from "@/lib/consent";
 import { parsePlannerLink } from "@/lib/ikea-planner/link";
@@ -165,15 +166,22 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
     kaart.querySelector<HTMLElement>("h2[tabindex='-1']")?.focus({ preventScroll: true });
   }, [route, dstap, vstap]);
 
+  // Trechter: elke stap één keer per sessie (alleen na consent, zie ga-events.ts).
+  useEffect(() => {
+    stuurStapEenmalig(route, stap, stappen[stap - 1]);
+  }, [route, stap, stappen]);
+
   function kiesRoute(r: Route) {
+    if (r !== route) stuurTrechterEvent({ naam: "route_gekozen", params: { route: r } });
     setRoute(r);
     setDstap(1);
     setVstap(1);
     setFout(null);
   }
 
-  function naarVragen() {
+  function naarVragen(reden: "lezen_mislukt" | "geen_link" | "verzenden_mislukt") {
     // Gegevens blijven staan; alleen de route wisselt.
+    stuurTrechterEvent({ naam: "overstap_naar_vragen", params: { van_route: route, reden } });
     setRoute("vragen");
     setVstap(1);
     setFout(null);
@@ -220,6 +228,10 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
       fd.append("website", website);
       const res = await fetch("/api/ontwerp-lezen", { method: "POST", body: fd });
       const data = (await res.json().catch(() => null)) as OntwerpLezenAntwoord | null;
+      stuurTrechterEvent({
+        naam: "ontwerp_gelezen",
+        params: { route: "link", gelukt: !!data?.ok, vertrouwen: data?.ok ? data.vertrouwen : "geen" },
+      });
       if (data?.ok) {
         setGelezen(data);
         setLezen({ status: "rust" });
@@ -256,6 +268,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
     try {
       window.sessionStorage.setItem(OFFERTE_VERZONDEN_KEY, "1");
       window.sessionStorage.setItem(INVOERMETHODE_KEY, methode);
+      window.sessionStorage.setItem(SITE_VERSIE_KEY, "v2-redesign");
     } catch {
       // sessionStorage onbereikbaar: lead is wel opgeslagen, alleen de conversie valt weg
     }
@@ -473,7 +486,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
                       <p className="m-0 font-bold">{lezen.melding}</p>
                       <p className="mb-0 mt-1">
                         Geen probleem: je kunt ook{" "}
-                        <button type="button" onClick={naarVragen} className="cursor-pointer border-0 bg-transparent p-0 font-[inherit] font-bold text-inherit underline underline-offset-2">
+                        <button type="button" onClick={() => naarVragen("lezen_mislukt")} className="cursor-pointer border-0 bg-transparent p-0 font-[inherit] font-bold text-inherit underline underline-offset-2">
                           een paar vragen beantwoorden
                         </button>{" "}
                         of{" "}
@@ -493,7 +506,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
                 <p className="mt-3 text-[13.5px] text-v2-muted sm:hidden">Geen account of PDF nodig. We zien alleen je ontwerp.</p>
                 <p className="mt-3.5 text-[14px] sm:hidden">
                   Link niet bij de hand?{" "}
-                  <button type="button" onClick={naarVragen} className="min-h-8 cursor-pointer border-0 bg-transparent p-0 font-[inherit] font-bold text-v2-ink underline underline-offset-[3px]">
+                  <button type="button" onClick={() => naarVragen("geen_link")} className="min-h-8 cursor-pointer border-0 bg-transparent p-0 font-[inherit] font-bold text-v2-ink underline underline-offset-[3px]">
                     Beantwoord een paar vragen
                   </button>
                 </p>
@@ -768,7 +781,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
                   {route !== "vragen" && (
                     <p className="mb-0 mt-1">
                       Lukt het niet?{" "}
-                      <button type="button" onClick={naarVragen} className="cursor-pointer border-0 bg-transparent p-0 font-[inherit] font-bold text-inherit underline underline-offset-2">
+                      <button type="button" onClick={() => naarVragen("verzenden_mislukt")} className="cursor-pointer border-0 bg-transparent p-0 font-[inherit] font-bold text-inherit underline underline-offset-2">
                         Beantwoord een paar vragen
                       </button>
                       , je gegevens blijven staan.

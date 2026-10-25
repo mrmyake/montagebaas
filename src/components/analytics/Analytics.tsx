@@ -12,6 +12,21 @@ export function Analytics() {
   const adsId = process.env.NEXT_PUBLIC_ADS_ID;
   if (!gaId) return null;
 
+  // Buiten productie (previews, lokaal) niets naar Google: anders tellen testaanvragen
+  // als conversie in GA4 en, via de import, in Google Ads. Wel een shim, zodat
+  // events controleerbaar in window.dataLayer belanden (Fase 4-controle).
+  if (process.env.VERCEL_ENV !== "production") {
+    return (
+      <Script id="ga-uit" strategy="beforeInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function(){ window.dataLayer.push(arguments); };
+          window.__mbGaUit = true;
+        `}
+      </Script>
+    );
+  }
+
   const debug = process.env.NODE_ENV === "development";
 
   return (
