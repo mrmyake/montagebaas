@@ -202,6 +202,13 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
   }
 
   async function leesOntwerp() {
+    if (plannerTekst.trim() === "") {
+      // Lege link (bv. getikt vanuit de prijsbalk verderop): terug naar het veld.
+      const veld = document.getElementById("planner-link");
+      veld?.scrollIntoView({ block: "center" });
+      veld?.focus({ preventScroll: true });
+      return;
+    }
     if (!link.ok) {
       setLezen({ status: "fout", melding: "Dit lijkt geen link naar een IKEA Keukenplanner-ontwerp. Kopieer de deellink opnieuw." });
       return;
@@ -334,7 +341,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting }: 
   const actie: { label: string; kort: string; doe: () => void; uit: boolean; accent: boolean } =
     ontwerp && dstap === 1
       ? route === "link"
-        ? { label: lezen.status === "bezig" ? "Bezig met lezen…" : "Lees mijn ontwerp", kort: lezen.status === "bezig" ? "Lezen…" : "Lees ontwerp", doe: leesOntwerp, uit: lezen.status === "bezig" || plannerTekst.trim() === "", accent: true }
+        ? { label: lezen.status === "bezig" ? "Bezig met lezen…" : "Lees mijn ontwerp", kort: lezen.status === "bezig" ? "Lezen…" : "Lees ontwerp", doe: leesOntwerp, uit: lezen.status === "bezig", accent: true }
         : { label: "Volgende", kort: "Volgende", doe: volgende, uit: bestanden.length === 0, accent: false }
       : stap < laatste
         ? { label: "Volgende", kort: "Volgende", doe: volgende, uit: false, accent: false }
