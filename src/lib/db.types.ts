@@ -69,7 +69,7 @@ export interface AanvraagRow {
   // Redesign-intake (0018). site_versie: v1-oud voor alles van vóór 0018 en van
   // /offerte-oud. prijs_getoond_*: exact wat de klant zag (incl. btw), beide gelijk
   // bij een vaste prijs, beide null als er geen bedrag getoond is.
-  site_versie: SiteVersie | null;
+  site_versie: SiteVersie; // not null, default v1-oud
   pakket_gekozen: Pakket | null;
   demontage_gekozen: boolean | null;
   prijs_getoond_laag: number | null;
@@ -191,7 +191,7 @@ export interface LeadOverzichtRow {
   invoermethode: Invoermethode | null; // sinds 0013
   planner_status: PlannerStatus | null; // sinds 0013
   werkelijke_dagen: number | null; // sinds 0016
-  site_versie: SiteVersie | null; // sinds 0018
+  site_versie: SiteVersie; // sinds 0018
   pakket_gekozen: Pakket | null; // sinds 0018
   demontage_gekozen: boolean | null; // sinds 0018
   prijs_getoond_laag: number | null; // sinds 0018
