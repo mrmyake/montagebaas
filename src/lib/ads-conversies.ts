@@ -75,6 +75,40 @@ export interface UitgeslotenContacten {
   telefoons: Set<string>;
 }
 
+/**
+ * Eigen domeinen en adressen die nooit naar Google gaan (testinzendingen,
+ * ook met een +tag of een ander adres op hetzelfde domein). Env ADS_UITSLUITEN,
+ * kommagescheiden: "@domein.nl" sluit het hele domein uit, "naam@domein.nl" één adres.
+ */
+export const ADS_UITSLUITEN_STANDAARD = "@ilja.com, @montagebaas.com, @gamundo.com, ilja.goossens@gmail.com";
+
+export interface Uitsluitregels {
+  domeinen: Set<string>;
+  adressen: Set<string>;
+}
+
+export function parseUitsluitregels(raw: string | undefined | null): Uitsluitregels {
+  const uit: Uitsluitregels = { domeinen: new Set(), adressen: new Set() };
+  for (const item of (raw ?? "").split(",")) {
+    const s = item.trim().toLowerCase();
+    if (!s) continue;
+    if (s.startsWith("@")) {
+      if (s.length > 1) uit.domeinen.add(s.slice(1));
+    } else {
+      const e = normaliseerEmail(s);
+      if (e) uit.adressen.add(e);
+    }
+  }
+  return uit;
+}
+
+/** Valt dit e-mailadres onder een uitgesloten domein of adres? */
+export function valtOnderUitsluiting(email: string | null | undefined, regels: Uitsluitregels): boolean {
+  const e = normaliseerEmail(email);
+  if (!e) return false;
+  return regels.adressen.has(e) || regels.domeinen.has(e.slice(e.lastIndexOf("@") + 1));
+}
+
 /** "me@x.nl, 06-12345678" → genormaliseerde sets. Onbruikbare items worden stil genegeerd. */
 export function parseUitgeslotenContacten(raw: string | undefined | null): UitgeslotenContacten {
   const uit: UitgeslotenContacten = { emails: new Set(), telefoons: new Set() };
@@ -244,6 +278,8 @@ export function beslis(
     consentOnbekend: ConsentOnbekendBeleid;
     consentLivegang?: string;
     uitgesloten?: UitgeslotenContacten;
+    /** Eigen domeinen/adressen (ADS_UITSLUITEN). */
+    uitsluiten?: Uitsluitregels;
     /** Waarde voor aanvraag_ontvangen; standaard ADS_LEAD_WAARDE_STANDAARD. */
     leadWaarde?: number;
     nu?: Date;
@@ -268,6 +304,9 @@ export function beslis(
       (telefoon && opties.uitgesloten.telefoons.has(telefoon)))
   ) {
     return met({ soort: "overslaan", reden: "testinzending (eigen contactgegevens)", klikType });
+  }
+  if (opties.uitsluiten && valtOnderUitsluiting(rij.email, opties.uitsluiten)) {
+    return met({ soort: "overslaan", reden: "testinzending (eigen domein of adres, ADS_UITSLUITEN)", klikType });
   }
 
   // Statusimport van 25-09: het logtijdstip is het importmoment, niet het echte

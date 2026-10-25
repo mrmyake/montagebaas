@@ -3,11 +3,13 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { googleAccessToken } from "@/lib/google-auth";
 import {
   ADS_LEAD_WAARDE_STANDAARD,
+  ADS_UITSLUITEN_STANDAARD,
   CONVERSIE_ACTIES,
   beslis,
   bouwIngestRequest,
   normaliseerCustomerId,
   parseUitgeslotenContacten,
+  parseUitsluitregels,
   type AdsEvent,
   type Beslissing,
   type ConsentOnbekendBeleid,
@@ -123,6 +125,8 @@ export async function draaiAdsConversiesJob(
   const db = supabaseAdmin();
   const consentOnbekend = leesConsentBeleid();
   const uitgesloten = parseUitgeslotenContacten(process.env.ADS_UITGESLOTEN_CONTACTEN);
+  // Leeg of niet gezet → de standaardlijst; zo kan een vergeten env-var nooit testleads doorlaten.
+  const uitsluiten = parseUitsluitregels(process.env.ADS_UITSLUITEN?.trim() || ADS_UITSLUITEN_STANDAARD);
   const leadWaarde = leesLeadWaarde();
 
   let query = db.from("ads_conversies_te_versturen").select("*");
@@ -146,7 +150,7 @@ export async function draaiAdsConversiesJob(
   for (const a of CONVERSIE_ACTIES) perActie.set(a, []);
 
   for (const rij of rijen) {
-    const b = beslis(rij, { consentOnbekend, uitgesloten, leadWaarde });
+    const b = beslis(rij, { consentOnbekend, uitgesloten, uitsluiten, leadWaarde });
     rapport.samenvatting[b.soort] += 1;
     rapport.rijen.push({
       aanvraag: rij.aanvraag_id.slice(0, 8),
@@ -234,12 +238,13 @@ export async function draaiAdsConversiesJob(
 
     if (modus !== "verzend") continue;
 
-    for (const { rij } of items) {
+    for (const { rij, event } of items) {
       await upsertUpload(
         db,
         rij,
         ok
           ? {
+              waarde: event.conversionValue, // wat echt naar Google ging (bv. ADS_LEAD_WAARDE)
               status: "verstuurd",
               reden: null,
               request_id: r.requestId ?? null,
@@ -249,7 +254,7 @@ export async function draaiAdsConversiesJob(
               // eerdere poging) is niet meer van toepassing; de check vult hem opnieuw.
               verwerking: null,
             }
-          : { status: "fout", reden: `HTTP ${httpStatus}`, response: response as object }
+          : { status: "fout", reden: `HTTP ${httpStatus}`, response: response as object, waarde: event.conversionValue }
       );
     }
   }
@@ -267,6 +272,8 @@ async function upsertUpload(
     response?: object | null;
     verzonden_op?: string | null;
     verwerking?: null;
+    /** Verstuurde waarde; zonder deze de waarde uit de view (leeg → 0). */
+    waarde?: number;
   }
 ): Promise<void> {
   const { error } = await db.from("ads_conversie_uploads").upsert(
@@ -274,8 +281,8 @@ async function upsertUpload(
       aanvraag_id: rij.aanvraag_id,
       conversie_actie: rij.conversie_actie,
       event_tijdstip: rij.event_tijdstip,
-      waarde: rij.waarde === null ? 0 : Number(rij.waarde),
       ...velden,
+      waarde: velden.waarde ?? (rij.waarde === null ? 0 : Number(rij.waarde)),
     },
     { onConflict: "aanvraag_id,conversie_actie" }
   );

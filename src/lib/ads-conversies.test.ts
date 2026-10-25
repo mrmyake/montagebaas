@@ -13,6 +13,9 @@ import {
   parseUitgeslotenContacten,
   sha256Hex,
   type TeVersturenRij,
+  ADS_UITSLUITEN_STANDAARD,
+  parseUitsluitregels,
+  valtOnderUitsluiting,
 } from "./ads-conversies.ts";
 
 const basis: TeVersturenRij = {
@@ -316,4 +319,23 @@ test("aanvraag_ontvangen: zelfde regels, transactionId met eigen suffix", () => 
   assert.equal(beslis(onbekend, { consentOnbekend: "overslaan" }).soort, "versturen");
   const nieuw = { ...onbekend, created_at: "2026-10-23T08:00:00+02:00", event_tijdstip: "2026-10-23T08:00:00+02:00" };
   assert.equal(beslis(nieuw, { consentOnbekend: "overslaan" }).soort, "overslaan");
+});
+
+test("ADS_UITSLUITEN: domeinen en adressen, ook met +tag en hoofdletters", () => {
+  const r = parseUitsluitregels(ADS_UITSLUITEN_STANDAARD);
+  assert.equal(valtOnderUitsluiting("me+test@ilja.com", r), true);
+  assert.equal(valtOnderUitsluiting("Ilja@Montagebaas.com", r), true);
+  assert.equal(valtOnderUitsluiting("ilja@gamundo.com", r), true);
+  assert.equal(valtOnderUitsluiting("Ilja.Goossens+offerte@gmail.com", r), true); // gmail: punten en +tag genormaliseerd
+  assert.equal(valtOnderUitsluiting("klant@gmail.com", r), false);
+  assert.equal(valtOnderUitsluiting("iemand@ilja.com.nl", r), false); // ander domein
+  assert.equal(valtOnderUitsluiting(null, r), false);
+  assert.deepEqual(parseUitsluitregels(" , @ , "), { domeinen: new Set(), adressen: new Set() });
+});
+
+test("beslis: adres op een uitgesloten domein → overslaan, vóór alle andere regels", () => {
+  const b = beslis({ ...basis, email: "me+test@ilja.com" }, { consentOnbekend: "versturen", uitsluiten: parseUitsluitregels(ADS_UITSLUITEN_STANDAARD) });
+  assert.equal(b.soort, "overslaan");
+  if (b.soort === "overslaan") assert.match(b.reden, /ADS_UITSLUITEN/);
+  assert.equal(beslis(basis, { consentOnbekend: "versturen", uitsluiten: parseUitsluitregels(ADS_UITSLUITEN_STANDAARD) }).soort, "versturen");
 });
