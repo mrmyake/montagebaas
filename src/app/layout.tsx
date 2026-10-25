@@ -9,17 +9,24 @@ import { Analytics } from "@/components/analytics/Analytics";
 import { ConsentBanner } from "@/components/analytics/ConsentBanner";
 import { CtaClickTracker } from "@/components/analytics/CtaClickTracker";
 import { AttributieCapture } from "@/components/analytics/AttributieCapture";
+import { HeaderV2 } from "@/components/v2/HeaderV2";
+import { FooterV2 } from "@/components/v2/FooterV2";
 import { localBusinessSchema, websiteSchema } from "@/lib/schema";
 import { site } from "@/lib/site";
+import { huidigMerk } from "@/lib/merk";
+import { siteVersie } from "@/lib/site-versie";
 
-// Lettertypen lokaal gehost (variabel, latin; OFL, zie fonts/*-OFL.txt): de build
-// hangt zo niet af van Google Fonts. Bron: @fontsource-variable/inter en
-// @fontsource-variable/space-grotesk, beide 5.3.0.
+// Lettertypen lokaal gehost (latin; OFL, zie fonts/*-OFL.txt): de build hangt zo
+// niet af van Google Fonts. Bron: @fontsource-variable/inter,
+// @fontsource-variable/space-grotesk, @fontsource-variable/schibsted-grotesk en
+// @fontsource/ibm-plex-mono, alle 5.3.0. Inter en Space Grotesk zijn van de oude
+// site (v1) en worden daarom niet vooraf geladen.
 const sans = localFont({
   src: "./fonts/Inter-latin-wght.woff2",
   variable: "--font-sans",
   display: "swap",
   weight: "100 900",
+  preload: false,
 });
 
 const display = localFont({
@@ -27,6 +34,23 @@ const display = localFont({
   variable: "--font-display",
   display: "swap",
   weight: "300 700",
+  preload: false,
+});
+
+const schibsted = localFont({
+  src: "./fonts/SchibstedGrotesk-latin-wght.woff2",
+  variable: "--font-schibsted",
+  display: "swap",
+  weight: "400 900",
+});
+
+const plex = localFont({
+  src: [
+    { path: "./fonts/IBMPlexMono-latin-400.woff2", weight: "400" },
+    { path: "./fonts/IBMPlexMono-latin-600.woff2", weight: "600" },
+  ],
+  variable: "--font-plex",
+  display: "swap",
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
@@ -58,6 +82,30 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (siteVersie() === "v2") {
+    const merk = huidigMerk();
+    return (
+      <html
+        lang="nl"
+        data-site="v2"
+        className={`${schibsted.variable} ${plex.variable} h-full`}
+        style={{ "--merk-accent": merk.accent, "--merk-accent-donker": merk.accentDonker } as React.CSSProperties}
+      >
+        <body className="flex min-h-full flex-col bg-v2-bg text-v2-ink">
+          <JsonLd data={[localBusinessSchema(), websiteSchema()]} />
+          <HeaderV2 />
+          {/* pb zolang de cookiebalk er is; de prijsbalk van de intake regelt zijn eigen ruimte */}
+          <main className="flex-1 pb-[var(--consent-bar-h,0px)]">{children}</main>
+          <FooterV2 />
+          <AttributieCapture />
+          <Analytics />
+          <ConsentBanner />
+          <CtaClickTracker />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="nl" className={`${sans.variable} ${display.variable} h-full`}>
       <body className="flex min-h-full flex-col">

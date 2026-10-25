@@ -10,8 +10,8 @@
  * PUUR en client-veilig: geen DB, geen netwerk, geen server-only imports.
  */
 
-import type { PrijsResultaat } from "@/lib/rekenen";
-import { PRIJS_TIJDELIJK } from "@/lib/prijs-tijdelijk";
+import type { PrijsResultaat } from "./rekenen.ts";
+import { PRIJS_TIJDELIJK } from "./prijs-tijdelijk.ts";
 
 export type Grootte = "<8" | "8-15" | "15+";
 export type Opstelling = "recht" | "hoek" | "eiland";

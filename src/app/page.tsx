@@ -7,14 +7,27 @@ import { Reviews } from "@/components/sections/Reviews";
 import { WerkgebiedTeaser } from "@/components/sections/WerkgebiedTeaser";
 import { FaqTeaser } from "@/components/sections/FaqTeaser";
 import { SlotCta } from "@/components/sections/SlotCta";
+import { HomeV2 } from "@/components/v2/HomeV2";
+import { siteVersie } from "@/lib/site-versie";
 
-export const metadata: Metadata = {
-  description:
-    "Je IKEA-keuken vakkundig laten plaatsen tegen een vaste prijs. Offerte binnen 24 uur, één vast aanspreekpunt en een gescreende monteur uit je eigen regio. In heel Nederland.",
-  alternates: { canonical: "/" },
-};
+export function generateMetadata(): Metadata {
+  if (siteVersie() === "v2") {
+    return {
+      title: { absolute: "IKEA-keuken laten plaatsen voor een vaste prijs | Montagebaas" },
+      description:
+        "Plak de link naar je IKEA Keukenplanner-ontwerp en zie direct wat montage kost. Vaste prijs binnen 24 uur. Ilja plaatst je keuken zelf, tot 75 km rond Loosdrecht.",
+      alternates: { canonical: "/" },
+    };
+  }
+  return {
+    description:
+      "Je IKEA-keuken vakkundig laten plaatsen tegen een vaste prijs. Offerte binnen 24 uur en één vast aanspreekpunt. Ilja plaatst je keuken zelf, tot ongeveer 75 km rond Loosdrecht.",
+    alternates: { canonical: "/" },
+  };
+}
 
 export default function Home() {
+  if (siteVersie() === "v2") return <HomeV2 />;
   return (
     <>
       <Hero />

@@ -12,6 +12,9 @@ import {
   methodeVoorBestanden,
   valideerBestanden,
 } from "@/lib/aanvraag-intake";
+import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
+import { leesIntakeVelden } from "@/lib/intake/server";
+import { naarKolommen, ontwerpBand } from "@/lib/prijs-weergave";
 
 /**
  * Upload-pad van /offerte: ontvangt een IKEA-tekening + minimale contactgegevens,
@@ -21,6 +24,12 @@ import {
  * Bewust een route handler i.p.v. server-action: server-actions hebben een kleine
  * body-limiet, hier komt een bestand binnen. De gedeelde intake (validatie,
  * Storage, insert) staat in lib/aanvraag-intake.ts, ook gebruikt door de link-route.
+ *
+ * Nieuwe intake (redesign): de PDF wordt niet vóór het verzenden gelezen. De
+ * klant kiest grootte, opstelling en pakket en ziet een band; die band wordt
+ * hier server-side opnieuw bepaald en als prijs_getoond_* opgeslagen. De
+ * Ads-conversie gaat bij verzenden; de latere aanroep in verwerkTekening is dan
+ * een no-op.
  */
 
 function fout(error: string, status: number) {
@@ -67,7 +76,14 @@ export async function POST(req: Request) {
   const { naam, email, telefoon } = contact;
 
   // 2. Lead wegschrijven (zelfde tabel).
+  const intake = leesIntakeVelden(form);
+  const band =
+    intake.aantal_kasten_range && intake.pakket_gekozen
+      ? ontwerpBand(intake.aantal_kasten_range as "<8" | "8-15" | "15+", intake.pakket_gekozen, intake.demontage_gekozen === true)
+      : null;
   const id = await insertAanvraag(db, form, {
+    ...intake,
+    ...(band ? naarKolommen(band) : {}),
     naam,
     telefoon,
     email,
@@ -80,6 +96,9 @@ export async function POST(req: Request) {
   if (!id) {
     return fout("Opslaan mislukte. Gebruik het formulier hieronder.", 500);
   }
+
+  // Precies één keer per lead, bij verzenden.
+  after(() => verstuurAdsConversieDirect(id));
 
   // 3. Ntfy-push — instant mobiele melding, best-effort. De owner-mail (mét AI-resultaat
   // + bijlagen) volgt pas na schakel 2, zie hieronder.
@@ -100,7 +119,7 @@ export async function POST(req: Request) {
   // Schakel 1 → 2: lezen + rekenen draait ONTKOPPELD ná de respons (Opus 4.8 kan
   // seconden duren). De owner-mail (met AI-resultaat + bijlagen) en de klant-mail
   // (mét indicatie + disclaimer) gaan dáárna pas uit.
-  // Upload-pad heeft geen postcode → regio null → landelijke tarieven.
+  // Regio null → landelijke tarieven (de nieuwe intake vraagt wel een postcode, maar tarieven zijn nog landelijk).
   after(() =>
     verwerkTekening(id, bewaard.tekeningPad, null, { naam, email, telefoon }, bewaard.bestanden, {
       methode: methodeVoorBestanden(files),
