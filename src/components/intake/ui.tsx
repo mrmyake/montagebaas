@@ -12,7 +12,7 @@ function Rondje({ aan }: { aan: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`mt-0.5 h-5 w-5 flex-none rounded-full border-2 shadow-[inset_0_0_0_3px_#fff] ${aan ? "border-merk bg-merk" : "border-v2-line bg-white"}`}
+      className={`mt-0.5 block h-5 w-5 flex-none rounded-full border-2 shadow-[inset_0_0_0_3px_#fff] ${aan ? "border-merk bg-merk" : "border-v2-line bg-white"}`}
     />
   );
 }
