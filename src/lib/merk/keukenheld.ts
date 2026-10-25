@@ -40,8 +40,7 @@ export const keukenheld: Merk = {
   },
   reviews: {
     ...montagebaas.reviews,
-    // De huidige Google-link zoekt op de oude profielnaam. Ilja levert de nieuwe
-    // aan; tot dan staat de Google-score zonder link.
-    google: { ...montagebaas.reviews.google, url: null },
+    // Bedrijfsprofiel, zonder /review (dat opent het schrijfvenster; wij tonen de reviews).
+    google: { ...montagebaas.reviews.google, url: "https://g.page/r/CR7MyzqJoUHcEBM" },
   },
 };
