@@ -18,6 +18,7 @@ export const keukenheld: Merk = {
     standaardBericht: "Hoi, ik wil graag een offerte voor het plaatsen van mijn keuken.",
   },
   email: "info@dekeukenheld.nl",
+  replyTo: "ilja@dekeukenheld.nl",
   onderwerpBevestiging: "Je aanvraag bij De Keukenheld",
   afzender: "De Keukenheld <noreply@dekeukenheld.nl>",
   footerJuridisch: "De Keukenheld is ingeschreven als handelsnaam onder KvK 74579320. Geen onderdeel van IKEA.",
