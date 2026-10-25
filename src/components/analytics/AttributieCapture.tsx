@@ -14,8 +14,12 @@ import { CONSENT_CHANGED_EVENT, CONSENT_STORAGE_KEY, type ConsentState } from "@
  *
  * Twee momenten:
  *  1. bij mount, als de bezoeker eerder al accepteerde (keuze in localStorage);
- *  2. zodra de bezoeker in de banner op Accepteren klikt (window-event), zolang
- *     de attributieparameters dan nog in de URL staan.
+ *  2. zodra de bezoeker later akkoord geeft (banner of het vinkje in de intake,
+ *     beide via het window-event). Dan staat de bezoeker meestal al op een
+ *     andere pagina zonder parameters; daarom onthouden we de binnenkomst-URL
+ *     alleen in het geheugen van dit tabblad (niets op het apparaat) en
+ *     schrijven we die alsnog weg. Zonder dit verloor elke aanvraag waarbij
+ *     het vinkje in de intake de enige toestemming was zijn gclid en utm's.
  * Bij 'denied' wordt een eventueel aanwezige cookie verwijderd. Zonder keuze
  * gebeurt er niets. De server controleert dit nogmaals (attributieVoorInsertMetConsent).
  *
@@ -25,9 +29,18 @@ import { CONSENT_CHANGED_EVENT, CONSENT_STORAGE_KEY, type ConsentState } from "@
  */
 export function AttributieCapture() {
   useEffect(() => {
+    // Binnenkomst van deze paginalading. De root layout blijft gemount bij
+    // client-side navigatie, dus dit blijft staan tot een volledige herlaad.
+    let binnenkomst: string | null = null;
+    try {
+      binnenkomst = volgendeCookieWaarde(window.location.href, document.referrer);
+    } catch {
+      binnenkomst = null;
+    }
+
     function legVast() {
       try {
-        const waarde = volgendeCookieWaarde(window.location.href, document.referrer);
+        const waarde = volgendeCookieWaarde(window.location.href, document.referrer) ?? binnenkomst;
         // null = deze URL bevat geen attributieparameters. Niets doen, zodat een
         // direct bezoek de herkomst van een eerdere advertentieklik niet wist.
         if (waarde === null) return;
