@@ -1,4 +1,4 @@
-import { euro } from "@/lib/pricing";
+import { bedrag, euro } from "@/lib/pricing";
 import { site, whatsappDefault, whatsappUrl } from "@/lib/site";
 import { huidigMerk } from "@/lib/merk";
 import type { Invoermethode, PlannerStatus } from "@/lib/db.types";
@@ -75,7 +75,7 @@ export async function stuurLeadNotificatie(lead: LeadNotificatie): Promise<void>
         ${rij("Opstelling", lead.opstelling)}
         ${rij("Extra's", lead.extras.length ? lead.extras.join(", ") : "geen")}
         ${rij("Gewenste periode", lead.gewenste_periode)}
-        ${rij("Prijsindicatie", `${euro(lead.prijs_indicatie_min)} – ${euro(lead.prijs_indicatie_max)}`)}
+        ${rij("Prijsindicatie", `${bedrag(lead.prijs_indicatie_min, lead.prijs_indicatie_max)}`)}
         ${rij("Toelichting", lead.toelichting ?? "—")}
       </table>
     </div>`;
@@ -90,7 +90,7 @@ export async function stuurLeadNotificatie(lead: LeadNotificatie): Promise<void>
     `Type: ${lead.type_klus} | ${lead.aantal_kasten_range} | ${lead.opstelling}`,
     `Extra's: ${lead.extras.length ? lead.extras.join(", ") : "geen"}`,
     `Periode: ${lead.gewenste_periode}`,
-    `Indicatie: ${euro(lead.prijs_indicatie_min)} – ${euro(lead.prijs_indicatie_max)}`,
+    `Indicatie: ${bedrag(lead.prijs_indicatie_min, lead.prijs_indicatie_max)}`,
     `Toelichting: ${lead.toelichting ?? "—"}`,
   ].join("\n");
 
@@ -158,7 +158,7 @@ export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void
       </table>
       <p style="margin:0 0 4px;color:#6b7178;font-size:14px">Voorlopige prijsindicatie</p>
       <p style="margin:0 0 4px;font-size:20px;font-weight:700">
-        ${euro(lead.prijs_indicatie_min)} – ${euro(lead.prijs_indicatie_max)}
+        ${bedrag(lead.prijs_indicatie_min, lead.prijs_indicatie_max)}
       </p>
       <p style="margin:0 0 20px;color:#6b7178;font-size:13px">
         Dit is een indicatie op basis van je keuzes. Je definitieve offerte op maat volgt binnen 24 uur.
@@ -190,7 +190,7 @@ export async function stuurKlantBevestiging(lead: LeadNotificatie): Promise<void
     `- Gewenste periode: ${lead.gewenste_periode}`,
     `- Locatie: ${lead.postcode}${lead.regio ? ` (${lead.regio})` : ""}`,
     "",
-    `Voorlopige prijsindicatie: ${euro(lead.prijs_indicatie_min)} – ${euro(lead.prijs_indicatie_max)}`,
+    `Voorlopige prijsindicatie: ${bedrag(lead.prijs_indicatie_min, lead.prijs_indicatie_max)}`,
     "Dit is een indicatie; je definitieve offerte volgt binnen 24 uur.",
     "",
     "Heb je je keuken al ontworpen in de IKEA Keukenplanner? Stuur ons de deellink van je ontwerp (of de artikellijst) door op deze mail te reageren, dan rekenen we met je eigen plan.",
@@ -308,7 +308,7 @@ export async function stuurTekeningIndicatieNotificatie(
            <h2 style="margin:0 0 4px">${input.status === "berekend" ? "Prijs berekend (hoog vertrouwen)" : `Indicatie (vertrouwen ${input.vertrouwen})`}</h2>
            <p style="margin:0 0 16px;color:#6b7178">Lead-ID: ${input.aanvraagId}</p>
            ${contactTabel}
-           <p style="margin:0 0 4px;font-size:20px;font-weight:700">${euro(input.min)} – ${euro(input.max)}</p>
+           <p style="margin:0 0 4px;font-size:20px;font-weight:700">${bedrag(input.min, input.max)}</p>
            <p style="margin:0 0 8px;color:#6b7178">Vertrouwen: ${input.vertrouwen}</p>
            <p style="margin:0 0 4px;font-weight:600">Aannames</p>
            <ul style="margin:0 0 12px;padding-left:18px;font-size:14px;color:#3a3f47">${lijst(input.aannames)}</ul>
@@ -336,7 +336,7 @@ export async function stuurTekeningIndicatieNotificatie(
           `Telefoon: ${input.telefoon}`,
           `E-mail: ${input.email}`,
           `Tekening: ${input.bestandsnaam}`,
-          `Indicatie: ${euro(input.min)} – ${euro(input.max)}`,
+          `Indicatie: ${bedrag(input.min, input.max)}`,
           `Vertrouwen: ${input.vertrouwen}`,
           `Aannames:`,
           ...input.aannames.map((a) => `- ${a}`),
@@ -424,7 +424,7 @@ export async function stuurTekeningKlantBevestiging(klant: {
   const prijsBlokHtml = p
     ? `<div style="margin:0 0 12px;padding:14px 16px;background:#f4f1ea;border-radius:12px">
          <div style="font-size:13px;color:#6b7178">${v2 ? "Je indicatie" : "Indicatie op basis van je tekening"}</div>
-         <div style="font-size:22px;font-weight:700;margin-top:2px">${euro(p.min)} – ${euro(p.max)}</div>
+         <div style="font-size:22px;font-weight:700;margin-top:2px">${bedrag(p.min, p.max)}</div>
        </div>
        <p style="margin:0 0 16px;color:#6b7178;font-size:13px;line-height:1.5">${disclaimer}</p>`
     : `<p style="margin:0 0 16px;color:#3a3f47;line-height:1.5">Bedankt! We hebben je IKEA-tekening goed ontvangen.</p>`;
@@ -457,7 +457,7 @@ export async function stuurTekeningKlantBevestiging(klant: {
     `Plan ontvangen, ${voornaam}!`,
     "",
     p
-      ? `${v2 ? "Je indicatie" : "Indicatie op basis van je tekening"}: ${euro(p.min)} – ${euro(p.max)}`
+      ? `${v2 ? "Je indicatie" : "Indicatie op basis van je tekening"}: ${bedrag(p.min, p.max)}`
       : "We hebben je IKEA-tekening ontvangen.",
     p ? disclaimer : "",
     "We nemen binnen 24 uur contact met je op voor je exacte vaste prijs op maat.",
@@ -714,6 +714,8 @@ export async function stuurLinkKlantBevestiging(klant: {
   email: string;
   plannerStatus: PlannerStatus;
   prijs?: { min: number; max: number };
+  /** v2: het bedrag komt uit prijs_getoond_* (wat de klant zag), niet uit `prijs`. */
+  aanvraagId?: string;
 }): Promise<void> {
   const from = afzender();
   const replyTo = huidigMerk().replyTo ?? process.env.LEAD_NOTIFY_TO ?? site.email;
@@ -721,6 +723,10 @@ export async function stuurLinkKlantBevestiging(klant: {
 
   const voornaam = esc(klant.naam.split(/\s+/)[0] || klant.naam);
   const s = klant.plannerStatus;
+  // v2: alleen een bedrag als de klant er een zag (TOON_PRIJS_BIJ_LINK); v1: zoals voorheen.
+  const v2 = await getoondOpV2(klant.aanvraagId);
+  const prijs = v2 ? (v2.band ?? undefined) : klant.prijs;
+  const prijsLabel = v2 ? "Je indicatie" : "Indicatie op basis van je ontwerp";
   const pdfWa = whatsappUrl(`${site.whatsappGroet}, hier is de artikellijst (PDF) van mijn IKEA-keukenontwerp.`);
 
   const inleiding =
@@ -741,11 +747,12 @@ export async function stuurLinkKlantBevestiging(klant: {
              <p style="margin:0;font-size:14px;line-height:1.5;color:#3a3f47">Exporteer in de IKEA Keukenplanner de <strong>PDF met de artikellijst</strong> en stuur die mee, dan maken we je prijs op de euro nauwkeurig. Reageer op deze mail of <a href="${pdfWa}" style="color:#1a1c20;font-weight:600">stuur 'm via WhatsApp</a>.</p>
            </div>`;
 
-  const prijsHtml = klant.prijs
+  const prijsHtml = prijs
     ? `<div style="margin:0 0 12px;padding:14px 16px;background:#f4f1ea;border-radius:12px">
-         <div style="font-size:13px;color:#6b7178">Indicatie op basis van je ontwerp</div>
-         <div style="font-size:22px;font-weight:700;margin-top:2px">${euro(klant.prijs.min)} – ${euro(klant.prijs.max)}</div>
-       </div>`
+         <div style="font-size:13px;color:#6b7178">${prijsLabel}</div>
+         <div style="font-size:22px;font-weight:700;margin-top:2px">${bedrag(prijs.min, prijs.max)}</div>
+       </div>${v2 ? `
+       <p style="margin:0 0 16px;color:#6b7178;font-size:13px;line-height:1.5">Dit is de indicatie die je op de site zag.</p>` : ""}`
     : "";
 
   const html = `
@@ -766,7 +773,7 @@ export async function stuurLinkKlantBevestiging(klant: {
     `Ontwerp ontvangen, ${klant.naam.split(/\s+/)[0] || klant.naam}!`,
     "",
     inleiding,
-    klant.prijs ? `Indicatie op basis van je ontwerp: ${euro(klant.prijs.min)} – ${euro(klant.prijs.max)}` : "",
+    prijs ? `${prijsLabel}: ${bedrag(prijs.min, prijs.max)}${v2 ? ". Dit is de indicatie die je op de site zag." : ""}` : "",
     "We nemen binnen 24 uur contact met je op voor je exacte vaste prijs op maat.",
     s === "ok"
       ? ""

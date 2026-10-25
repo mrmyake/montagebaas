@@ -100,3 +100,6 @@ export const euro = (n: number) =>
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(n);
+
+/** "€ 2.975" als laag en hoog gelijk zijn, anders "€ 2.475 – € 3.175". */
+export const bedrag = (min: number, max: number) => (min === max ? euro(min) : `${euro(min)} – ${euro(max)}`);

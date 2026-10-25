@@ -186,6 +186,7 @@ export async function verwerkPlannerLink(a: PlannerAanvraag): Promise<void> {
       email: a.klant.email,
       plannerStatus: status,
       prijs: TOON_PRIJS_BIJ_LINK && min && max ? { min, max } : undefined,
+      aanvraagId: a.aanvraagId,
     }),
   ]);
 }

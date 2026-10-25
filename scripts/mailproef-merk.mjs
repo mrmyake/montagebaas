@@ -7,6 +7,10 @@
 //   MERK=keukenheld node scripts/mailproef-merk.mjs --verstuur --aan=<adres> --een
 //     (alleen de formuliermail, naar een ander adres, bv. van mail-tester.com)
 //
+// Let op: dit script bouwt de mails zonder echte aanvraag. De bedragen in de PDF- en
+// linkmail komen bij v2 uit prijs_getoond_* van de aanvraag; die zitten hier dus niet in.
+// Voor de echte inhoud: testleads via de site, dan scripts/controle-klantmails.mjs.
+//
 // --verstuur werkt pas als RESEND_API_KEY en RESEND_FROM_EMAIL in .env.local bij het
 // merkdomein horen (tweede Resend-account voor dekeukenheld.nl).
 import { readFileSync } from "node:fs";
@@ -60,8 +64,8 @@ await notify.stuurKlantBevestiging({
   toelichting: null,
 });
 if (!een) {
-  await notify.stuurTekeningKlantBevestiging({ ...klant, prijs: { min: 2475, max: 3175, ruw: false } });
-  await notify.stuurLinkKlantBevestiging({ ...klant, plannerStatus: "ok", prijs: { min: 2975, max: 2975 } });
+  await notify.stuurTekeningKlantBevestiging(klant);
+  await notify.stuurLinkKlantBevestiging({ ...klant, plannerStatus: "ok" });
   await notify.stuurLinkKlantBevestiging({ ...klant, plannerStatus: "verlopen" });
 }
 
