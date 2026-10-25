@@ -13,6 +13,7 @@ import { attributieVoorInsertMetConsent } from "@/lib/attributie";
 import { consentVoorInsert, type ConsentBron, type ConsentState } from "@/lib/consent";
 import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
 import type { AanvraagInsert } from "@/lib/db.types";
+import { huidigMerk } from "@/lib/merk";
 
 export interface AanvraagPayload {
   type_klus: TypeKlus;
@@ -115,6 +116,7 @@ export async function verstuurAanvraag(
     toelichting,
     invoermethode: "formulier",
     site_versie: "v1-oud", // de oude configurator (/offerte-oud); de nieuwe intake heeft een eigen action
+    merk: huidigMerk().id,
   };
 
   let id: string;

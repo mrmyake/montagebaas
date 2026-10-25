@@ -27,7 +27,8 @@ declare global {
   }
 }
 
-export function ConversionTracker() {
+/** `merk`: het actieve merk (env MERK), van de server; gaat als parameter mee op offerte_aanvraag. */
+export function ConversionTracker({ merk }: { merk: string }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -50,8 +51,8 @@ export function ConversionTracker() {
     // window.gtag is de consent-shim (queue't in dataLayer) tot gtag.js laadt;
     // het event gaat dus niet verloren als de library nog lui aan het laden is.
     if (typeof window.gtag !== "function") return;
-    window.gtag("event", "offerte_aanvraag", { ...(invoermethode ? { invoermethode } : {}), site_versie: siteVersie });
-  }, []);
+    window.gtag("event", "offerte_aanvraag", { ...(invoermethode ? { invoermethode } : {}), site_versie: siteVersie, merk });
+  }, [merk]);
 
   return null;
 }
