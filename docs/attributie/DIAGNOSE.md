@@ -41,6 +41,15 @@ met referrer www.google.com, dan /kosten, dan /offerte, dan intake.
 | vragen via montagebaas.com (redirect) | banner | ✔ | n.v.t. | ✔ | ✔ | ✔ | keukenheld / v2-redesign |
 | vragen, lokaal met fix | vinkje | ✔ | ✔ | ✔ | ✔ | n.v.t. (GA uit buiten productie) | keukenheld / v2-redesign |
 
+Na deploy (f2e71ee, productie, alleen het vinkje als toestemming):
+
+| Route | Toestemming | gclid | utm_* | landing_page | referrer | ga_client_id | merk / site_versie |
+|---|---|---|---|---|---|---|---|
+| vragen | vinkje | ✔ | ✔ | ✔ | ✔ | ✔ | keukenheld / v2-redesign |
+| pdf | vinkje | ✔ | ✔ | ✔ | ✔ | ✔ | keukenheld / v2-redesign |
+| link | vinkje | ✔ | ✔ | ✔ | ✔ | ✔ | keukenheld / v2-redesign |
+| vragen via montagebaas.com (redirect) | vinkje | ✔ | n.v.t. | ✔ | ✔ | ✔ | keukenheld / v2-redesign |
+
 Alle testrijen: `ads_conversie_uploads` status `overgeslagen` (testinzending), niets verstuurd.
 
 Bijvangst: elke pagina gooit React-fout #418 (hydration mismatch). Niet onderzocht.
