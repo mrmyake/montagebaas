@@ -88,7 +88,7 @@ export interface UitgeslotenContacten {
 export const ADS_GEWONNEN_WACHTTIJD_UUR_STANDAARD = 24;
 const GEWONNEN_STATUSSEN = ["gewonnen", "uitgevoerd"];
 
-export const ADS_UITSLUITEN_STANDAARD = "@ilja.com, @montagebaas.com, @gamundo.com, ilja.goossens@gmail.com";
+export const ADS_UITSLUITEN_STANDAARD = "@ilja.com, @montagebaas.com, @dekeukenheld.nl, @gamundo.com, ilja.goossens@gmail.com";
 
 export interface Uitsluitregels {
   domeinen: Set<string>;
