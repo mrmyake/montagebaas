@@ -2,6 +2,7 @@ import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
 import { googleAccessToken } from "@/lib/google-auth";
 import {
+  ADS_GEWONNEN_WACHTTIJD_UUR_STANDAARD,
   ADS_LEAD_WAARDE_STANDAARD,
   ADS_UITSLUITEN_STANDAARD,
   CONVERSIE_ACTIES,
@@ -73,6 +74,16 @@ export function leesConsentBeleid(): ConsentOnbekendBeleid {
   return "wachten"; // geen beslissing genomen → niets definitiefs doen
 }
 
+/** ADS_GEWONNEN_WACHTTIJD_UUR (uren, ≥ 0); ontbreekt of ongeldig → 24. */
+export function leesGewonnenWachttijd(): number {
+  const ruw = process.env.ADS_GEWONNEN_WACHTTIJD_UUR?.trim();
+  if (!ruw) return ADS_GEWONNEN_WACHTTIJD_UUR_STANDAARD;
+  const n = Number(ruw.replace(",", "."));
+  if (Number.isFinite(n) && n >= 0) return n;
+  console.warn(`[ads-conversies] ADS_GEWONNEN_WACHTTIJD_UUR "${ruw}" ongeldig; standaard ${ADS_GEWONNEN_WACHTTIJD_UUR_STANDAARD} gebruikt.`);
+  return ADS_GEWONNEN_WACHTTIJD_UUR_STANDAARD;
+}
+
 /** ADS_LEAD_WAARDE (euro's, > 0); ontbreekt of ongeldig → ADS_LEAD_WAARDE_STANDAARD. */
 export function leesLeadWaarde(): number {
   const ruw = process.env.ADS_LEAD_WAARDE?.trim();
@@ -128,6 +139,7 @@ export async function draaiAdsConversiesJob(
   // Leeg of niet gezet → de standaardlijst; zo kan een vergeten env-var nooit testleads doorlaten.
   const uitsluiten = parseUitsluitregels(process.env.ADS_UITSLUITEN?.trim() || ADS_UITSLUITEN_STANDAARD);
   const leadWaarde = leesLeadWaarde();
+  const gewonnenWachttijdUur = leesGewonnenWachttijd();
 
   let query = db.from("ads_conversies_te_versturen").select("*");
   if (filter) {
@@ -150,7 +162,7 @@ export async function draaiAdsConversiesJob(
   for (const a of CONVERSIE_ACTIES) perActie.set(a, []);
 
   for (const rij of rijen) {
-    const b = beslis(rij, { consentOnbekend, uitgesloten, uitsluiten, leadWaarde });
+    const b = beslis(rij, { consentOnbekend, uitgesloten, uitsluiten, leadWaarde, gewonnenWachttijdUur });
     rapport.samenvatting[b.soort] += 1;
     rapport.rijen.push({
       aanvraag: rij.aanvraag_id.slice(0, 8),

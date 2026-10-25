@@ -339,3 +339,21 @@ test("beslis: adres op een uitgesloten domein → overslaan, vóór alle andere 
   if (b.soort === "overslaan") assert.match(b.reden, /ADS_UITSLUITEN/);
   assert.equal(beslis(basis, { consentOnbekend: "versturen", uitsluiten: parseUitsluitregels(ADS_UITSLUITEN_STANDAARD) }).soort, "versturen");
 });
+
+test("opdracht_gewonnen: pas na de wachttijd op gewonnen, en alleen als de status nog gewonnen/uitgevoerd is", () => {
+  const nu = new Date("2026-10-25T08:00:00Z");
+  const gewonnen = { ...basis, conversie_actie: "opdracht_gewonnen" as const, lead_status: "gewonnen" };
+  const opties = { consentOnbekend: "versturen" as const, nu };
+  const kort = beslis({ ...gewonnen, event_tijdstip: "2026-10-25T06:00:00Z" }, opties);
+  assert.equal(kort.soort, "wachten");
+  if (kort.soort === "wachten") assert.match(kort.reden, /nog geen 24 uur op gewonnen \(2 uur\)/);
+  assert.equal(beslis({ ...gewonnen, event_tijdstip: "2026-10-24T07:59:00Z" }, opties).soort, "versturen");
+  assert.equal(beslis({ ...gewonnen, lead_status: "uitgevoerd", event_tijdstip: "2026-10-20T08:00:00Z" }, opties).soort, "versturen");
+  const terug = beslis({ ...gewonnen, lead_status: "verloren", event_tijdstip: "2026-10-20T08:00:00Z" }, opties);
+  assert.equal(terug.soort, "wachten");
+  if (terug.soort === "wachten") assert.match(terug.reden, /niet \(meer\) gewonnen/);
+  // Wachttijd instelbaar; 0 = meteen.
+  assert.equal(beslis({ ...gewonnen, event_tijdstip: "2026-10-25T07:59:00Z" }, { ...opties, gewonnenWachttijdUur: 0 }).soort, "versturen");
+  // Andere acties wachten niet.
+  assert.equal(beslis({ ...basis, conversie_actie: "aanvraag_ontvangen", event_tijdstip: "2026-10-25T07:59:00Z" }, opties).soort, "versturen");
+});
