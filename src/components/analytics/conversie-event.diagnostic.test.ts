@@ -40,7 +40,7 @@ type FakeWindow = {
   gtag?: (...args: unknown[]) => void;
 };
 
-// 1-op-1 uit Analytics.tsx:22-25 (de beforeInteractive consent-shim):
+// 1-op-1 uit AnalyticsHead in Analytics.tsx (de inline consent-shim in <head>):
 //   window.dataLayer = window.dataLayer || [];
 //   function gtag(){dataLayer.push(arguments);}
 //   window.gtag = gtag;
@@ -69,7 +69,7 @@ function conversionTrackerEffect(win: FakeWindow): void {
 test("mechanisme: event blijft hangen in dataLayer, vlag verdwijnt, ook al laadt het echte script nooit", () => {
   const win: FakeWindow = { sessionStorage: new FakeStorage(), dataLayer: [] };
 
-  // Analytics.tsx's beforeInteractive-script draait altijd, ongeacht of
+  // Het inline script van AnalyticsHead draait altijd, ongeacht of
   // GtagLoader het echte gtag.js ooit injecteert (dat is exact de claim in
   // ConversionTracker.tsx:39-40).
   installGtagShim(win);

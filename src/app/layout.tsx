@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileCtaBar } from "@/components/layout/MobileCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { Analytics } from "@/components/analytics/Analytics";
+import { Analytics, AnalyticsHead } from "@/components/analytics/Analytics";
 import { ConsentBanner } from "@/components/analytics/ConsentBanner";
 import { CtaClickTracker } from "@/components/analytics/CtaClickTracker";
 import { AttributieCapture } from "@/components/analytics/AttributieCapture";
@@ -98,6 +98,9 @@ export default function RootLayout({
         className={`${schibsted.variable} ${plex.variable} h-full`}
         style={{ "--merk-accent": merk.accent, "--merk-accent-donker": merk.accentDonker } as React.CSSProperties}
       >
+        <head>
+          <AnalyticsHead />
+        </head>
         <body className="flex min-h-full flex-col bg-v2-bg text-v2-ink">
           <JsonLd data={[localBusinessSchema(), websiteSchema()]} />
           <HeaderV2 merk={{ naam: merk.naam, telefoon: merk.telefoon, logo: merk.logo, whatsappUrl: whatsappUrl(merk) }} />
@@ -115,6 +118,9 @@ export default function RootLayout({
 
   return (
     <html lang="nl" className={`${sans.variable} ${display.variable} h-full`}>
+      <head>
+        <AnalyticsHead />
+      </head>
       <body className="flex min-h-full flex-col">
         <JsonLd data={[localBusinessSchema(), websiteSchema()]} />
         <Header naam={merk.naam} telefoon={{ weergave: site.telefoonWeergave, link: site.telefoonLink }} />
