@@ -3,14 +3,15 @@
 // (bestaat er al een rij, dan blijft die staan: on conflict do nothing). De
 // werkvoorraad slaat 'overgeslagen' over, dus ook de cron raakt hem niet meer.
 //
-// Weigert alles wat geen testlead is: naam moet "test" bevatten én het e-mailadres
-// moet in TESTLEAD_EMAILS staan.
+// Weigert alles wat geen testlead is: het e-mailadres moet onder dezelfde
+// uitsluitregel vallen als de Ads-upload (valtOnderUitsluiting met ADS_UITSLUITEN,
+// of de standaardlijst als die niet gezet is). Zo telt me+test@ilja.com ook mee.
 //
 // Gebruik: node scripts/markeer-testlead.mjs <aanvraag-id> [...]
 import { readFileSync } from "node:fs";
 import pg from "pg";
+import { ADS_UITSLUITEN_STANDAARD, parseUitsluitregels, valtOnderUitsluiting } from "../src/lib/ads-conversies.ts";
 
-const TESTLEAD_EMAILS = ["me@ilja.com"];
 const ACTIES = ["aanvraag_ontvangen", "offerte_verstuurd", "opdracht_gewonnen"];
 
 const env = Object.fromEntries(
@@ -23,6 +24,8 @@ const env = Object.fromEntries(
     })
 );
 
+const uitsluiten = parseUitsluitregels(env.ADS_UITSLUITEN?.trim() || ADS_UITSLUITEN_STANDAARD);
+
 const ids = process.argv.slice(2);
 if (!ids.length) throw new Error("Geef één of meer aanvraag-id's op");
 
@@ -33,8 +36,8 @@ try {
     const { rows } = await c.query("select id, naam, email, created_at from montagebaas.aanvragen where id = $1", [id]);
     const a = rows[0];
     if (!a) throw new Error(`Aanvraag ${id} bestaat niet`);
-    if (!/test/i.test(a.naam) || !TESTLEAD_EMAILS.includes(a.email.trim().toLowerCase())) {
-      throw new Error(`Aanvraag ${id} ("${a.naam}", ${a.email}) is geen testlead; niets gedaan`);
+    if (!valtOnderUitsluiting(a.email, uitsluiten)) {
+      throw new Error(`Aanvraag ${id} ("${a.naam}", ${a.email}) valt niet onder ADS_UITSLUITEN; geen testlead, niets gedaan`);
     }
     for (const actie of ACTIES) {
       await c.query(

@@ -357,3 +357,13 @@ test("opdracht_gewonnen: pas na de wachttijd op gewonnen, en alleen als de statu
   // Andere acties wachten niet.
   assert.equal(beslis({ ...basis, conversie_actie: "aanvraag_ontvangen", event_tijdstip: "2026-10-25T07:59:00Z" }, opties).soort, "versturen");
 });
+
+test("uitsluiting: de testlead-adressen van de redesign (Fase 4) vallen eronder, klantadressen niet", () => {
+  const r = parseUitsluitregels(ADS_UITSLUITEN_STANDAARD);
+  for (const e of ["me@ilja.com", "me+test@ilja.com", "ME+Test@Ilja.com ", "info@montagebaas.com", "test+fase4@montagebaas.com"]) {
+    assert.equal(valtOnderUitsluiting(e, r), true, e);
+  }
+  for (const e of ["jan@voorbeeld.nl", "ilja@gmail.com", "me@ilja.com.voorbeeld.nl", null]) {
+    assert.equal(valtOnderUitsluiting(e, r), false, String(e));
+  }
+});
