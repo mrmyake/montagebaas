@@ -8,7 +8,7 @@ import { verstuurAdsConversieDirect } from "@/lib/ads-conversies-job";
 import { leesIntakeVelden } from "@/lib/intake/server";
 import { laadTarieven } from "@/lib/tarieven";
 import { berekenPrijsUitTelling, valideerTelling } from "@/lib/rekenen";
-import { linkGetoond, linkPrijzen, naarKolommen } from "@/lib/prijs-weergave";
+import { linkGetoond, linkPrijzen, naarKolommen, prijsbronUitTarieven } from "@/lib/prijs-weergave";
 import {
   bestandenUit,
   bewaarBestanden,
@@ -61,9 +61,9 @@ async function getoondePrijs(telling: unknown, pakket: "compleet" | "montageklaa
   const v = valideerTelling(telling);
   if (!v.ok) return null;
   try {
-    const { tarieven } = await laadTarieven(null);
+    const { id, tarieven } = await laadTarieven(null);
     const werkblad = werkbladUitTelling(v.telling) ?? "geen";
-    return linkGetoond(linkPrijzen(berekenPrijsUitTelling(v.telling, tarieven), werkblad, true), pakket, demontage);
+    return linkGetoond(linkPrijzen(prijsbronUitTarieven(id, tarieven), berekenPrijsUitTelling(v.telling, tarieven), werkblad, true), pakket, demontage);
   } catch (e) {
     console.error("[offerte-link] getoonde prijs bepalen mislukt:", e);
     return null;

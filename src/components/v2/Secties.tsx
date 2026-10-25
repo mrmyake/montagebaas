@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Merk } from "@/lib/merk";
 import { reviewSamenvatting } from "@/lib/merk";
-import { kostenKaarten, tekstBedragen } from "@/lib/prijs-weergave";
+import { kostenKaarten, tekstBedragen, type Prijsbron } from "@/lib/prijs-weergave";
 
 /** Gedeelde sectiebreedte en -padding uit de mockup. */
 const binnen = "mx-auto max-w-[1240px] px-4 sm:px-[clamp(16px,4vw,40px)]";
@@ -49,9 +49,9 @@ export function Vertrouwensbalk({ merk }: { merk: Merk }) {
   );
 }
 
-export function Kosten() {
-  const kaarten = kostenKaarten();
-  const b = tekstBedragen();
+export function Kosten({ bron }: { bron: Prijsbron }) {
+  const kaarten = kostenKaarten(bron);
+  const b = tekstBedragen(bron);
   return (
     <section id="kosten" className={`${binnen} ${ruimte}`}>
       <h2 className={h2}>Wat kost het ongeveer?</h2>
@@ -229,8 +229,8 @@ export interface FaqVraag {
   antwoord: string;
 }
 
-export function faqVragen(merk: Merk): FaqVraag[] {
-  const b = tekstBedragen();
+export function faqVragen(merk: Merk, bron: Prijsbron): FaqVraag[] {
+  const b = tekstBedragen(bron);
   return [
     {
       vraag: "Waar vind ik de link naar mijn ontwerp?",
@@ -243,7 +243,7 @@ export function faqVragen(merk: Merk): FaqVraag[] {
     },
     {
       vraag: "Wat kost het om een IKEA-keuken te laten plaatsen?",
-      antwoord: `Een gemiddelde keuken met 8 tot 15 kasten kost tussen ${b.gemiddeld.replace(" – ", " en ")}, inclusief apparaten aansluiten. Met je IKEA-link zie je je eigen prijs.`,
+      antwoord: `Een gemiddelde keuken met 8 tot 14 kasten kost tussen ${b.gemiddeld.replace(" – ", " en ")}, inclusief apparaten aansluiten. Met je IKEA-link zie je je eigen prijs.`,
     },
     {
       vraag: "Hoe snel kunnen jullie komen?",

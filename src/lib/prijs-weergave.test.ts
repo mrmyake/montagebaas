@@ -1,67 +1,88 @@
-// Prijsadapter: bedragen komen uit prijs-tijdelijk.ts (specwaarden) of Schakel 2. Draaien: `npm test`.
+// Prijsadapter: alle bedragen uit de tarievenrij (dagenmodel) of Schakel 2. Draaien: `npm test`.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { PRIJS_TIJDELIJK } from "./prijs-tijdelijk.ts";
-import { EXTRA_OPTIES, euro, extraLabel, linkGetoond, linkPrijzen, naarKolommen, ontwerpBand, toonBedrag, vragenIndicatie } from "./prijs-weergave.ts";
+import { TARIEVEN_DAGENMODEL } from "./__fixtures__/tarieven-dagenmodel.ts";
+import {
+  extraLabel,
+  extraOpties,
+  euro,
+  linkGetoond,
+  linkPrijzen,
+  naarKolommen,
+  ontwerpBand,
+  prijsbronUitTarieven,
+  tekstBedragen,
+  vragenIndicatie,
+} from "./prijs-weergave.ts";
 import type { PrijsResultaat } from "./rekenen.ts";
+
+const bron = prijsbronUitTarieven("test-id", TARIEVEN_DAGENMODEL);
 
 const prijs = (vertrouwen: PrijsResultaat["vertrouwen"]): PrijsResultaat => ({
   totaal_minuten: 0,
   assembly_minuten: 0,
-  compleet: { dagen: 4, excl: 2285, btw: 479.85, incl: 2764.85 },
-  montageklaar: { dagen: 3, excl: 1725, btw: 362.25, incl: 2087.25 },
-  besparing_incl: 677.6,
+  compleet: { dagen: 4, excl: 2285, btw: 479.85, incl: 2775 },
+  montageklaar: { dagen: 3, excl: 1725, btw: 362.25, incl: 2095 },
+  besparing_incl: 680,
+  toeslagen: [],
   vertrouwen,
   aannames: [],
 });
 
 test("euro: spatie na het teken, punt als duizendtal", () => {
   assert.equal(euro(2775), "€ 2.775");
-  assert.equal(euro(995.4), "€ 995");
+});
+
+test("prijsbron: banden, toeslagen en inbegrepen uit de tarievenrij", () => {
+  assert.deepEqual(bron.banden["8-14"], { laag: 2095, hoog: 2775, laag_dagen: 3, hoog_dagen: 4 });
+  assert.equal(bron.demontage, 995);
+  assert.equal(bron.werkbladZagen, 350);
+  assert.deepEqual(bron.inbegrepen, { apparaten: true, spoelbak: true });
+});
+
+test("prijsbron: Montageklaar = Compleet min 1 dag, afgerond zoals het dagenmodel", () => {
+  // Zelfde bedragen als de dagenmodel-PR noemt: 2095→1425, 2475→1775, 2775→2095, 3475→2775.
+  assert.deepEqual(bron.montageklaarBanden["8-14"], { laag: 1425, hoog: 2095 });
+  assert.deepEqual(bron.montageklaarBanden["<8"], { laag: 1075, hoog: 1775 });
+  assert.deepEqual(bron.montageklaarBanden["15+"], { laag: 2095, hoog: 2775 });
+  assert.equal(tekstBedragen(bron).montageklaarScheelt, "€ 700");
+  assert.equal(tekstBedragen(bron).dagen, "2,5 tot 5");
+});
+
+test("prijsbron: een rij zonder banden of toeslagen geeft een fout, geen verzonnen bedrag", () => {
+  assert.throws(() => prijsbronUitTarieven("oud", { ...TARIEVEN_DAGENMODEL, indicatiebanden: undefined }));
+  assert.throws(() => prijsbronUitTarieven("oud", { ...TARIEVEN_DAGENMODEL, toeslagen: {} }));
 });
 
 test("vragenroute: band per grootte plus extra's", () => {
-  const { getoond } = vragenIndicatie({ klus: "complete_ikea_keuken", grootte: "8-15", extras: { demontage: true, apparaten: true } });
-  const b = PRIJS_TIJDELIJK.banden["8-15"];
-  const d = PRIJS_TIJDELIJK.extras.demontage;
-  assert.deepEqual(getoond, { soort: "band", laag: b.laag + d, hoog: b.hoog + d });
+  const { getoond } = vragenIndicatie(bron, { klus: "complete_ikea_keuken", grootte: "8-14", extras: { demontage: true, apparaten: true } });
+  assert.deepEqual(getoond, { soort: "band", laag: 2095 + 995, hoog: 2775 + 995 });
 });
 
-test("vragenroute: afmonteren eigen band, losse klus vanaf-prijs", () => {
-  assert.deepEqual(vragenIndicatie({ klus: "alleen_afmonteren", grootte: "15+", extras: {} }).getoond, {
-    soort: "band",
-    ...PRIJS_TIJDELIJK.afmonteren,
-  });
-  const los = vragenIndicatie({ klus: "losse_klus", grootte: "<8", extras: {} }).getoond;
-  assert.deepEqual(los, { soort: "vanaf", vanaf: PRIJS_TIJDELIJK.losseKlusVanaf });
-  assert.equal(toonBedrag(los), `vanaf ${euro(PRIJS_TIJDELIJK.losseKlusVanaf)}`);
-  assert.deepEqual(naarKolommen(los), { prijs_getoond_laag: 350, prijs_getoond_hoog: 350 });
-});
-
-test("PDF-route: Montageklaar scheelt het vaste bedrag", () => {
-  const c = ontwerpBand("<8", "compleet", false);
-  const m = ontwerpBand("<8", "montageklaar", false);
-  assert.equal(c.soort === "band" && m.soort === "band" && c.laag - m.laag, PRIJS_TIJDELIJK.montageklaarScheeltOngeveer);
-});
-
-test("link: alleen een vaste prijs bij vlag aan en vertrouwen hoog", () => {
-  assert.equal(linkPrijzen(prijs("hoog"), "maatwerk_laminaat", false), null);
-  assert.equal(linkPrijzen(prijs("gemiddeld"), "maatwerk_laminaat", true), null);
-  const p = linkPrijzen(prijs("hoog"), "laminaat_op_locatie", true);
-  assert.deepEqual(p, { compleet: 2765, montageklaar: 2087, werkbladZagen: PRIJS_TIJDELIJK.extras.werkblad_zagen });
-  assert.deepEqual(linkGetoond(p, "compleet", true), {
-    soort: "vast",
-    bedrag: 2765 + PRIJS_TIJDELIJK.extras.werkblad_zagen + PRIJS_TIJDELIJK.extras.demontage,
-  });
-  assert.deepEqual(naarKolommen(linkGetoond(null, "compleet", false)), { prijs_getoond_laag: null, prijs_getoond_hoog: null });
+test("vragenroute: afmonteren en losse klus zonder bedrag", () => {
+  assert.equal(vragenIndicatie(bron, { klus: "alleen_afmonteren", grootte: "15+", extras: {} }).getoond, null);
+  assert.equal(vragenIndicatie(bron, { klus: "losse_klus", grootte: "<8", extras: { demontage: true } }).getoond, null);
 });
 
 test("leidingaanpassing: geen bedrag, telt niet mee, 'Prijs na opname'", () => {
-  const leiding = EXTRA_OPTIES.find((e) => e.key === "leiding")!;
+  const leiding = extraOpties(bron).find((e) => e.key === "leiding")!;
   assert.equal(leiding.bedrag, null);
   assert.equal(extraLabel(leiding.bedrag), "Prijs na opname");
-  const met = vragenIndicatie({ klus: "complete_ikea_keuken", grootte: "<8", extras: { leiding: true } });
-  const zonder = vragenIndicatie({ klus: "complete_ikea_keuken", grootte: "<8", extras: {} });
+  const met = vragenIndicatie(bron, { klus: "complete_ikea_keuken", grootte: "<8", extras: { leiding: true } });
+  const zonder = vragenIndicatie(bron, { klus: "complete_ikea_keuken", grootte: "<8", extras: {} });
   assert.deepEqual(met.getoond, zonder.getoond);
   assert.deepEqual(met.regels, [{ label: "Leidingaanpassing", waarde: "na opname" }]);
+});
+
+test("PDF-route: Montageklaar-band uit de tarieven, demontage erbij", () => {
+  assert.deepEqual(ontwerpBand(bron, "<8", "montageklaar", true), { soort: "band", laag: 1075 + 995, hoog: 1775 + 995 });
+});
+
+test("link: alleen een vaste prijs bij vlag aan en vertrouwen hoog", () => {
+  assert.equal(linkPrijzen(bron, prijs("hoog"), "maatwerk_laminaat", false), null);
+  assert.equal(linkPrijzen(bron, prijs("gemiddeld"), "maatwerk_laminaat", true), null);
+  const p = linkPrijzen(bron, prijs("hoog"), "laminaat_op_locatie", true);
+  assert.deepEqual(p, { compleet: 2775, montageklaar: 2095, werkbladZagen: 350, demontage: 995 });
+  assert.deepEqual(linkGetoond(p, "compleet", true), { soort: "vast", bedrag: 2775 + 350 + 995 });
+  assert.deepEqual(naarKolommen(linkGetoond(null, "compleet", false)), { prijs_getoond_laag: null, prijs_getoond_hoog: null });
 });

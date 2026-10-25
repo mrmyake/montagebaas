@@ -19,7 +19,7 @@ export const KLUS_OPTIES: (Optie<TypeKlus> & { kort: string })[] = [
 
 export const GROOTTE_OPTIES: (Optie<Grootte> & { kort: string })[] = [
   { value: "<8", label: "Kleine keuken", sub: "Minder dan 8 kasten", kort: "klein" },
-  { value: "8-15", label: "Gemiddelde keuken", sub: "8 tot 15 kasten", kort: "gemiddeld" },
+  { value: "8-14", label: "Gemiddelde keuken", sub: "8 tot 14 kasten", kort: "gemiddeld" },
   { value: "15+", label: "Grote keuken", sub: "15 kasten of meer", kort: "groot" },
 ];
 

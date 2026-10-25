@@ -7,25 +7,31 @@ import { ButtonLink } from "@/components/ui/Button";
 import { SlotCta } from "@/components/sections/SlotCta";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { serviceSchema, faqPageSchema } from "@/lib/schema";
-import { kostenKaarten, tekstBedragen, EXTRA_OPTIES, extraLabel } from "@/lib/prijs-weergave";
+import { kostenKaarten, tekstBedragen, extraOpties, extraLabel, type Prijsbron } from "@/lib/prijs-weergave";
+import { laadPrijsbron } from "@/lib/prijs-bron";
 
-const b = tekstBedragen();
-const openingszin = `Een complete montage van een IKEA-keuken kost bij Montagebaas ongeveer ${b.laagsteBand} tot ${b.hoogsteBand}, inclusief btw en reiskosten.`;
+// Bedragen uit de actieve tarievenrij; elk uur opnieuw opgehaald.
+export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Wat kost een IKEA-keuken plaatsen? Prijzen 2026",
-  description:
-    `${openingszin} Bekijk de prijzen per keukengrootte en per losse klus, en wat wel en niet is inbegrepen.`,
-  alternates: { canonical: "/kosten" },
-};
+const openingszinVoor = (b: ReturnType<typeof tekstBedragen>) =>
+  `Een complete montage van een IKEA-keuken kost bij Montagebaas ongeveer ${b.laagsteBand} tot ${b.hoogsteBand}, inclusief btw en reiskosten.`;
 
-const lossePosten = [
-  ...EXTRA_OPTIES.map((e) => ({ label: e.label, sub: e.sub, prijs: extraLabel(e.bedrag) })),
+export async function generateMetadata(): Promise<Metadata> {
+  const b = tekstBedragen(await laadPrijsbron());
+  return {
+    title: "Wat kost een IKEA-keuken plaatsen? Prijzen 2026",
+    description: `${openingszinVoor(b)} Bekijk de prijzen per keukengrootte en per losse klus, en wat wel en niet is inbegrepen.`,
+    alternates: { canonical: "/kosten" },
+  };
+}
+
+const lossePostenVoor = (bron: Prijsbron) => [
+  ...extraOpties(bron).map((e) => ({ label: e.label, sub: e.sub, prijs: extraLabel(e.bedrag) })),
   { label: "Tegelwerk of spatwand", sub: "Maatwerk, apart in je offerte", prijs: "Op aanvraag" },
 ];
 
 // FAQ-subset specifiek over kosten (voor GEO / AI Overviews)
-const kostenFaq = [
+const kostenFaqVoor = (b: ReturnType<typeof tekstBedragen>, openingszin: string) => [
   {
     vraag: "Wat kost een IKEA-keuken laten plaatsen?",
     antwoord:
@@ -50,8 +56,13 @@ const kostenFaq = [
 const thClass = "border-b border-line px-4 py-3 text-left text-sm font-semibold text-ink";
 const tdClass = "border-b border-line px-4 py-3 text-ink-soft";
 
-export default function KostenPage() {
-  const rijen = kostenKaarten();
+export default async function KostenPage() {
+  const bron = await laadPrijsbron();
+  const b = tekstBedragen(bron);
+  const openingszin = openingszinVoor(b);
+  const rijen = kostenKaarten(bron);
+  const lossePosten = lossePostenVoor(bron);
+  const kostenFaq = kostenFaqVoor(b, openingszin);
 
   return (
     <>
@@ -193,7 +204,7 @@ export default function KostenPage() {
             <p>
               Laat je het doen, dan heb je zekerheid: een vakkundige montage, een vaste prijs en
               iemand die verantwoordelijk is voor het resultaat. Twijfel je over een deel van het
-              werk? Je kunt ook alleen het lastige laten afmonteren, voor ongeveer {b.afmonteren}.
+              werk? Je kunt ook alleen het lastige laten afmonteren. Die prijs maken we na overleg.
             </p>
           </div>
 

@@ -4,8 +4,12 @@ import { Container } from "@/components/ui/Container";
 import { FaqList } from "@/components/sections/FaqList";
 import { SlotCta } from "@/components/sections/SlotCta";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { faqItems } from "@/lib/content";
+import { faqItems as faqItemsVoor } from "@/lib/content";
 import { faqPageSchema } from "@/lib/schema";
+import { laadPrijsbron } from "@/lib/prijs-bron";
+
+// Bedragen in de antwoorden komen uit de actieve tarievenrij; elk uur opnieuw opgehaald.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Veelgestelde vragen over keuken laten plaatsen",
@@ -14,7 +18,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/veelgestelde-vragen" },
 };
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const faqItems = faqItemsVoor(await laadPrijsbron());
   return (
     <>
       <JsonLd data={faqPageSchema(faqItems)} />

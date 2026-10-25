@@ -10,7 +10,7 @@ import { leesOntwerp, type GelezenOntwerp } from "@/lib/ikea-planner/lees";
 import { PlannerFout, naarPlannerFout, type PlannerFoutCategorie } from "@/lib/ikea-planner/fouten";
 import { klantweergave } from "@/lib/ikea-planner/klantweergave";
 import { TOON_PRIJS_BIJ_LINK } from "@/lib/ikea-planner/verwerker";
-import { linkPrijzen, type LinkPrijzen } from "@/lib/prijs-weergave";
+import { linkPrijzen, prijsbronUitTarieven, type LinkPrijzen } from "@/lib/prijs-weergave";
 import type { PlannerSnapshotInsert } from "@/lib/db.types";
 
 /**
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     try {
       const { id, tarieven } = await laadTarieven(null);
       tarievenId = id;
-      prijzen = linkPrijzen(berekenPrijsUitTelling(gelezen.resultaat.telling, tarieven), gelezen.resultaat.werkblad, true);
+      prijzen = linkPrijzen(prijsbronUitTarieven(id, tarieven), berekenPrijsUitTelling(gelezen.resultaat.telling, tarieven), gelezen.resultaat.werkblad, true);
     } catch (e) {
       console.error("[ontwerp-lezen] tarieven/prijs mislukt:", e);
     }

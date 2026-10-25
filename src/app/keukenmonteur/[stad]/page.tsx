@@ -13,9 +13,12 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { localBusinessSchema, serviceSchema, breadcrumbSchema } from "@/lib/schema";
 import { steden, stedenBySlug, stedenBinnenStraal } from "@/lib/steden";
 import { tekstBedragen } from "@/lib/prijs-weergave";
+import { laadPrijsbron } from "@/lib/prijs-bron";
 import { site, whatsappDefault } from "@/lib/site";
 
 export const dynamicParams = false;
+// Bedragen uit de actieve tarievenrij; elk uur opnieuw opgehaald.
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return steden.map((s) => ({ stad: s.slug }));
@@ -44,7 +47,6 @@ export async function generateMetadata({
 }
 
 // Prijsindicatie, uit de prijsadapter (nooit zelf bedragen berekenen of hardcoden)
-const indicatie = tekstBedragen();
 
 export default async function StadPage({
   params,
@@ -57,6 +59,7 @@ export default async function StadPage({
 
   const alineas = data.intro.split("\n\n");
   const binnen = data.binnenStraal;
+  const indicatie = tekstBedragen(await laadPrijsbron());
 
   return (
     <>
