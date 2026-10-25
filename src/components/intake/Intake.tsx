@@ -8,7 +8,7 @@ import { ConsentCheckbox } from "@/components/analytics/ConsentCheckbox";
 import { INVOERMETHODE_KEY, OFFERTE_VERZONDEN_KEY, SITE_VERSIE_KEY } from "@/components/analytics/ConversionTracker";
 import { stuurStapEenmalig, stuurTrechterEvent } from "@/lib/ga-events";
 import { verstuurVragenAanvraag } from "@/components/intake/actions";
-import { bewaarConsentKeuze, huidigeConsentKeuze, type ConsentBron } from "@/lib/consent";
+import { CONSENT_CHANGED_EVENT, bewaarConsentKeuze, huidigeConsentKeuze, type ConsentBron } from "@/lib/consent";
 import { parsePlannerLink } from "@/lib/ikea-planner/link";
 import { bouwBon, type Route } from "@/lib/intake/bon";
 import {
@@ -172,6 +172,10 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting, br
   // Trechter: elke stap één keer per sessie (alleen na consent, zie ga-events.ts).
   useEffect(() => {
     stuurStapEenmalig(route, stap, stappen[stap - 1]);
+    // Kiest de bezoeker pas later in de banner, dan alsnog de huidige stap.
+    const naConsent = () => stuurStapEenmalig(route, stap, stappen[stap - 1]);
+    window.addEventListener(CONSENT_CHANGED_EVENT, naConsent);
+    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, naConsent);
   }, [route, stap, stappen]);
 
   function kiesRoute(r: Route) {
