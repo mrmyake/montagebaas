@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>De Keukenheld, B2: IKEA-link eerst</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&amp;family=IBM+Plex+Mono:wght@400;600&amp;display=swap">
+<style>
+body{margin:0;background:#EEF0EC}
+*{box-sizing:border-box}
+a{color:#15171A}a:hover{color:#0B5E53}
+html{scroll-behavior:smooth}
+:focus-visible{outline:3px solid #15171A;outline-offset:3px}
+.khl-nav{display:flex}
+@media (max-width:900px){.khl-nav{display:none}}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</helmet>
+<div id="top" style="background:#EEF0EC; color:#15171A; font-family:'Schibsted Grotesk', system-ui, sans-serif; font-size:17px; line-height:1.5">
+
+<header style="background:#FFFFFF; border-bottom:1px solid #D9DCD6">
+<div style="max-width:1240px; margin:0 auto; padding:12px clamp(16px,4vw,40px); display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap">
+<a href="#top" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:#15171A">
+<svg width="28" height="33" viewBox="0 0 48 56" aria-hidden="true"><rect x="2" y="2" width="44" height="52" rx="5" fill="{{accent}}"></rect><path d="M2 30H46" stroke="#FFFFFF" stroke-width="2.5"></path><path d="M14 16l6 6 13-13" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19 42H29" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"></path></svg>
+<span style="font-weight:800; font-size:20px; letter-spacing:-0.02em">De Keukenheld</span>
+</a>
+<nav class="khl-nav" aria-label="Hoofdmenu" style="gap:24px; align-items:center; font-size:15px; font-weight:500">
+<a href="#kosten" style="text-decoration:none">Kosten</a>
+<a href="#vergelijk" style="text-decoration:none">Vergelijk</a>
+<a href="#werkwijze" style="text-decoration:none">Werkwijze</a>
+<a href="#reviews" style="text-decoration:none">Reviews</a>
+<a href="#werkgebied" style="text-decoration:none">Werkgebied</a>
+<a href="#vragen" style="text-decoration:none">Vragen</a>
+<a href="#over" style="text-decoration:none">Over ons</a>
+</nav>
+<div style="display:flex; align-items:center; gap:14px">
+<a href="tel:+31629173468" style="text-decoration:none; font-weight:700; font-size:15px; min-height:44px; display:inline-flex; align-items:center">06 2917 3468</a>
+<a href="#offerte" style="background:{{accent}}; color:#FFFFFF; text-decoration:none; font-weight:700; padding:0 18px; border-radius:8px; min-height:44px; display:inline-flex; align-items:center">Bereken je prijs</a>
+</div>
+</div>
+</header>
+
+<section id="offerte" style="max-width:1240px; margin:0 auto; padding:clamp(28px,5vw,64px) clamp(16px,4vw,40px) clamp(40px,6vw,72px); display:flex; flex-wrap:wrap; gap:clamp(24px,4vw,48px); align-items:flex-start">
+
+<div style="flex:1 1 560px; min-width:0">
+<h1 style="margin:0; font-size:clamp(34px,4.4vw,60px); line-height:1.02; letter-spacing:-0.035em; font-weight:800; max-width:15em">Plak je IKEA-ontwerp. Zie direct wat montage kost.</h1>
+<p style="margin:16px 0 0; font-size:clamp(17px,1.5vw,20px); color:#5B6168; max-width:34em">We lezen je kasten, werkblad en apparaten uit de IKEA Keukenplanner. Je ziet je prijs op de bon en hebt binnen 24 uur een vaste prijs.</p>
+<p style="margin:10px 0 0; font-size:15.5px; color:#5B6168">Liever even overleggen? <a href="https://wa.me/31629173468" style="font-weight:700">App ons</a> of <a href="tel:+31629173468" style="font-weight:700">bel 06 2917 3468</a>.</p>
+
+<div style="margin-top:26px; background:#FFFFFF; border:1px solid #D9DCD6; border-radius:12px; overflow:hidden">
+
+<sc-if value="{{showRoutes}}" hint-placeholder-val="{{ true }}">
+<div role="group" aria-label="Hoe wil je je keuken doorgeven?" style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); border-bottom:1px solid #D9DCD6">
+<sc-for list="{{routes}}" as="r" hint-placeholder-count="3">
+<button type="button" onClick="{{r.pick}}" aria-pressed="{{r.pressed}}" style="font:inherit; text-align:left; cursor:pointer; border:0; border-bottom:3px solid {{r.line}}; background:{{r.bg}}; color:#15171A; padding:14px 18px 12px; min-height:64px">
+<span style="display:block; font-weight:800; font-size:16px">{{r.label}}</span>
+<span style="display:block; font-size:13.5px; color:#5B6168">{{r.sub}}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<div style="padding:clamp(18px,3vw,32px)">
+<sc-if value="{{showBar}}" hint-placeholder-val="{{ false }}">
+<ol aria-label="Stappen" style="list-style:none; margin:0 0 20px; padding:0; display:flex; flex-wrap:wrap; gap:6px">
+<sc-for list="{{bar}}" as="b" hint-placeholder-count="4">
+<li aria-current="{{b.current}}" style="display:flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; border-radius:999px; background:{{b.bg}}; color:{{b.fg}}; font-size:14px; font-weight:700">
+<span style="display:inline-flex; width:24px; height:24px; border-radius:50%; align-items:center; justify-content:center; background:{{b.dotBg}}; color:{{b.dotFg}}; font-size:13px">{{b.n}}</span>{{b.label}}</li>
+</sc-for>
+</ol>
+</sc-if>
+
+<sc-if value="{{d1Link}}" hint-placeholder-val="{{ true }}">
+<label for="l-link" style="display:block; font-weight:800; font-size:20px; letter-spacing:-0.01em">Link naar je ontwerp</label>
+<p style="margin:4px 0 12px; color:#5B6168; font-size:15px">Open je ontwerp in de IKEA Keukenplanner, kies delen en kopieer de link.</p>
+<div style="display:flex; flex-wrap:wrap; gap:10px">
+<input id="l-link" name="planner_link" type="url" inputmode="url" autocomplete="off" placeholder="https://kitchen.planner.ikea.com/nl/nl/planner/…" style="flex:1 1 320px; min-width:0; font-family:'IBM Plex Mono', monospace; font-size:15px; min-height:56px; padding:0 14px; border:2px solid #15171A; border-radius:8px; color:#15171A; background:#FFFFFF">
+<button type="button" onClick="{{readDesign}}" style="flex:0 0 auto; font:inherit; font-weight:800; color:#FFFFFF; background:{{accent}}; border:0; border-radius:8px; padding:0 24px; min-height:56px; cursor:pointer">Lees mijn ontwerp</button>
+</div>
+<ul style="list-style:none; margin:16px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 20px; font-size:14.5px; color:#5B6168">
+<li style="display:flex; gap:6px; align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10" fill="none" stroke="{{accent}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>Geen account of PDF nodig</li>
+<li style="display:flex; gap:6px; align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10" fill="none" stroke="{{accent}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>We zien alleen je ontwerp</li>
+<li style="display:flex; gap:6px; align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10" fill="none" stroke="{{accent}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>We checken je bestelling op ontbrekende onderdelen</li>
+</ul>
+</sc-if>
+
+<sc-if value="{{d1Pdf}}" hint-placeholder-val="{{ false }}">
+<p style="margin:0; font-weight:800; font-size:20px; letter-spacing:-0.01em">Upload je ontwerp</p>
+<p style="margin:4px 0 12px; color:#5B6168; font-size:15px">Exporteer mét de artikellijst, dan klopt je prijs het best.</p>
+<label for="l-pdf" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; min-height:160px; padding:20px; border:2px dashed #C3C8C0; border-radius:10px; cursor:pointer; background:#F7F8F5">
+<svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="#15171A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<span style="font-weight:700">Sleep je planner hierheen of klik om te kiezen</span>
+<span style="font-size:14px; color:#5B6168">PDF, PNG of JPG, max 8 MB per bestand, tot 8 bestanden</span>
+</label>
+<input id="l-pdf" type="file" accept=".pdf,.png,.jpg,.jpeg" multiple style="position:absolute; width:1px; height:1px; opacity:0; overflow:hidden">
+<button type="button" onClick="{{readDesign}}" style="margin-top:14px; font:inherit; font-weight:800; color:#FFFFFF; background:{{accent}}; border:0; border-radius:8px; padding:0 24px; min-height:52px; cursor:pointer">Lees mijn ontwerp</button>
+</sc-if>
+
+<sc-if value="{{d2}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; gap:12px; align-items:flex-start">
+<svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true" style="flex:none"><circle cx="16" cy="16" r="15" fill="{{accent}}"></circle><path d="M9 16.5l4.5 4.5L23 11.5" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div>
+<h2 style="margin:0; font-size:22px; font-weight:800; letter-spacing:-0.02em">Je ontwerp is gelezen</h2>
+<p style="margin:2px 0 0; color:#5B6168; font-size:15px">Dit is wat we in je IKEA-ontwerp zien.</p>
+</div>
+</div>
+<ul style="list-style:none; margin:14px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:8px">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="5">
+<li style="background:#E6F2F0; color:#0B4F46; font-weight:700; font-size:14.5px; padding:6px 12px; border-radius:999px">{{c.t}}</li>
+</sc-for>
+</ul>
+<h3 style="margin:24px 0 12px; font-size:19px; font-weight:800">Kies je pakket</h3>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:10px">
+<sc-for list="{{pakketOpts}}" as="o" hint-placeholder-count="2">
+<button type="button" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="text-align:left; font:inherit; color:#15171A; background:{{o.bg}}; border:2px solid {{o.bd}}; border-radius:10px; padding:16px; min-height:44px; cursor:pointer; display:flex; flex-direction:column; gap:4px">
+<span style="display:flex; justify-content:space-between; align-items:baseline; gap:10px"><span style="font-weight:800; font-size:18px">{{o.label}}</span><span style="font-weight:800; font-size:20px; color:{{accent}}">{{o.priceText}}</span></span>
+<span style="font-size:14.5px; color:#5B6168">{{o.sub}}</span>
+</button>
+</sc-for>
+</div>
+<button type="button" onClick="{{toggleDem}}" aria-pressed="{{demPressed}}" style="margin-top:10px; width:100%; text-align:left; font:inherit; color:#15171A; background:{{demBg}}; border:2px solid {{demBd}}; border-radius:10px; padding:12px 16px; min-height:44px; cursor:pointer; display:flex; gap:12px; align-items:center">
+<span aria-hidden="true" style="flex:none; width:22px; height:22px; border-radius:5px; border:2px solid {{demBd}}; background:{{demBox}}; display:inline-flex; align-items:center; justify-content:center">
+<sc-if value="{{dem}}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 14 14"><path d="M3 7.5l2.5 2.5L11 4.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+</span>
+<span style="flex:1"><span style="display:block; font-weight:700">Oude keuken eruit</span><span style="display:block; font-size:14.5px; color:#5B6168">Demonteren en afvoeren, inclusief container</span></span>
+<span style="font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:14.5px">+ € 995</span>
+</button>
+<p style="margin:12px 0 0; font-size:14.5px; color:#5B6168">Klopt er iets niet, of pas je je ontwerp nog aan? Geen probleem: we checken alles voor je vaste prijs.</p>
+</sc-if>
+
+<sc-if value="{{d3}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0 0 4px; font-size:22px; font-weight:800; letter-spacing:-0.02em">Waar en wanneer?</h2>
+<p style="margin:0 0 14px; color:#5B6168; font-size:15px">Alleen je postcode, geen volledig adres nodig.</p>
+<label for="l-postcode" style="display:block; font-weight:700; font-size:15px; margin-bottom:6px">Postcode</label>
+<input id="l-postcode" name="postcode" autocomplete="postal-code" placeholder="1234 AB" style="font-family:'IBM Plex Mono', monospace; font-size:20px; width:100%; max-width:240px; min-height:54px; padding:0 14px; border:2px solid #15171A; border-radius:8px; color:#15171A; letter-spacing:0.06em">
+<p style="margin:20px 0 10px; font-weight:700; font-size:15px">Wanneer moet de keuken erin staan?</p>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px">
+<sc-for list="{{periodeOpts}}" as="o" hint-placeholder-count="4">
+<button type="button" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="text-align:left; font:inherit; color:#15171A; background:{{o.bg}}; border:2px solid {{o.bd}}; border-radius:10px; padding:12px 14px; min-height:44px; cursor:pointer; display:flex; gap:12px; align-items:flex-start">
+<span aria-hidden="true" style="flex:none; width:20px; height:20px; margin-top:2px; border-radius:50%; border:2px solid {{o.bd}}; background:{{o.dot}}; box-shadow:inset 0 0 0 3px #FFFFFF"></span>
+<span><span style="display:block; font-weight:700">{{o.label}}</span><span style="display:block; font-size:14px; color:#5B6168">{{o.sub}}</span></span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{dContact}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0 0 4px; font-size:22px; font-weight:800; letter-spacing:-0.02em">Waar sturen we je vaste prijs naartoe?</h2>
+<p style="margin:0 0 16px; color:#5B6168; font-size:15px">Binnen 24 uur in je mail. Vrijblijvend, je zit nergens aan vast.</p>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px">
+<div><label for="l-naam" style="display:block; font-weight:700; font-size:15px; margin-bottom:6px">Naam</label><input id="l-naam" name="naam" autocomplete="name" style="font:inherit; width:100%; min-height:48px; padding:0 12px; border:2px solid #C3C8C0; border-radius:8px; color:#15171A"></div>
+<div><label for="l-tel" style="display:block; font-weight:700; font-size:15px; margin-bottom:6px">Telefoon</label><input id="l-tel" name="telefoon" type="tel" autocomplete="tel" style="font:inherit; width:100%; min-height:48px; padding:0 12px; border:2px solid #C3C8C0; border-radius:8px; color:#15171A"></div>
+<div style="grid-column:1 / -1"><label for="l-mail" style="display:block; font-weight:700; font-size:15px; margin-bottom:6px">E-mail</label><input id="l-mail" name="email" type="email" autocomplete="email" style="font:inherit; width:100%; min-height:48px; padding:0 12px; border:2px solid #C3C8C0; border-radius:8px; color:#15171A"></div>
+<div style="grid-column:1 / -1"><label for="l-toel" style="display:block; font-weight:700; font-size:15px; margin-bottom:6px">Toelichting <span style="font-weight:400; color:#5B6168">(mag leeg)</span></label><textarea id="l-toel" name="toelichting" rows="3" style="font:inherit; width:100%; padding:10px 12px; border:2px solid #C3C8C0; border-radius:8px; color:#15171A; resize:vertical"></textarea></div>
+</div>
+<label for="l-consent" style="display:flex; gap:10px; align-items:flex-start; margin-top:12px; font-size:14.5px; color:#5B6168; cursor:pointer">
+<input id="l-consent" type="checkbox" checked="{{consent}}" onChange="{{toggleConsent}}" style="width:20px; height:20px; margin:1px 0 0; accent-color:#15171A; flex:none">
+<span>Google mag meten via welke advertentie je ons vond.</span>
+</label>
+</sc-if>
+
+<sc-if value="{{q1}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0 0 4px; font-size:22px; font-weight:800; letter-spacing:-0.02em">Wat voor klus is het?</h2>
+<p style="margin:0 0 14px; color:#5B6168; font-size:15px">Nog geen ontwerp, een andere keuken of een klus die al half af is? Dan beantwoord je een paar korte vragen.</p>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:10px">
+<sc-for list="{{klusOpts}}" as="o" hint-placeholder-count="4">
+<button type="button" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="text-align:left; font:inherit; color:#15171A; background:{{o.bg}}; border:2px solid {{o.bd}}; border-radius:10px; padding:14px 16px; min-height:44px; cursor:pointer; display:flex; gap:12px; align-items:flex-start">
+<span aria-hidden="true" style="flex:none; width:20px; height:20px; margin-top:2px; border-radius:50%; border:2px solid {{o.bd}}; background:{{o.dot}}; box-shadow:inset 0 0 0 3px #FFFFFF"></span>
+<span><span style="display:block; font-weight:700">{{o.label}}</span><span style="display:block; font-size:14.5px; color:#5B6168">{{o.sub}}</span></span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{q2}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0 0 4px; font-size:22px; font-weight:800; letter-spacing:-0.02em">Hoe groot is je keuken?</h2>
+<p style="margin:0 0 14px; color:#5B6168; font-size:15px">Tel onder- en bovenkasten samen.</p>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px">
+<sc-for list="{{sizeOpts}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="text-align:left; font:inherit; color:#15171A; background:{{o.bg}}; border:2px solid {{o.bd}}; border-radius:10px; padding:14px 16px; min-height:44px; cursor:pointer; display:flex; gap:12px; align-items:flex-start">
+<span aria-hidden="true" style="flex:none; width:20px; height:20px; margin-top:2px; border-radius:50%; border:2px solid {{o.bd}}; background:{{o.dot}}; box-shadow:inset 0 0 0 3px #FFFFFF"></span>
+<span><span style="display:block; font-weight:700">{{o.label}}</span><span style="display:block; font-size:14.5px; color:#5B6168">{{o.sub}}</span></span>
+</button>
+</sc-for>
+</div>
+<h3 style="margin:22px 0 12px; font-size:18px; font-weight:800">Welke opstelling?</h3>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px">
+<sc-for list="{{setupOpts}}" as="o" hint-placeholder-count="3">
+<button type="button" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="text-align:left; font:inherit; color:#15171A; background:{{o.bg}}; border:2px solid {{o.bd}}; border-radius:10px; padding:14px 16px; min-height:44px; cursor:pointer; display:flex; gap:12px; align-items:flex-start">
+<span aria-hidden="true" style="flex:none; width:20px; height:20px; margin-top:2px; border-radius:50%; border:2px solid {{o.bd}}; background:{{o.dot}}; box-shadow:inset 0 0 0 3px #FFFFFF"></span>
+<span><span style="display:block; font-weight:700">{{o.label}}</span><span style="display:block; font-size:14.5px; color:#5B6168">{{o.sub}}</span></span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{q3}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0 0 4px; font-size:22px; font-weight:800; letter-spacing:-0.02em">Wil je er nog iets bij?</h2>
+<p style="margin:0 0 14px; color:#5B6168; font-size:15px">Kies wat van toepassing is. Overslaan kan ook.</p>
+<div style="display:flex; flex-direction:column; gap:8px">
+<sc-for list="{{extraOpts}}" as="e" hint-placeholder-count="5">
+<button type="button" onClick="{{e.toggle}}" aria-pressed="{{e.pressed}}" style="text-align:left; font:inherit; color:#15171A; background:{{e.bg}}; border:2px solid {{e.bd}}; border-radius:10px; padding:12px 16px; min-height:44px; cursor:pointer; display:flex; gap:12px; align-items:center">
+<span aria-hidden="true" style="flex:none; width:22px; height:22px; border-radius:5px; border:2px solid {{e.bd}}; background:{{e.box}}; display:inline-flex; align-items:center; justify-content:center">
+<sc-if value="{{e.on}}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 14 14"><path d="M3 7.5l2.5 2.5L11 4.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if>
+</span>
+<span style="flex:1; min-width:0"><span style="display:block; font-weight:700">{{e.label}}</span><span style="display:block; font-size:14.5px; color:#5B6168">{{e.sub}}</span></span>
+<span style="font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:14.5px; white-space:nowrap">{{e.priceLabel}}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{q4}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0 0 4px; font-size:22px; font-weight:800; letter-spacing:-0.02em">Waar en wanneer?</h2>
+<p style="margin:0 0 14px; color:#5B6168; font-size:15px">Alleen je postcode, geen volledig adres nodig.</p>
+<label for="q-postcode" style="display:block; font-weight:700; font-size:15px; margin-bottom:6px">Postcode</label>
+<input id="q-postcode" name="postcode" autocomplete="postal-code" placeholder="1234 AB" style="font-family:'IBM Plex Mono', monospace; font-size:20px; width:100%; max-width:240px; min-height:54px; padding:0 14px; border:2px solid #15171A; border-radius:8px; color:#15171A; letter-spacing:0.06em">
+<p style="margin:20px 0 10px; font-weight:700; font-size:15px">Wanneer moet de keuken erin staan?</p>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px">
+<sc-for list="{{periodeOpts}}" as="o" hint-placeholder-count="4">
+<button type="button" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="text-align:left; font:inherit; color:#15171A; background:{{o.bg}}; border:2px solid {{o.bd}}; border-radius:10px; padding:12px 14px; min-height:44px; cursor:pointer; display:flex; gap:12px; align-items:flex-start">
+<span aria-hidden="true" style="flex:none; width:20px; height:20px; margin-top:2px; border-radius:50%; border:2px solid {{o.bd}}; background:{{o.dot}}; box-shadow:inset 0 0 0 3px #FFFFFF"></span>
+<span><span style="display:block; font-weight:700">{{o.label}}</span><span style="display:block; font-size:14px; color:#5B6168">{{o.sub}}</span></span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{showNav}}" hint-placeholder-val="{{ false }}">
+<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:24px; flex-wrap:wrap">
+<sc-if value="{{showPrev}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{prev}}" style="font:inherit; font-weight:700; color:#15171A; background:transparent; border:0; text-decoration:underline; text-underline-offset:4px; padding:0 4px; min-height:48px; cursor:pointer">Vorige</button>
+</sc-if>
+<div style="margin-left:auto; display:flex; gap:10px">
+<sc-if value="{{showNext}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{next}}" style="font:inherit; font-weight:800; color:#FFFFFF; background:#15171A; border:0; border-radius:8px; padding:0 28px; min-height:52px; cursor:pointer">Volgende</button>
+</sc-if>
+<sc-if value="{{showSubmit}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{submit}}" style="font:inherit; font-weight:800; color:#FFFFFF; background:{{accent}}; border:0; border-radius:8px; padding:0 28px; min-height:52px; cursor:pointer">Vraag je vaste prijs aan</button>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0; font-size:30px; font-weight:800; letter-spacing:-0.02em">Je aanvraag is binnen.</h2>
+<p style="margin:8px 0 0; color:#5B6168; max-width:30em">Je bon staat hiernaast. We checken je ontwerp en sturen binnen 24 uur je vaste prijs.</p>
+<button type="button" onClick="{{reset}}" style="margin-top:18px; font:inherit; font-weight:700; color:#15171A; background:transparent; border:2px solid #15171A; border-radius:8px; padding:0 20px; min-height:48px; cursor:pointer">Opnieuw beginnen</button>
+</sc-if>
+</div>
+</div>
+</div>
+
+<aside aria-label="Jouw prijs" style="flex:0 1 380px; min-width:280px; position:sticky; top:24px">
+<div style="background:#FFFFFF; padding:26px 24px 20px; font-family:'IBM Plex Mono', monospace; font-size:14px; line-height:1.55; box-shadow:0 18px 40px -24px rgba(21,23,26,0.45)">
+<p style="margin:0; text-align:center; font-weight:600; font-size:15px; letter-spacing:0.08em">DE KEUKENHELD</p>
+<p style="margin:2px 0 0; text-align:center; color:#5B6168">Montage IKEA-keuken</p>
+<div style="border-top:2px dashed #C3C8C0; margin:16px 0 12px"></div>
+<sc-if value="{{receiptEmpty}}" hint-placeholder-val="{{ true }}">
+<p style="margin:12px 0; color:#5B6168; text-align:center">Plak je link of upload je ontwerp. Dan rekenen we je bon uit.</p>
+</sc-if>
+<sc-if value="{{receiptFull}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{receipt}}" as="r" hint-placeholder-count="3">
+<div style="display:flex; gap:8px; align-items:baseline; padding:3px 0">
+<span style="flex:0 1 auto">{{r.label}}</span>
+<span aria-hidden="true" style="flex:1 1 20px; border-bottom:1px dotted #9AA09A; transform:translateY(-4px)"></span>
+<span style="flex:none; font-weight:600; text-align:right">{{r.amount}}</span>
+</div>
+</sc-for>
+<div style="border-top:2px dashed #C3C8C0; margin:12px 0 10px"></div>
+<p style="margin:0; color:#5B6168">{{priceLabel}}</p>
+<p style="margin:2px 0 0; font-family:'Schibsted Grotesk', sans-serif; font-weight:800; font-size:clamp(26px,2.6vw,34px); letter-spacing:-0.02em; color:{{accent}}; line-height:1.1">{{priceText}}</p>
+<sc-if value="{{showAlt}}" hint-placeholder-val="{{ false }}">
+<p style="margin:6px 0 0; color:#5B6168">{{altText}}</p>
+</sc-if>
+<p style="margin:8px 0 0; color:#5B6168">Incl. btw en reiskosten. Je vaste prijs volgt binnen 24 uur.</p>
+</sc-if>
+<div style="border-top:2px dashed #C3C8C0; margin:16px 0 12px"></div>
+<p style="margin:0; text-align:center; color:#5B6168">Vragen? Bel 06 2917 3468</p>
+</div>
+<div aria-hidden="true" style="height:10px; background:linear-gradient(135deg, #FFFFFF 50%, transparent 50%) 0 0 / 14px 10px repeat-x, linear-gradient(225deg, #FFFFFF 50%, transparent 50%) 0 0 / 14px 10px repeat-x"></div>
+</aside>
+</section>
+
+<section aria-label="Waarom De Keukenheld" style="background:#FFFFFF; border-top:1px solid #D9DCD6; border-bottom:1px solid #D9DCD6">
+<div style="max-width:1240px; margin:0 auto; padding:20px clamp(16px,4vw,40px); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-weight:700; font-size:15.5px">
+<span style="display:inline-flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z" fill="{{accent}}"></path></svg>4,9 uit 55 reviews</span>
+<span style="display:inline-flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#15171A" stroke-width="2"></circle><path d="M12 7v5l3 2" fill="none" stroke="#15171A" stroke-width="2" stroke-linecap="round"></path></svg>Vaste prijs binnen 24 uur</span>
+<span style="display:inline-flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10" fill="none" stroke="#15171A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>Gespecialiseerd in IKEA METOD</span>
+<span style="display:inline-flex; align-items:center; gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="#15171A" stroke-width="2" stroke-linejoin="round"></path></svg>Heel Nederland</span>
+</div>
+</section>
+
+<section id="kosten" style="max-width:1240px; margin:0 auto; padding:clamp(56px,7vw,96px) clamp(16px,4vw,40px)">
+<h2 style="margin:0; font-size:clamp(30px,3.4vw,46px); letter-spacing:-0.03em; font-weight:800; line-height:1.08">Wat kost het ongeveer?</h2>
+<p style="margin:12px 0 0; color:#5B6168; font-size:18px; max-width:36em">Richtprijzen voor complete montage. Met je IKEA-link zie je bovenaan je eigen prijs.</p>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:36px">
+<div style="position:relative; background:#FFFFFF; clip-path:polygon(30px 0, 100% 0, 100% 100%, 30px 100%, 0 50%); padding:26px 26px 26px 52px">
+<span aria-hidden="true" style="position:absolute; left:20px; top:50%; width:12px; height:12px; margin-top:-6px; border-radius:50%; background:#EEF0EC"></span>
+<h3 style="margin:0; font-size:20px; font-weight:800">Kleine keuken</h3>
+<p style="margin:6px 0 0; color:#5B6168; font-size:15px">Tot 8 kasten, rechte opstelling</p>
+<p style="margin:18px 0 0; font-weight:800; font-size:30px; letter-spacing:-0.02em; color:{{accent}}">€ 1.775 – € 2.095</p>
+</div>
+<div style="position:relative; background:#15171A; color:#FFFFFF; clip-path:polygon(30px 0, 100% 0, 100% 100%, 30px 100%, 0 50%); padding:26px 26px 26px 52px">
+<span aria-hidden="true" style="position:absolute; left:20px; top:50%; width:12px; height:12px; margin-top:-6px; border-radius:50%; background:#EEF0EC"></span>
+<p style="margin:0 0 6px; font-size:13.5px; font-weight:700; color:#C9CDC6">Meest gekozen</p>
+<h3 style="margin:0; font-size:20px; font-weight:800">Gemiddelde keuken</h3>
+<p style="margin:6px 0 0; color:#C9CDC6; font-size:15px">8 tot 15 kasten, L- of U-vorm</p>
+<p style="margin:18px 0 0; font-weight:800; font-size:30px; letter-spacing:-0.02em">€ 2.475 – € 2.775</p>
+</div>
+<div style="position:relative; background:#FFFFFF; clip-path:polygon(30px 0, 100% 0, 100% 100%, 30px 100%, 0 50%); padding:26px 26px 26px 52px">
+<span aria-hidden="true" style="position:absolute; left:20px; top:50%; width:12px; height:12px; margin-top:-6px; border-radius:50%; background:#EEF0EC"></span>
+<h3 style="margin:0; font-size:20px; font-weight:800">Grote keuken</h3>
+<p style="margin:6px 0 0; color:#5B6168; font-size:15px">15 kasten of meer, met kookeiland</p>
+<p style="margin:18px 0 0; font-weight:800; font-size:30px; letter-spacing:-0.02em; color:{{accent}}">€ 3.125 – € 3.475</p>
+</div>
+</div>
+<p style="margin:20px 0 0; color:#5B6168; font-size:15px">Inclusief apparaten aansluiten, btw en reiskosten. Zet je de kasten zelf in elkaar? Met Montageklaar betaal je ongeveer € 700 minder. Oude keuken eruit kost € 995 extra, inclusief container.</p>
+</section>
+
+<section id="vergelijk" style="background:#FFFFFF; border-top:1px solid #D9DCD6; border-bottom:1px solid #D9DCD6">
+<div style="max-width:1240px; margin:0 auto; padding:clamp(56px,7vw,96px) clamp(16px,4vw,40px)">
+<h2 style="margin:0; font-size:clamp(30px,3.4vw,46px); letter-spacing:-0.03em; font-weight:800; line-height:1.08">Zelf doen, een klusplatform of De Keukenheld?</h2>
+<p style="margin:12px 0 0; color:#5B6168; font-size:18px; max-width:38em">Alle drie kunnen een prima keuken opleveren. Dit is waar ze verschillen.</p>
+<div style="margin-top:32px; overflow-x:auto">
+<table style="width:100%; min-width:720px; border-collapse:collapse; font-size:16px">
+<thead>
+<tr>
+<td style="padding:14px 16px; width:22%"></td>
+<th scope="col" style="text-align:left; padding:14px 16px; font-weight:800; font-size:17px">Zelf doen</th>
+<th scope="col" style="text-align:left; padding:14px 16px; font-weight:800; font-size:17px">Klusplatform</th>
+<th scope="col" style="text-align:left; padding:14px 16px; font-weight:800; font-size:17px; background:#E6F2F0; border-top:4px solid {{accent}}">De Keukenheld</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-top:1px solid #D9DCD6">
+<th scope="row" style="text-align:left; padding:16px; font-weight:700">Wat het kost</th>
+<td style="padding:16px; color:#5B6168">Alleen je tijd en gereedschap</td>
+<td style="padding:16px; color:#5B6168">Per klusser anders, vaak per uur</td>
+<td style="padding:16px; background:#E6F2F0; font-weight:700">Vaste prijs vooraf, op basis van je eigen ontwerp</td>
+</tr>
+<tr style="border-top:1px solid #D9DCD6">
+<th scope="row" style="text-align:left; padding:16px; font-weight:700">Planning</th>
+<td style="padding:16px; color:#5B6168">Avonden en weekenden</td>
+<td style="padding:16px; color:#5B6168">Hangt af van wie reageert</td>
+<td style="padding:16px; background:#E6F2F0; font-weight:700">Een vaste startdatum, in overleg</td>
+</tr>
+<tr style="border-top:1px solid #D9DCD6">
+<th scope="row" style="text-align:left; padding:16px; font-weight:700">Je bestelling</th>
+<td style="padding:16px; color:#5B6168">Missende onderdelen merk je bij het monteren</td>
+<td style="padding:16px; color:#5B6168">Wisselt per klusser</td>
+<td style="padding:16px; background:#E6F2F0; font-weight:700">We lopen je artikellijst vooraf na</td>
+</tr>
+<tr style="border-top:1px solid #D9DCD6">
+<th scope="row" style="text-align:left; padding:16px; font-weight:700">Apparaten en werkblad</th>
+<td style="padding:16px; color:#5B6168">Zelf uitzoeken</td>
+<td style="padding:16px; color:#5B6168">Wisselt per klusser</td>
+<td style="padding:16px; background:#E6F2F0; font-weight:700">Inbegrepen bij complete montage</td>
+</tr>
+<tr style="border-top:1px solid #D9DCD6; border-bottom:1px solid #D9DCD6">
+<th scope="row" style="text-align:left; padding:16px; font-weight:700">Aanspreekpunt</th>
+<td style="padding:16px; color:#5B6168">Jijzelf</td>
+<td style="padding:16px; color:#5B6168">Wie op je klus reageert</td>
+<td style="padding:16px; background:#E6F2F0; font-weight:700">Eén vast aanspreekpunt</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section id="werkwijze" style="max-width:1240px; margin:0 auto; padding:clamp(56px,7vw,96px) clamp(16px,4vw,40px)">
+<h2 style="margin:0; font-size:clamp(30px,3.4vw,46px); letter-spacing:-0.03em; font-weight:800; line-height:1.08">In vier stappen een werkende keuken</h2>
+<ol style="list-style:none; margin:36px 0 0; padding:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px">
+<li style="background:#FFFFFF; border-radius:12px; padding:24px">
+<span aria-hidden="true" style="font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:15px; color:{{accent}}">Stap 1</span>
+<h3 style="margin:8px 0 6px; font-size:20px; font-weight:800">Plak je IKEA-link</h3>
+<p style="margin:0; color:#5B6168; font-size:15.5px">We lezen je ontwerp en je ziet direct je prijs. Geen link? Dan beantwoord je een paar vragen.</p>
+</li>
+<li style="background:#FFFFFF; border-radius:12px; padding:24px">
+<span aria-hidden="true" style="font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:15px; color:{{accent}}">Stap 2</span>
+<h3 style="margin:8px 0 6px; font-size:20px; font-weight:800">Vaste prijs binnen 24 uur</h3>
+<p style="margin:0; color:#5B6168; font-size:15.5px">We checken je ontwerp en bestelling, en sturen een vaste prijs zonder verrassingen.</p>
+</li>
+<li style="background:#FFFFFF; border-radius:12px; padding:24px">
+<span aria-hidden="true" style="font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:15px; color:{{accent}}">Stap 3</span>
+<h3 style="margin:8px 0 6px; font-size:20px; font-weight:800">Plannen wanneer het jou past</h3>
+<p style="margin:0; color:#5B6168; font-size:15.5px">Akkoord? Dan kies je samen met ons de montagedatum.</p>
+</li>
+<li style="background:#FFFFFF; border-radius:12px; padding:24px">
+<span aria-hidden="true" style="font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:15px; color:{{accent}}">Stap 4</span>
+<h3 style="margin:8px 0 6px; font-size:20px; font-weight:800">Vakkundige montage</h3>
+<p style="margin:0; color:#5B6168; font-size:15.5px">Een gescreende monteur uit jouw regio plaatst alles netjes en compleet.</p>
+</li>
+</ol>
+</section>
+
+<section id="reviews" style="background:#FFFFFF; border-top:1px solid #D9DCD6; border-bottom:1px solid #D9DCD6">
+<div style="max-width:1240px; margin:0 auto; padding:clamp(56px,7vw,96px) clamp(16px,4vw,40px); display:flex; flex-wrap:wrap; gap:clamp(28px,5vw,56px); align-items:flex-start">
+<div style="flex:1 1 260px; min-width:0">
+<h2 style="margin:0; font-size:clamp(30px,3.4vw,46px); letter-spacing:-0.03em; font-weight:800; line-height:1.08">55 klanten gingen je voor</h2>
+<p style="margin:20px 0 0; display:flex; align-items:baseline; gap:10px"><span style="font-size:64px; font-weight:800; letter-spacing:-0.04em; line-height:1">4,9</span><span style="color:#5B6168">gemiddeld</span></p>
+<p style="margin:6px 0 0; color:#5B6168">5,0 op Google en 4,8 op Werkspot</p>
+<a href="#" style="display:inline-flex; align-items:center; min-height:44px; margin-top:8px; font-weight:700">Lees alle reviews</a>
+</div>
+<div style="flex:2 1 520px; min-width:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px">
+<figure style="margin:0; background:#EEF0EC; border-radius:12px; padding:24px">
+<blockquote style="margin:0; font-size:18px; line-height:1.45">“Fantastische service door Ilja! Hij heeft een kookeiland voor ons geïnstalleerd en het ziet er top uit.”</blockquote>
+<figcaption style="margin-top:14px; font-size:14.5px; color:#5B6168"><strong style="color:#15171A">Stephan van den Hoek</strong>, Nijkerk</figcaption>
+</figure>
+<figure style="margin:0; background:#EEF0EC; border-radius:12px; padding:24px">
+<blockquote style="margin:0; font-size:18px; line-height:1.45">“Het was meten en passen, maar Ilja bleef flexibel en ging door tot het goed was. Zeer tevreden.”</blockquote>
+<figcaption style="margin-top:14px; font-size:14.5px; color:#5B6168"><strong style="color:#15171A">Koen</strong>, U-vormige keuken, Nederhorst den Berg</figcaption>
+</figure>
+</div>
+</div>
+</section>
+
+<section id="werkgebied" style="max-width:1240px; margin:0 auto; padding:clamp(56px,7vw,96px) clamp(16px,4vw,40px); display:flex; flex-wrap:wrap; gap:24px 56px">
+<div style="flex:1 1 320px; min-width:0">
+<h2 style="margin:0; font-size:clamp(30px,3.4vw,46px); letter-spacing:-0.03em; font-weight:800; line-height:1.08">Heel Nederland</h2>
+<p style="margin:12px 0 0; color:#5B6168; font-size:18px">Een gescreende monteur uit je eigen regio, met De Keukenheld als vast aanspreekpunt.</p>
+</div>
+<ul style="flex:2 1 520px; min-width:0; list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:2px 16px; font-weight:500">
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Amsterdam</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Rotterdam</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Den Haag</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Utrecht</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Eindhoven</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Groningen</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Tilburg</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Almere</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Breda</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Nijmegen</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Haarlem</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Arnhem</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Amersfoort</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Zwolle</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Apeldoorn</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center">Leiden</a></li>
+<li><a href="#" style="display:inline-flex; min-height:40px; align-items:center; font-weight:700">Alle plaatsen</a></li>
+</ul>
+</section>
+
+<section id="vragen" style="background:#FFFFFF; border-top:1px solid #D9DCD6">
+<div style="max-width:1240px; margin:0 auto; padding:clamp(56px,7vw,96px) clamp(16px,4vw,40px)">
+<h2 style="margin:0; font-size:clamp(30px,3.4vw,46px); letter-spacing:-0.03em; font-weight:800; line-height:1.08">Veelgestelde vragen</h2>
+<div style="margin-top:28px; display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:0 40px">
+<details style="border-top:1px solid #D9DCD6; padding:18px 0">
+<summary style="font-weight:700; font-size:18px">Waar vind ik de link naar mijn ontwerp?</summary>
+<p style="margin:10px 0 0; color:#5B6168">Open je ontwerp in de IKEA Keukenplanner en kies delen. Kopieer de link en plak hem bovenaan deze pagina. Een PDF met artikellijst werkt ook.</p>
+</details>
+<details style="border-top:1px solid #D9DCD6; padding:18px 0">
+<summary style="font-weight:700; font-size:18px">Wat als ik mijn ontwerp nog aanpas?</summary>
+<p style="margin:10px 0 0; color:#5B6168">Geen probleem. Je offerte gaat uit van het ontwerp van vandaag. Vóór de montage checken we je definitieve bestellijst.</p>
+</details>
+<details style="border-top:1px solid #D9DCD6; padding:18px 0">
+<summary style="font-weight:700; font-size:18px">Wat kost het om een IKEA-keuken te laten plaatsen?</summary>
+<p style="margin:10px 0 0; color:#5B6168">Een gemiddelde keuken met 8 tot 15 kasten kost tussen € 2.475 en € 2.775, inclusief apparaten aansluiten. Met je IKEA-link zie je je eigen prijs.</p>
+</details>
+<details style="border-top:1px solid #D9DCD6; padding:18px 0">
+<summary style="font-weight:700; font-size:18px">Hoe snel kunnen jullie komen?</summary>
+<p style="margin:10px 0 0; color:#5B6168">Je offerte heb je binnen 24 uur. De montage plannen we samen, zo dicht mogelijk bij je IKEA-levering.</p>
+</details>
+<details style="border-top:1px solid #D9DCD6; border-bottom:1px solid #D9DCD6; padding:18px 0">
+<summary style="font-weight:700; font-size:18px">Plaatsen jullie ook keukens die niet van IKEA zijn?</summary>
+<p style="margin:10px 0 0; color:#5B6168">Ja, ook bouwpakketkeukens van andere leveranciers. Kies bovenaan voor Vragen beantwoorden.</p>
+</details>
+<details style="border-top:1px solid #D9DCD6; border-bottom:1px solid #D9DCD6; padding:18px 0">
+<summary style="font-weight:700; font-size:18px">Halen jullie ook de oude keuken eruit?</summary>
+<p style="margin:10px 0 0; color:#5B6168">Ja, voor € 995 inclusief container. Vink het aan als je je pakket kiest.</p>
+</details>
+</div>
+<a href="#" style="display:inline-flex; align-items:center; min-height:44px; margin-top:16px; font-weight:700">Alle vragen bekijken</a>
+</div>
+</section>
+
+<section style="max-width:1240px; margin:0 auto; padding:clamp(48px,6vw,80px) clamp(16px,4vw,40px)">
+<div style="background:{{accent}}; color:#FFFFFF; border-radius:16px; padding:clamp(28px,4vw,48px); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:24px">
+<div style="flex:1 1 380px; min-width:0">
+<h2 style="margin:0; font-size:clamp(28px,3.4vw,44px); letter-spacing:-0.03em; font-weight:800; line-height:1.05">Je ontwerp is klaar. Je prijs ook.</h2>
+<p style="margin:10px 0 0; font-size:18px">Plak je IKEA-link en zie direct wat montage kost.</p>
+</div>
+<div style="display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center">
+<a href="#offerte" style="background:#FFFFFF; color:#15171A; text-decoration:none; font-weight:800; font-size:18px; padding:0 26px; border-radius:8px; min-height:54px; display:inline-flex; align-items:center">Plak je link</a>
+<a href="tel:+31629173468" style="color:#FFFFFF; font-weight:700; min-height:44px; display:inline-flex; align-items:center">Of bel 06 2917 3468</a>
+</div>
+</div>
+</section>
+
+<footer id="over" style="background:#E2E5DF; font-size:15px">
+<div style="max-width:1240px; margin:0 auto; padding:40px clamp(16px,4vw,40px); display:flex; flex-wrap:wrap; justify-content:space-between; gap:24px">
+<div style="flex:1 1 280px; min-width:0">
+<p style="margin:0; font-weight:800; font-size:19px">De Keukenheld</p>
+<p style="margin:6px 0 0; color:#4A4F55; max-width:28em">IKEA-keukens geplaatst voor een vaste prijs, in heel Nederland. De Keukenheld is geen onderdeel van IKEA.</p>
+<p style="margin:12px 0 0; color:#4A4F55">KvK [nummer]</p>
+</div>
+<nav aria-label="Voettekst" style="display:flex; flex-wrap:wrap; gap:4px 24px; align-items:flex-start">
+<a href="#kosten" style="text-decoration:none; min-height:36px; display:inline-flex; align-items:center">Kosten</a>
+<a href="#werkwijze" style="text-decoration:none; min-height:36px; display:inline-flex; align-items:center">Werkwijze</a>
+<a href="#reviews" style="text-decoration:none; min-height:36px; display:inline-flex; align-items:center">Reviews</a>
+<a href="#werkgebied" style="text-decoration:none; min-height:36px; display:inline-flex; align-items:center">Werkgebied</a>
+<a href="#vragen" style="text-decoration:none; min-height:36px; display:inline-flex; align-items:center">Vragen</a>
+<a href="#" style="text-decoration:none; min-height:36px; display:inline-flex; align-items:center">Privacy</a>
+</nav>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0F7B6C","options":["#0F7B6C","#D9381E","#6B3FC9"]},"$preview":{"width":1440,"height":5300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var accent = this.props.accent || '#0F7B6C';
+    var D = { route: 'link', dstep: 1, pakket: 'compleet', dem: false, step: 1, klus: 'compleet', size: 'gemiddeld', opstelling: 'hoek', periode: 'snel', consent: true, ex_demontage: false, ex_apparaten: false, ex_werkblad: false, ex_spoelbak: false, ex_leiding: false, done: false };
+    var st = this.state || {};
+    var s = {};
+    for (var k in D) { s[k] = (st[k] === undefined) ? D[k] : st[k]; }
+    function set(p) { self.setState(p); }
+    function eur(n) { return '€ ' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function find(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
+    function sel(on) { return { pressed: on ? 'true' : 'false', bg: on ? '#E6F2F0' : '#FFFFFF', bd: on ? accent : '#D9DCD6', dot: on ? accent : '#FFFFFF' }; }
+    function mk(key) {
+      return function (o) {
+        return Object.assign({}, o, sel(s[key] === o.id), { pick: function () { var p = {}; p[key] = o.id; set(p); } });
+      };
+    }
+    var ROUTES = [
+      { id: 'link', label: 'IKEA-link plakken', sub: 'Snelst, direct je prijs' },
+      { id: 'pdf', label: 'PDF uploaden', sub: 'Export uit de Keukenplanner' },
+      { id: 'vragen', label: 'Vragen beantwoorden', sub: 'Nog geen ontwerp of geen IKEA' }
+    ];
+    var PAKKET = [
+      { id: 'compleet', label: 'Compleet', price: 2775, sub: 'Wij doen alles, van bouwpakket tot werkende keuken.' },
+      { id: 'montageklaar', label: 'Montageklaar', price: 2095, sub: 'Jij zet kasten en lades in elkaar. Wij plaatsen, stellen af en sluiten aan.' }
+    ];
+    var KLUS = [
+      { id: 'compleet', label: 'Complete IKEA-keuken plaatsen', sub: 'Van bouwpakket tot werkende keuken', short: 'Montage IKEA-keuken' },
+      { id: 'ander', label: 'Andere bouwpakketkeuken plaatsen', sub: 'Bijvoorbeeld een keuken van een andere leverancier', short: 'Montage bouwpakketkeuken' },
+      { id: 'afmonteren', label: 'Alleen afmonteren', sub: 'Deels al gestart, laatste werk afmaken', short: 'Afmonteren' },
+      { id: 'los', label: 'Losse klus', sub: 'Werkblad, kraan, kookplaat of een ander onderdeel', short: 'Losse klus' }
+    ];
+    var SIZE = [
+      { id: 'klein', label: 'Kleine keuken', sub: 'Minder dan 8 kasten', short: 'klein', lo: 1775, hi: 2095 },
+      { id: 'gemiddeld', label: 'Gemiddelde keuken', sub: '8 tot 15 kasten', short: 'gemiddeld', lo: 2475, hi: 2775 },
+      { id: 'groot', label: 'Grote keuken', sub: '15 kasten of meer', short: 'groot', lo: 3125, hi: 3475 }
+    ];
+    var SETUP = [
+      { id: 'recht', label: 'Recht', sub: 'Eén rechte wand' },
+      { id: 'hoek', label: 'Hoek', sub: 'L- of U-vorm' },
+      { id: 'eiland', label: 'Eiland', sub: 'Met kookeiland' }
+    ];
+    var EXTRA = [
+      { id: 'demontage', label: 'Oude keuken demonteren en afvoeren', short: 'Oude keuken eruit', sub: 'Inclusief container', price: 995, priceLabel: '+ € 995' },
+      { id: 'apparaten', label: 'Apparaten aansluiten', short: 'Apparaten aansluiten', sub: 'Oven, kookplaat, vaatwasser, koelkast. Zit al in de prijs.', price: 0, priceLabel: 'Inbegrepen' },
+      { id: 'spoelbak', label: 'Spoelbak en kraan aansluiten', short: 'Spoelbak en kraan', sub: 'Op bestaande afvoer en water. Zit al in de prijs.', price: 0, priceLabel: 'Inbegrepen' },
+      { id: 'werkblad', label: 'Werkblad op maat zagen', short: 'Werkblad op maat zagen', sub: 'Laminaat dat ter plekke gezaagd moet worden. Voorgezaagd is inbegrepen.', price: 350, priceLabel: '+ € 350' },
+      { id: 'leiding', label: 'Lichte leidingaanpassing', short: 'Leidingaanpassing', sub: 'Kleine aanpassing aan water of afvoer', price: 125, priceLabel: '+ € 125' }
+    ];
+    var PERIODE = [
+      { id: 'snel', label: 'Zo snel mogelijk', sub: 'De keuken is (bijna) geleverd' },
+      { id: 'maand', label: 'Binnen een maand', sub: 'Levering is gepland' },
+      { id: 'later', label: 'Over 1 tot 3 maanden', sub: 'Nog aan het plannen' },
+      { id: 'onbekend', label: 'Weet ik nog niet', sub: 'Ik oriënteer me' }
+    ];
+    var design = s.route !== 'vragen';
+    var done = !!s.done;
+    var ds = s.dstep, qs = s.step;
+    var labels = design ? ['Ontwerp', 'Pakket', 'Waar en wanneer', 'Gegevens'] : ['Klus', 'Keuken', "Extra's", 'Waar en wanneer', 'Gegevens'];
+    var cur = design ? ds : qs;
+    var last = labels.length;
+    var bar = labels.map(function (l, i) {
+      var n = i + 1, c = n === cur, p = n < cur;
+      return { n: p ? '✓' : String(n), label: l, current: c ? 'step' : 'false', bg: c ? '#15171A' : (p ? '#E6F2F0' : 'transparent'), fg: c ? '#FFFFFF' : (p ? '#15171A' : '#5B6168'), dotBg: c ? accent : (p ? '#15171A' : '#DDE0DA'), dotFg: (c || p) ? '#FFFFFF' : '#15171A' };
+    });
+    var receipt = [], priceText = '', priceLabel = 'Indicatie', altText = '', showAlt = false, receiptFull = false;
+    var pk = find(PAKKET, s.pakket);
+    if (design && ds >= 2) {
+      receiptFull = true;
+      receipt.push({ label: 'Kasten', amount: '14, hoekopstelling' });
+      receipt.push({ label: 'Werkblad EKBACKEN', amount: 'voorgezaagd' });
+      receipt.push({ label: 'Apparaten, 4 st', amount: 'inbegrepen' });
+      receipt.push({ label: 'Spoelbak en kraan', amount: 'inbegrepen' });
+      receipt.push({ label: pk.label, amount: eur(pk.price).replace('€ ', '€') });
+      if (s.dem) { receipt.push({ label: 'Oude keuken eruit', amount: '+€995' }); }
+      if (ds >= 4) { receipt.push({ label: 'Planning', amount: find(PERIODE, s.periode).label.toLowerCase() }); }
+      priceLabel = 'Jouw prijs, ' + pk.label;
+      priceText = eur(pk.price + (s.dem ? 995 : 0));
+      var other = PAKKET.filter(function (x) { return x.id !== s.pakket; })[0];
+      altText = other.label + ': ' + eur(other.price + (s.dem ? 995 : 0));
+      showAlt = true;
+    }
+    if (!design) {
+      receiptFull = true;
+      var size = find(SIZE, s.size), klus = find(KLUS, s.klus), setup = find(SETUP, s.opstelling);
+      var lo = size.lo, hi = size.hi;
+      if (s.klus === 'afmonteren') { lo = 775; hi = 1425; }
+      var isLos = s.klus === 'los';
+      receipt.push({ label: klus.short + (isLos ? '' : ', ' + size.short + ', ' + setup.label.toLowerCase()), amount: isLos ? 'vanaf €350' : (eur(lo).replace('€ ', '€') + '–' + eur(hi).replace('€ ', '')) });
+      var extra = 0;
+      EXTRA.forEach(function (e) { if (s['ex_' + e.id]) { extra += e.price; receipt.push({ label: e.short, amount: e.price ? '+' + eur(e.price).replace('€ ', '€') : 'inbegrepen' }); } });
+      if (qs >= 4) { receipt.push({ label: 'Planning', amount: find(PERIODE, s.periode).label.toLowerCase() }); }
+      priceText = isLos ? 'vanaf € 350' : (eur(lo + extra) + ' – ' + eur(hi + extra));
+    }
+    return {
+      accent: accent,
+      routes: ROUTES.map(function (r) { var on = s.route === r.id; return Object.assign({}, r, { pressed: on ? 'true' : 'false', bg: on ? '#FFFFFF' : '#F4F5F2', line: on ? accent : 'transparent', pick: function () { set({ route: r.id, dstep: 1, step: 1, done: false }); } }); }),
+      showRoutes: !done && ((design && ds === 1) || (!design && qs === 1)),
+      showBar: !done && !(design && ds === 1),
+      bar: bar,
+      d1Link: !done && design && ds === 1 && s.route === 'link',
+      d1Pdf: !done && design && ds === 1 && s.route === 'pdf',
+      d2: !done && design && ds === 2,
+      d3: !done && ((design && ds === 3) || false),
+      q4: !done && !design && qs === 4,
+      dContact: !done && cur === last,
+      q1: !done && !design && qs === 1,
+      q2: !done && !design && qs === 2,
+      q3: !done && !design && qs === 3,
+      done: done,
+      showNav: !done && !(design && ds === 1),
+      showPrev: cur > 1,
+      showNext: cur < last,
+      showSubmit: cur === last,
+      chips: [{ t: '14 kasten' }, { t: 'Hoekopstelling' }, { t: 'EKBACKEN-werkblad, voorgezaagd' }, { t: '4 inbouwapparaten' }, { t: 'Spoelbak met kraan' }],
+      pakketOpts: PAKKET.map(function (o) { return Object.assign({}, o, sel(s.pakket === o.id), { priceText: eur(o.price), pick: function () { set({ pakket: o.id }); } }); }),
+      dem: !!s.dem,
+      demPressed: s.dem ? 'true' : 'false',
+      demBg: s.dem ? '#E6F2F0' : '#FFFFFF',
+      demBd: s.dem ? accent : '#D9DCD6',
+      demBox: s.dem ? accent : '#FFFFFF',
+      toggleDem: function () { set({ dem: !s.dem }); },
+      klusOpts: KLUS.map(mk('klus')),
+      sizeOpts: SIZE.map(mk('size')),
+      setupOpts: SETUP.map(mk('opstelling')),
+      periodeOpts: PERIODE.map(mk('periode')),
+      extraOpts: EXTRA.map(function (e) {
+        var on = !!s['ex_' + e.id];
+        return Object.assign({}, e, sel(on), { on: on, box: on ? accent : '#FFFFFF', toggle: function () { var p = {}; p['ex_' + e.id] = !on; set(p); } });
+      }),
+      receipt: receipt,
+      receiptFull: receiptFull,
+      receiptEmpty: !receiptFull,
+      priceText: priceText,
+      priceLabel: priceLabel,
+      altText: altText,
+      showAlt: showAlt,
+      consent: !!s.consent,
+      toggleConsent: function () { set({ consent: !s.consent }); },
+      readDesign: function () { set({ dstep: 2 }); },
+      next: function () { if (design) { set({ dstep: Math.min(ds + 1, last) }); } else { set({ step: Math.min(qs + 1, last) }); } },
+      prev: function () { if (design) { set({ dstep: Math.max(ds - 1, 1) }); } else { set({ step: Math.max(qs - 1, 1) }); } },
+      submit: function () { set({ done: true }); },
+      reset: function () { set(D); }
+    };
+  }
+}
+</script>
+</body>
+</html>

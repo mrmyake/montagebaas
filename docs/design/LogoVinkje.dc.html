@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Logo 1: vinkje-greep</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;800&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width:1200px; height:720px; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); grid-template-rows:repeat(2, minmax(0, 1fr)); font-family:'Schibsted Grotesk', sans-serif; color:#15171A">
+
+<div style="grid-row:1 / span 2; background:#EEF0EC; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:64px; padding:48px">
+<svg width="206" height="240" viewBox="0 0 48 56" role="img" aria-label="Beeldmerk De Keukenheld"><rect x="2" y="2" width="44" height="52" rx="5" fill="{{teal}}"></rect><path d="M2 30H46" stroke="#FFFFFF" stroke-width="2.5"></path><path d="M14 16l6 6 13-13" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19 42H29" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"></path></svg>
+<div style="display:flex; align-items:center; gap:16px">
+<svg width="48" height="56" viewBox="0 0 48 56" aria-hidden="true"><rect x="2" y="2" width="44" height="52" rx="5" fill="{{teal}}"></rect><path d="M2 30H46" stroke="#FFFFFF" stroke-width="2.5"></path><path d="M14 16l6 6 13-13" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19 42H29" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"></path></svg>
+<span style="font-weight:800; font-size:46px; letter-spacing:-0.035em; line-height:1">De Keukenheld</span>
+</div>
+</div>
+
+<div style="background:{{teal}}; display:flex; align-items:center; justify-content:center; gap:14px">
+<svg width="40" height="46" viewBox="0 0 48 56" aria-hidden="true"><rect x="2" y="2" width="44" height="52" rx="5" fill="#FFFFFF"></rect><path d="M2 30H46" stroke="{{teal}}" stroke-width="2.5"></path><path d="M14 16l6 6 13-13" fill="none" stroke="{{teal}}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19 42H29" stroke="{{teal}}" stroke-width="4" stroke-linecap="round"></path></svg>
+<span style="font-weight:800; font-size:38px; letter-spacing:-0.035em; color:#FFFFFF; line-height:1">De Keukenheld</span>
+</div>
+
+<div style="background:#FFFFFF; display:flex; align-items:flex-end; justify-content:center; gap:28px; padding:40px">
+<div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+<div style="width:120px; height:120px; border-radius:27px; background:{{teal}}; display:flex; align-items:center; justify-content:center"><svg width="56" height="66" viewBox="0 0 48 56" aria-hidden="true"><rect x="2" y="2" width="44" height="52" rx="5" fill="#FFFFFF"></rect><path d="M2 30H46" stroke="{{teal}}" stroke-width="2.5"></path><path d="M14 16l6 6 13-13" fill="none" stroke="{{teal}}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19 42H29" stroke="{{teal}}" stroke-width="4" stroke-linecap="round"></path></svg></div>
+<span style="font-size:13px; color:#5B6168; font-weight:500">App-icoon</span>
+</div>
+<div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+<svg width="27" height="32" viewBox="0 0 48 56" aria-hidden="true"><rect x="2" y="2" width="44" height="52" rx="5" fill="{{teal}}"></rect><path d="M2 30H46" stroke="#FFFFFF" stroke-width="3"></path><path d="M14 16l6 6 13-13" fill="none" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M19 42H29" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"></path></svg>
+<span style="font-size:13px; color:#5B6168; font-weight:500">32 px</span>
+</div>
+<div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+<svg width="14" height="16" viewBox="0 0 48 56" aria-hidden="true"><rect x="2" y="2" width="44" height="52" rx="6" fill="{{teal}}"></rect><path d="M14 18l7 7 14-14" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M2 32H46" stroke="#FFFFFF" stroke-width="4"></path></svg>
+<span style="font-size:13px; color:#5B6168; font-weight:500">16 px</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"teal":{"editor":"color","default":"#0F7B6C","options":["#0F7B6C","#0B5E53","#D9381E"]},"$preview":{"width":1200,"height":720}}'>
+class Component extends DCLogic {
+  renderVals() { return { teal: this.props.teal || '#0F7B6C' }; }
+}
+</script>
+</body>
+</html>
