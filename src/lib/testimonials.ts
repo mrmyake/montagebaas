@@ -8,6 +8,7 @@
 //  - reviews die niet-keukenwerk noemen (cinewall, kast, ombouw, muur, veranda, …) staan hier niet;
 //  - A1 (Marlon) wel op de reviewpagina, NIET op de homepage;
 //  - cijfers altijd als "4,9 uit 56 reviews op Google en Werkspot", nooit "56 tevreden klanten".
+import { huidigMerk } from "@/lib/merk";
 
 export type TestimonialSource = "werkspot" | "google" | "website";
 
@@ -195,12 +196,13 @@ export const REVIEW_AGGREGATES = {
   werkspot: {
     rating: 4.8,
     count: 31,
-    profileUrl: "https://www.werkspot.nl/profiel/hout-nieuw/reviews",
+    profileUrl: huidigMerk().reviews.werkspot.url,
   },
   google: {
     rating: 5.0,
     count: 25,
-    profileUrl: "https://www.google.com/search?q=Montagebaas+-+TVMuur.com+Loosdrecht",
+    // Uit de merkconfig: de oude link zoekt op de oude profielnaam.
+    profileUrl: huidigMerk().reviews.google.url,
   },
 } as const;
 

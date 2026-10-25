@@ -1,7 +1,8 @@
 import { site } from "@/lib/site";
+import { huidigMerk } from "@/lib/merk";
 import type { FaqItem } from "@/components/sections/FaqList";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
+const siteUrl = site.url;
 
 /** Werkgebied: tot ongeveer 75 km rond Loosdrecht (vestiging Tjalk 68). */
 const WERKGEBIED = {
@@ -63,6 +64,7 @@ export function localBusinessSchema(opts?: {
     "@id": `${siteUrl}/#business`,
     name: opts?.naamSuffix ? `${site.naam} — ${opts.naamSuffix}` : site.naam,
     url: siteUrl,
+    ...(huidigMerk().logoStructured ? { logo: `${siteUrl}${huidigMerk().logoStructured}` } : {}),
     description: site.belofte,
     areaServed: opts?.areaServed ? { "@type": "City", name: opts.areaServed } : WERKGEBIED,
     geo: { "@type": "GeoCoordinates", latitude: 52.2036, longitude: 5.0703 },

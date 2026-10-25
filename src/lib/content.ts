@@ -1,4 +1,5 @@
 import { kostenKaarten, tekstBedragen, type Prijsbron } from "@/lib/prijs-weergave";
+import { site } from "@/lib/site";
 
 
 /** De drie pijlers — "waarom Montagebaas". */
@@ -73,7 +74,7 @@ export function faqItems(bron: Prijsbron) {
   {
     vraag: "Wat kost het om een IKEA-keuken te laten plaatsen?",
     antwoord:
-      `Een complete montage van een IKEA-keuken kost bij Montagebaas ongeveer ${bedragen.laagsteBand} tot ${bedragen.hoogsteBand}, inclusief btw en reiskosten. Een kleine keuken zit rond ${bedragen.klein}, een gemiddelde rond ${bedragen.gemiddeld} en een grote met eiland rond ${bedragen.groot}. Apparaten, spoelbak en kraan aansluiten zitten daar al in. Je exacte prijs staat in je offerte.`,
+      `Een complete montage van een IKEA-keuken kost bij ${site.naam} ongeveer ${bedragen.laagsteBand} tot ${bedragen.hoogsteBand}, inclusief btw en reiskosten. Een kleine keuken zit rond ${bedragen.klein}, een gemiddelde rond ${bedragen.gemiddeld} en een grote met eiland rond ${bedragen.groot}. Apparaten, spoelbak en kraan aansluiten zitten daar al in. Je exacte prijs staat in je offerte.`,
   },
   {
     vraag: "Hoe snel kunnen jullie komen?",
@@ -113,7 +114,7 @@ export function faqItems(bron: Prijsbron) {
   {
     vraag: "Wie voert de montage uit?",
     antwoord:
-      "Ilja Goossens, de eigenaar van Montagebaas. Montagebaas is een eenmanszaak: Ilja maakt je offerte, plaatst je keuken zelf en is je aanspreekpunt van offerte tot oplevering.",
+      `Ilja Goossens, de eigenaar van ${site.naam}. ${site.naam} is een eenmanszaak: Ilja maakt je offerte, plaatst je keuken zelf en is je aanspreekpunt van offerte tot oplevering.`,
   },
   ] as const;
 }

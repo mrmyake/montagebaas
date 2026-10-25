@@ -3,11 +3,12 @@ import { UserCheck, MapPin, Handshake } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Container } from "@/components/ui/Container";
 import { SlotCta } from "@/components/sections/SlotCta";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Over Montagebaas: Ilja Goossens, keukenmonteur uit Loosdrecht",
+  title: `Over ${site.naam}: Ilja Goossens, keukenmonteur uit Loosdrecht`,
   description:
-    "Montagebaas is de eenmanszaak van Ilja Goossens uit Loosdrecht. Ilja plaatst je IKEA-keuken zelf, netjes en compleet, en is je aanspreekpunt van offerte tot oplevering. Werkgebied tot ongeveer 75 km rond Loosdrecht.",
+    `${site.naam} is de eenmanszaak van Ilja Goossens uit Loosdrecht. Ilja plaatst je IKEA-keuken zelf, netjes en compleet, en is je aanspreekpunt van offerte tot oplevering. Werkgebied tot ongeveer 75 km rond Loosdrecht.`,
   alternates: { canonical: "/over" },
 };
 
@@ -38,7 +39,7 @@ export default function OverPage() {
       <PageHeader
         eyebrow="Over ons"
         titel="Eén vakman, van offerte tot oplevering"
-        intro="Montagebaas is een eenmanszaak uit Loosdrecht. Ilja Goossens maakt je offerte, plaatst je keuken zelf en is je vaste aanspreekpunt. Geen anoniem platform."
+        intro={`${site.naam} is een eenmanszaak uit Loosdrecht. Ilja Goossens maakt je offerte, plaatst je keuken zelf en is je vaste aanspreekpunt. Geen anoniem platform.`}
       />
 
       <section className="py-12 sm:py-16">
@@ -50,7 +51,7 @@ export default function OverPage() {
               geen idee wie er straks voor je deur staat. Dat kan beter.
             </p>
             <p>
-              Bij Montagebaas weet je wie er komt: Ilja. Hij beoordeelt je aanvraag, geeft je vooraf
+              Bij {site.naam} weet je wie er komt: Ilja. Hij beoordeelt je aanvraag, geeft je vooraf
               een vaste prijs en plaatst je keuken zelf, netjes en compleet. Je hebt het hele traject
               één aanspreekpunt, en dat is ook de vakman die het werk doet.
             </p>

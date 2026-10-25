@@ -13,7 +13,7 @@ import { HeaderV2 } from "@/components/v2/HeaderV2";
 import { FooterV2 } from "@/components/v2/FooterV2";
 import { localBusinessSchema, websiteSchema } from "@/lib/schema";
 import { site } from "@/lib/site";
-import { huidigMerk } from "@/lib/merk";
+import { huidigMerk, whatsappUrl } from "@/lib/merk";
 import { siteVersie } from "@/lib/site-versie";
 
 // Lettertypen lokaal gehost (latin; OFL, zie fonts/*-OFL.txt): de build hangt zo
@@ -53,27 +53,35 @@ const plex = localFont({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? site.url;
+const merk = huidigMerk();
+const ogImages = merk.ogImage ? [{ url: merk.ogImage, width: 1200, height: 630, alt: merk.naam }] : undefined;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(site.url),
   title: {
     default: `${site.naam} — ${site.tagline}`,
     template: `%s | ${site.naam}`,
   },
   description: site.belofte,
+  // favicon.ico zelf: rewrite in next.config.ts naar het bestand van het merk.
+  icons: {
+    icon: merk.iconen.icon,
+    apple: merk.iconen.apple,
+  },
   openGraph: {
     type: "website",
     locale: "nl_NL",
     siteName: site.naam,
     title: `${site.naam} — ${site.tagline}`,
     description: site.belofte,
-    url: siteUrl,
+    url: site.url,
+    ...(ogImages ? { images: ogImages } : {}),
   },
   twitter: {
     card: "summary_large_image",
     title: `${site.naam} — ${site.tagline}`,
     description: site.belofte,
+    ...(ogImages ? { images: ogImages } : {}),
   },
 };
 
@@ -83,7 +91,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   if (siteVersie() === "v2") {
-    const merk = huidigMerk();
     return (
       <html
         lang="nl"
@@ -93,7 +100,7 @@ export default function RootLayout({
       >
         <body className="flex min-h-full flex-col bg-v2-bg text-v2-ink">
           <JsonLd data={[localBusinessSchema(), websiteSchema()]} />
-          <HeaderV2 />
+          <HeaderV2 merk={{ naam: merk.naam, telefoon: merk.telefoon, logo: merk.logo, whatsappUrl: whatsappUrl(merk) }} />
           {/* pb zolang de cookiebalk er is; de prijsbalk van de intake regelt zijn eigen ruimte */}
           <main className="flex-1 pb-[var(--consent-bar-h,0px)]">{children}</main>
           <FooterV2 />
@@ -110,7 +117,7 @@ export default function RootLayout({
     <html lang="nl" className={`${sans.variable} ${display.variable} h-full`}>
       <body className="flex min-h-full flex-col">
         <JsonLd data={[localBusinessSchema(), websiteSchema()]} />
-        <Header />
+        <Header naam={merk.naam} telefoon={{ weergave: site.telefoonWeergave, link: site.telefoonLink }} />
         {/* pb voor de sticky mobiele CTA-balk (en de cookiebalk zolang die er is) zodat content niet verstopt raakt */}
         <main className="flex-1 pb-[calc(5rem+var(--consent-bar-h,0px))] lg:pb-[var(--consent-bar-h,0px)]">{children}</main>
         <Footer />

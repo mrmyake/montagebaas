@@ -1,26 +1,33 @@
-import type { Merk } from "./types";
-import { montagebaas } from "./montagebaas";
+import type { Merk, MerkId } from "./types.ts";
+import { montagebaas } from "./montagebaas.ts";
+import { keukenheld } from "./keukenheld.ts";
 
-export type { Merk, ReviewQuote } from "./types";
+export type { Merk, MerkId, ReviewQuote } from "./types.ts";
 
-/** Actieve merken. De eerste is de terugval voor onbekende hosts (previews, localhost). */
-export const MERKEN: Merk[] = [montagebaas];
+export const MERKEN: Record<MerkId, Merk> = { montagebaas, keukenheld };
 
-/** Merk bij een Host-header ("www.montagebaas.com:443" mag). */
-export function merkVoorHost(host: string | null | undefined): Merk {
-  const h = (host ?? "").toLowerCase().split(":")[0];
-  return MERKEN.find((m) => m.hosts.includes(h)) ?? MERKEN[0];
+/** Merk bij een waarde van env MERK. Leeg of onbekend: Montagebaas. */
+export function merkVoorId(id: string | null | undefined): Merk {
+  const schoon = id?.trim().toLowerCase();
+  return schoon && Object.hasOwn(MERKEN, schoon) ? MERKEN[schoon as MerkId] : montagebaas;
 }
 
 /**
- * Het merk voor de huidige request. Zolang er één merk is, leest dit geen headers:
- * dat zou elke pagina dynamisch maken (geen statische HTML, trager op mobiel).
- * Komt er een tweede merk, dan hier `merkVoorHost((await headers()).get("host"))`,
- * of beter: proxy.ts herschrijft per host naar een [merk]-segment, zodat pagina's
- * statisch blijven.
+ * Het actieve merk, uit env MERK (montagebaas | keukenheld, standaard montagebaas).
+ * Overstappen en terugdraaien = MERK wijzigen en opnieuw deployen. Alleen op de
+ * server: in de browser bestaat MERK niet, dus clientcomponenten krijgen het merk
+ * (of de velden die ze nodig hebben) als prop.
  */
 export function huidigMerk(): Merk {
-  return MERKEN[0];
+  if (typeof window !== "undefined") {
+    throw new Error("huidigMerk() alleen op de server; geef het merk als prop door.");
+  }
+  return merkVoorId(process.env.MERK);
+}
+
+/** Basis-URL voor canonical, sitemap, robots en links in mails. NEXT_PUBLIC_SITE_URL is alleen een override. */
+export function siteUrl(merk: Merk = huidigMerk()): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL || merk.url).replace(/\/$/, "");
 }
 
 export const whatsappUrl = (m: Merk, bericht = m.whatsapp.standaardBericht) =>

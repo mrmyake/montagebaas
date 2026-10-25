@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 /**
  * Beeldmerk: kastfront met een vinkje als greep (docs/design/LogoVinkje.dc.html).
  * `kleur` is het front, `lijn` de deur-naad, het vinkje en de greep.
@@ -29,11 +31,34 @@ export function Beeldmerk({
   );
 }
 
-/** Beeldmerk + woordmerk in Schibsted Grotesk 800. */
-export function Woordmerk({ naam, klein = false }: { naam: string; klein?: boolean }) {
+/**
+ * Beeldmerk + woordmerk in Schibsted Grotesk 800. Met `logo` (merkconfig) staat
+ * dat bestand op de plek van het getekende kastfront, ongeveer 42 px hoog.
+ */
+export function Woordmerk({
+  naam,
+  klein = false,
+  logo,
+}: {
+  naam: string;
+  klein?: boolean;
+  logo?: { src: string; breedte: number; hoogte: number };
+}) {
   return (
     <span className="flex items-center gap-2 sm:gap-2.5">
-      <Beeldmerk className={klein ? "h-[26px] w-[22px]" : "h-[26px] w-[22px] sm:h-[33px] sm:w-[28px]"} />
+      {logo ? (
+        <Image
+          src={logo.src}
+          width={logo.breedte}
+          height={logo.hoogte}
+          alt=""
+          priority
+          sizes="48px"
+          className={klein ? "h-[34px] w-auto" : "h-[36px] w-auto sm:h-[42px]"}
+        />
+      ) : (
+        <Beeldmerk className={klein ? "h-[26px] w-[22px]" : "h-[26px] w-[22px] sm:h-[33px] sm:w-[28px]"} />
+      )}
       <span className={`font-extrabold tracking-[-0.02em] ${klein ? "text-[17px]" : "text-[17px] sm:text-[20px]"}`}>{naam}</span>
     </span>
   );

@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Privacyverklaring",
   description:
-    "Hoe Montagebaas omgaat met je persoonsgegevens bij een offerteaanvraag, conform de AVG.",
+    `Hoe ${site.naam} omgaat met je persoonsgegevens bij een offerteaanvraag, conform de AVG.`,
   alternates: { canonical: "/privacy" },
 };
 

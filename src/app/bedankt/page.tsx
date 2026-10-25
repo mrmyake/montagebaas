@@ -4,7 +4,8 @@ import { CheckCircle2, Phone } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { ButtonLink } from "@/components/ui/Button";
 import { WhatsappIcon } from "@/components/brand/WhatsappIcon";
-import { site, whatsappDefault } from "@/lib/site";
+import { site, whatsappDefault, whatsappUrl } from "@/lib/site";
+import { huidigMerk } from "@/lib/merk";
 import { ConversionTracker } from "@/components/analytics/ConversionTracker";
 import { TekeningIndicatie } from "@/components/analytics/TekeningIndicatie";
 
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export default function BedanktPage() {
   return (
     <section className="py-20 sm:py-28">
-      <ConversionTracker />
+      <ConversionTracker merk={huidigMerk().id} />
       <Container className="max-w-xl text-center">
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-trust-soft text-trust">
           <CheckCircle2 size={36} />
@@ -31,7 +32,9 @@ export default function BedanktPage() {
 
         {/* Indicatieprijs uit het tekening-upload-pad (rendert niets op het formulier-pad) */}
         <Suspense fallback={null}>
-          <TekeningIndicatie />
+          <TekeningIndicatie
+            artikellijstWa={whatsappUrl(`${site.whatsappGroet}, hier is de deellink of artikellijst van mijn IKEA-keukenontwerp.`)}
+          />
         </Suspense>
 
         <p className="mt-6 text-ink-soft">

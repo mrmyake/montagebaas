@@ -1,19 +1,34 @@
-import type { Merk } from "./types";
+import type { Merk } from "./types.ts";
 
 export const montagebaas: Merk = {
   id: "montagebaas",
   naam: "Montagebaas",
-  hosts: ["montagebaas.com", "www.montagebaas.com", "localhost"],
+  domein: "montagebaas.com",
   url: "https://montagebaas.com",
   accent: "#0F7B6C",
   accentDonker: "#0B5E53",
   telefoon: { weergave: "06 2917 3468", link: "tel:+31629173468" },
   whatsapp: {
     nummer: "31629173468",
+    groet: "Hoi Montagebaas",
     standaardBericht: "Hoi Montagebaas, ik wil graag een offerte voor het plaatsen van mijn keuken.",
   },
   email: "info@montagebaas.com",
+  onderwerpBevestiging: "Bedankt voor je aanvraag bij Montagebaas",
+  afzender: "Montagebaas <noreply@montagebaas.com>",
   kvk: "74579320",
+  iconen: {
+    favicon: "/brands/montagebaas/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/brands/montagebaas/icon.svg", sizes: "any", type: "image/svg+xml" },
+    ],
+    apple: { url: "/brands/montagebaas/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    manifest: [
+      { url: "/brands/montagebaas/icon.svg", sizes: "any", type: "image/svg+xml" },
+      { url: "/brands/montagebaas/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   adres: { straat: "Tjalk 68", postcode: "1231 TX", plaats: "Loosdrecht" },
   werkgebied: {
     tekst:

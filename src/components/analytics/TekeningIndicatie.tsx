@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2, Info } from "lucide-react";
 import { euro } from "@/lib/pricing";
-import { whatsappUrl } from "@/lib/site";
 import { WhatsappIcon } from "@/components/brand/WhatsappIcon";
 
 /**
@@ -21,7 +20,8 @@ type Status =
 
 const MAX_POGINGEN = 20; // ~40s (2s interval)
 
-export function TekeningIndicatie() {
+/** `artikellijstWa`: WhatsApp-link voor de artikellijst, van de server (merk). */
+export function TekeningIndicatie({ artikellijstWa }: { artikellijstWa: string }) {
   const id = useSearchParams().get("a");
   const [state, setState] = useState<Status>({ fase: "laden" });
   // Zonder ?a= (formulier-pad) is er niets te pollen: afgeleid, niet via setState
@@ -92,10 +92,6 @@ export function TekeningIndicatie() {
       </div>
     );
   }
-
-  const artikellijstWa = whatsappUrl(
-    "Hoi Montagebaas, hier is de deellink of artikellijst van mijn IKEA-keukenontwerp."
-  );
 
   return (
     <div className="mx-auto mt-6 max-w-md rounded-2xl bg-accent-soft/50 px-5 py-4 text-left ring-1 ring-accent/30">

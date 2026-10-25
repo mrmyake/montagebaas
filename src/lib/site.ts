@@ -1,15 +1,17 @@
 /**
- * Centrale site- en bedrijfsgegevens.
- *
- * ⚠️ EIGENAAR: vul de placeholders hieronder in met ECHTE gegevens vóór livegang.
- * Alles met `TODO_EIGENAAR` is een placeholder. Telefoon-/WhatsApp-nummers moeten in
- * internationaal formaat (zonder spaties) voor de tel:/wa.me-deeplinks.
+ * Centrale site- en bedrijfsgegevens voor de pagina's van vóór de redesign.
+ * Naam, domein en contact komen uit het actieve merk (src/lib/merk), zodat een
+ * merkwissel overal doorwerkt. Alleen op de server: clientcomponenten krijgen
+ * wat ze nodig hebben als prop.
  */
+import { huidigMerk, siteUrl } from "@/lib/merk";
+
+const merk = huidigMerk();
 
 export const site = {
-  naam: "Montagebaas",
-  domein: "montagebaas.com",
-  url: "https://montagebaas.com",
+  naam: merk.naam,
+  domein: merk.domein,
+  url: siteUrl(merk),
 
   // Kernbelofte — rode draad door de hele site
   tagline: "Je IKEA-keuken vakkundig geplaatst",
@@ -18,21 +20,18 @@ export const site = {
 
   // Contact
   telefoonWeergave: "06 - 2917 3468",
-  telefoonLink: "tel:+31629173468", // internationaal formaat voor de tel:-deeplink
-  whatsappNummer: "31629173468", // internationaal zonder +
-  email: "info@montagebaas.com",
+  telefoonLink: merk.telefoon.link, // internationaal formaat voor de tel:-deeplink
+  whatsappNummer: merk.whatsapp.nummer, // internationaal zonder +
+  whatsappGroet: merk.whatsapp.groet, // "Hoi Montagebaas"
+  email: merk.email,
 
   // Bedrijfsgegevens — voor footer + schema.org
-  kvk: "74579320", // KvK-nummer
-  straat: "Tjalk 68",
-  postcode: "1231 TX",
-  plaats: "Loosdrecht",
-  vestigingsplaats: "Loosdrecht",
+  kvk: merk.kvk,
+  straat: merk.adres.straat,
+  postcode: merk.adres.postcode,
+  plaats: merk.adres.plaats,
+  vestigingsplaats: merk.adres.plaats,
   land: "NL",
-
-  // Reviews — echte data leeft in `src/lib/testimonials.ts` (Werkspot + Google).
-  // De profiel-URL's voor verificatie:
-  werkspotUrl: "https://www.werkspot.nl/profiel/hout-nieuw/reviews",
 } as const;
 
 export const whatsappUrl = (bericht?: string) => {
@@ -41,15 +40,6 @@ export const whatsappUrl = (bericht?: string) => {
 };
 
 // Standaard WhatsApp-openingsbericht
-export const whatsappDefault = whatsappUrl(
-  "Hoi Montagebaas, ik wil graag een offerte voor het plaatsen van mijn keuken."
-);
+export const whatsappDefault = whatsappUrl(merk.whatsapp.standaardBericht);
 
-export const nav = [
-  { label: "Kosten", href: "/kosten" },
-  { label: "Werkwijze", href: "/werkwijze" },
-  { label: "Reviews", href: "/reviews" },
-  { label: "Werkgebied", href: "/werkgebied" },
-  { label: "Veelgestelde vragen", href: "/veelgestelde-vragen" },
-  { label: "Over ons", href: "/over" },
-] as const;
+export { nav } from "@/lib/nav";
