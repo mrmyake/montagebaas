@@ -383,7 +383,7 @@ export function Intake({ merknaam, telefoon, whatsappUrl, reviewSamenvatting, br
       <div className="min-w-0 flex-[1_1_560px]">
         <div className={toonRoutes ? "" : "hidden lg:block"}>
           <h1 className="m-0 max-w-[15em] text-[29px] font-extrabold leading-[1.05] tracking-[-0.035em] sm:text-[clamp(34px,4.4vw,60px)] sm:leading-[1.02]">
-            Plak je IKEA-ontwerp. Zie direct wat montage kost.
+            Deel je IKEA-ontwerp. Zie direct wat montage kost.
           </h1>
           <p className="mt-2.5 flex items-center gap-1.5 text-[14px] font-bold lg:hidden">
             <Ster /> {reviewSamenvatting}
