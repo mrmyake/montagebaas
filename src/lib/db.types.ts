@@ -166,9 +166,10 @@ export interface AdsConversieUploadRow {
   verwerking: Verwerking | null;
 }
 
-export type LeadBron = "website" | "werkspot" | "doorverwijzing" | "overig";
+// email/whatsapp/telefoon: 0020, voor aanvragen uit /admin/offerte.
+export type LeadBron = "website" | "werkspot" | "doorverwijzing" | "overig" | "email" | "whatsapp" | "telefoon";
 
-export const LEAD_BRONNEN: LeadBron[] = ["website", "werkspot", "doorverwijzing", "overig"];
+export const LEAD_BRONNEN: LeadBron[] = ["website", "werkspot", "doorverwijzing", "email", "whatsapp", "telefoon", "overig"];
 
 // Spiegelt montagebaas.lead_overzicht (0005_lead_status.sql, notitie sinds 0006).
 export interface LeadOverzichtRow {

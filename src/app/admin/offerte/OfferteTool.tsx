@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { KoppelStatus } from "@/lib/gmail/client";
 import type { Analyse, AnalyseUitkomst, BestaandeAanvraag } from "@/lib/admin-offerte/server";
-import { LEAD_BRONNEN, type LeadBron } from "@/lib/db.types";
+import type { LeadBron } from "@/lib/db.types";
 import { parsePlannerLink } from "@/lib/ikea-planner/link";
 import { TELVELDEN } from "@/lib/rekenen";
 import { WERKBLAD_KEUZES, berekenOffertePrijs, effectiefWerkblad, type OffertePrijs, type WerkbladKeuze } from "@/lib/admin-offerte/prijs";
-import { beoordeelVertrouwen, bepaalSignalen, type SignaalNiveau } from "@/lib/admin-offerte/signalen";
+import { beoordeelVertrouwen, bepaalSignalen, hangrailInfo, type SignaalNiveau } from "@/lib/admin-offerte/signalen";
 import { bedragTekst, bepaalOpenVragen, controleerMail, maakMail, onderwerpNieuw, type MailVariant } from "@/lib/admin-offerte/mail";
 import { leesLinkActie, maakDraftActie, plaatsActie, slaOpActie, type DraftActieUitkomst } from "./actions";
 
@@ -23,7 +23,15 @@ const NIVEAU: Record<SignaalNiveau, { label: string; klasse: string }> = {
   buiten_scope: { label: "Buiten scope", klasse: "border-amber-300 bg-amber-50 text-amber-900" },
   let_op: { label: "Let op", klasse: "border-sky-300 bg-sky-50 text-sky-900" },
 };
-const BRON_LABEL: Record<LeadBron, string> = { website: "Website", werkspot: "Werkspot", doorverwijzing: "Doorverwijzing", overig: "Overig" };
+// Bronkeuze bij opslaan: verplicht, geen standaard. Alleen Website kan later naar Google Ads.
+const BRON_KEUZES: { waarde: LeadBron; label: string }[] = [
+  { waarde: "website", label: "Website" },
+  { waarde: "werkspot", label: "Werkspot" },
+  { waarde: "email", label: "E-mail" },
+  { waarde: "whatsapp", label: "WhatsApp" },
+  { waarde: "telefoon", label: "Telefoon" },
+  { waarde: "overig", label: "Overig" },
+];
 const VARIANTEN: MailVariant[] = ["uitgebreid", "compact"];
 
 export function OfferteTool({ gmail, melding }: { gmail: KoppelStatus; melding: { status: string; reden: string | null } | null }) {
@@ -41,7 +49,7 @@ export function OfferteTool({ gmail, melding }: { gmail: KoppelStatus; melding: 
   const [amsterdamHandmatig, setAmsterdamHandmatig] = useState<boolean | null>(null);
   const amsterdamAuto = /^\s*10\d{2}/.test(postcode);
   const amsterdam = amsterdamHandmatig ?? amsterdamAuto;
-  const [bron, setBron] = useState<LeadBron>("website");
+  const [bron, setBron] = useState<LeadBron | "">("");
 
   // ---- Uitkomst ----
   const [analyse, setAnalyse] = useState<Analyse | null>(null);
@@ -177,7 +185,7 @@ export function OfferteTool({ gmail, melding }: { gmail: KoppelStatus; melding: 
   }
 
   function slaOp(koppelAan: string | null) {
-    if (!analyse || !prijs.p) return;
+    if (!analyse || !prijs.p || !bron) return;
     const p = prijs.p;
     startBezig(async () => {
       const u = await slaOpActie({
@@ -344,6 +352,9 @@ export function OfferteTool({ gmail, melding }: { gmail: KoppelStatus; melding: 
 
             <section className={PANEEL}>
               <h2 className={KOP}>Signalen (intern)</h2>
+              {hangrailInfo(analyse.artikelen, analyse.telling.bovenkasten) && (
+                <p className="mb-2 text-sm text-[var(--color-ink-soft)]">{hangrailInfo(analyse.artikelen, analyse.telling.bovenkasten)}</p>
+              )}
               {signalen.length === 0 ? (
                 <p className="text-sm text-[var(--color-muted)]">Geen signalen.</p>
               ) : (
@@ -497,21 +508,24 @@ export function OfferteTool({ gmail, melding }: { gmail: KoppelStatus; melding: 
                   <input className={INPUT} value={telefoon} onChange={(e) => setTelefoon(e.target.value)} />
                 </label>
                 <label className={LABEL}>
-                  Bron
-                  <select className={INPUT} value={bron} onChange={(e) => setBron(e.target.value as LeadBron)}>
-                    {LEAD_BRONNEN.map((b) => (
-                      <option key={b} value={b}>
-                        {BRON_LABEL[b]}
+                  Bron *
+                  <select className={INPUT} value={bron} onChange={(e) => setBron(e.target.value as LeadBron | "")}>
+                    <option value="" disabled>
+                      Kies een bron
+                    </option>
+                    {BRON_KEUZES.map((b) => (
+                      <option key={b.waarde} value={b.waarde}>
+                        {b.label}
                       </option>
                     ))}
                   </select>
                 </label>
-                <button type="button" className={KNOP} disabled={bezig || !naam.trim() || !!aanvraagId} onClick={() => slaOp(null)}>
+                <button type="button" className={KNOP} disabled={bezig || !naam.trim() || !bron || !!aanvraagId} onClick={() => slaOp(null)}>
                   Opslaan als aanvraag
                 </button>
               </div>
               <p className="text-xs text-[var(--color-muted)]">
-                Status Offerte verstuurd, offertebedrag {bedragTekst(prijs.p.compleet)} (Compleet). Gaat niet als aanvraag_ontvangen naar Google Ads.
+                {!naam.trim() || !bron ? "Vul de klantnaam in en kies een bron om op te slaan. " : ""}Status Offerte verstuurd, offertebedrag {bedragTekst(prijs.p.compleet)} (Compleet). Gaat niet als aanvraag_ontvangen naar Google Ads.
               </p>
               {opslag?.ok && <p className="text-sm text-green-800">{opslag.ok}</p>}
               {opslag?.fout && <p className="text-sm text-red-700">{opslag.fout}</p>}

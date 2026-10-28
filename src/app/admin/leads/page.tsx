@@ -35,6 +35,9 @@ const BRON_LABELS: Record<LeadBron, string> = {
   website: "Website",
   werkspot: "Werkspot",
   doorverwijzing: "Doorverwijzing",
+  email: "E-mail",
+  whatsapp: "WhatsApp",
+  telefoon: "Telefoon",
   overig: "Overig",
 };
 
