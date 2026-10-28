@@ -15,6 +15,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Link href="/admin/leads" className="text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-accent)]">
           Leads
         </Link>
+        <Link href="/admin/offerte" className="text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-accent)]">
+          Offerte
+        </Link>
         <Link href="/admin/roi" className="text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-accent)]">
           ROI
         </Link>

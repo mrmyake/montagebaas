@@ -82,7 +82,7 @@ export interface AanvraagRow {
 export type SiteVersie = "v1-oud" | "v2-redesign";
 export type Pakket = "compleet" | "montageklaar";
 
-export type Invoermethode = "formulier" | "link" | "pdf" | "foto";
+export type Invoermethode = "formulier" | "link" | "pdf" | "foto" | "admin_link"; // admin_link: 0020, /admin/offerte
 export type PlannerStatus =
   | "ok"
   | "ongeldige_link"
@@ -243,4 +243,16 @@ export interface StadRow {
   intro_tekst: string;
   wijken: string[];
   inwoners: number | null;
+}
+
+// Spiegelt montagebaas.offerte_drafts (0020): elke Gmail-draft uit /admin/offerte.
+export interface OfferteDraftInsert {
+  aanvraag_id: string | null;
+  planner_uuid: string | null;
+  gmail_draft_id: string;
+  gmail_thread_id: string;
+  variant: "uitgebreid" | "compact";
+  compleet_prijs: number;
+  montageklaar_prijs: number;
+  tarieven_id: string | null;
 }

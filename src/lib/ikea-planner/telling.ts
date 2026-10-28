@@ -29,6 +29,10 @@ export interface PlannerTelling {
   artikelen: Artikel[];
   werkblad: WerkbladSoort;
   prijscontrole: ReturnType<typeof prijscontrole>;
+  // Voor de signalen in /admin/offerte: wat er in het eiland staat (spoelbak,
+  // vaatwasser, kookplaat) en of er een verankeringsframe besteld is.
+  eilandInhoud: string[];
+  verankeringsframe: boolean;
 }
 
 const rond1 = (n: number) => Math.round(n * 10) / 10;
@@ -236,6 +240,7 @@ export function bomNaarTelling(
     aannames.push(`Prijscontrole BOM wijkt af: som €${pc.som} vs. totaal €${pc.totaal} (verschil €${pc.verschil})`);
   }
   const frame = artikelen.some(soortIs("verankeringsframe voor kookeiland"));
+  let eilandInhoud: string[] = [];
   if (!meta.opstelling) {
     // Geen plaatsingsdata: we weten niet of er een eiland is.
     if (frame) aannames.push("Verankeringsframe voor kookeiland in de lijst: eiland in het ontwerp, of te veel besteld? Controleren.");
@@ -247,6 +252,7 @@ export function bomNaarTelling(
       ...(inEiland.some(isVaatwasser) ? ["vaatwasser"] : []),
       ...(inEiland.some(isKookplaat) ? ["kookplaat"] : []),
     ];
+    eilandInhoud = erin;
     const nat = erin.includes("spoelbak") || erin.includes("vaatwasser");
     const stroom = erin.includes("kookplaat");
     const aansluiting = nat && stroom
@@ -301,5 +307,5 @@ export function bomNaarTelling(
       (meta.datumOpgeslagen ? `, laatst opgeslagen ${meta.datumOpgeslagen.slice(0, 10)}` : "")
   );
 
-  return { telling, artikelen, werkblad, prijscontrole: pc };
+  return { telling, artikelen, werkblad, prijscontrole: pc, eilandInhoud, verankeringsframe: frame };
 }
