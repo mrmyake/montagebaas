@@ -3,6 +3,9 @@
 --
 -- 1. invoermethode 'admin_link': aanvragen die Ilja zelf aanmaakt vanuit een
 --    planner-link die hij buiten de site kreeg.
+--    lead_bron + 'email', 'whatsapp', 'telefoon': de bronkeuze in /admin/offerte
+--    (Website, Werkspot, E-mail, WhatsApp, Telefoon, Overig). Alleen bron
+--    'website' komt in ads_conversies_te_versturen; dat blijft zo.
 -- 2. integraties: versleutelde refresh-token van de Gmail-koppeling. Alleen
 --    service_role; RLS aan zonder policies.
 -- 3. offerte_drafts: elke Gmail-draft die de tool maakt, met de prijzen en de
@@ -16,6 +19,9 @@
 -- ("unsafe use of new value"), daarom vergelijkt de view op invoermethode::text.
 
 alter type montagebaas.invoermethode add value if not exists 'admin_link';
+alter type montagebaas.lead_bron add value if not exists 'email';
+alter type montagebaas.lead_bron add value if not exists 'whatsapp';
+alter type montagebaas.lead_bron add value if not exists 'telefoon';
 
 begin;
 

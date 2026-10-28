@@ -2,7 +2,7 @@
 
 import { verifieerAdminSessie } from "@/lib/admin-auth";
 import { GmailKoppelingFout } from "@/lib/gmail/client";
-import { LEAD_BRONNEN, type LeadBron } from "@/lib/db.types";
+import type { LeadBron } from "@/lib/db.types";
 import {
   analyseerLink,
   maakOfferteDraft,
@@ -17,6 +17,8 @@ import {
 
 // Server actions van /admin/offerte. proxy.ts dekt /admin/*; verifieerAdminSessie
 // herhaalt de Basic-Auth-check vlak bij elke actie (zelfde patroon als /admin/leads).
+
+const ADMIN_BRONNEN: LeadBron[] = ["website", "werkspot", "email", "whatsapp", "telefoon", "overig"];
 
 export async function leesLinkActie(plannerUrl: string): Promise<AnalyseUitkomst> {
   await verifieerAdminSessie();
@@ -45,7 +47,7 @@ export async function slaOpActie(i: OpslaanInvoer): Promise<OpslaanUitkomst> {
   await verifieerAdminSessie();
   if (!i.naam.trim()) return { ok: false, fout: "Klantnaam is verplicht om op te slaan." };
   if (i.email.trim() && !/^\S+@\S+\.\S+$/.test(i.email.trim())) return { ok: false, fout: "Klant-e-mail is ongeldig." };
-  if (!LEAD_BRONNEN.includes(i.bron as LeadBron)) return { ok: false, fout: "Ongeldige bron." };
+  if (!ADMIN_BRONNEN.includes(i.bron)) return { ok: false, fout: "Kies een bron (Website, Werkspot, E-mail, WhatsApp, Telefoon of Overig)." };
   if (!(i.compleet > 0 && i.montageklaar > 0)) return { ok: false, fout: "Geen prijs om op te slaan." };
   try {
     return await slaOp(i);

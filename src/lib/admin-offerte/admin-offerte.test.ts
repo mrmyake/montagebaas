@@ -10,7 +10,7 @@ import { leesBom } from "../ikea-planner/bom.ts";
 import type { Artikel } from "../ikea-planner/bom.ts";
 import { bomNaarTelling } from "../ikea-planner/telling.ts";
 import { berekenOffertePrijs, effectiefWerkblad, tellingMetWerkblad } from "./prijs.ts";
-import { beoordeelVertrouwen, bepaalSignalen, hangrailMeter, type SignaalInvoer } from "./signalen.ts";
+import { beoordeelVertrouwen, bepaalSignalen, hangrailInfo, hangrailMeter, type SignaalInvoer } from "./signalen.ts";
 import {
   PRIJS_SLOTZIN,
   bepaalOpenVragen,
@@ -150,16 +150,14 @@ const invoer = (o: Partial<SignaalInvoer> & { telling?: Partial<KeukenTelling> }
 });
 const ids = (i: SignaalInvoer) => bepaalSignalen(i).map((s) => s.id);
 
-test("hangrail: meters uit de omschrijving, ratio per bovenkast 0,8–1,2", () => {
+test("hangrail: alleen een informatieregel, nooit een signaal", () => {
   assert.equal(hangrailMeter([art("ophangrail", 3, "ophangrail, verzinkt, 200 cm")]), 6);
   assert.equal(hangrailMeter([art("ophangrail", 2, "ophangrail, verzinkt")]), 4); // zonder maat: 200 cm
-  const met = (rails: number, bk: number) =>
-    ids(invoer({ artikelen: [art("ophangrail", rails, "ophangrail, verzinkt, 200 cm")], telling: { bovenkasten: bk } }));
-  assert.ok(!met(2, 4).includes("hangrail")); // 4 m / 4 = 1,0
-  assert.ok(!met(2, 5).includes("hangrail")); // 0,8: grens telt mee
-  assert.ok(met(1, 4).includes("hangrail")); // 0,5
-  assert.ok(met(3, 4).includes("hangrail")); // 1,5
-  assert.ok(!met(3, 0).includes("hangrail")); // geen bovenkasten: geen ratio
+  const rails = [art("ophangrail", 3, "ophangrail, verzinkt, 200 cm")];
+  assert.equal(hangrailInfo(rails, 4), "Ophangrail 6 m voor 4 bovenkast(en): 1,5 m per bovenkast.");
+  assert.equal(hangrailInfo(rails, 0), "Ophangrail 6 m, geen bovenkasten.");
+  assert.equal(hangrailInfo([], 4), null); // PDF: geen artikellijst
+  for (const bk of [1, 4, 30]) assert.ok(!ids(invoer({ artikelen: rails, telling: { bovenkasten: bk } })).includes("hangrail"));
 });
 
 test("eiland en verankeringsframe: beide richtingen", () => {
@@ -196,7 +194,8 @@ test("pootjes tellen nergens mee als controle; vaatwasserpositie is geen onderka
 test("eigen fixtures: MB monitor en eiland-ontwerp geven de verwachte signalen", () => {
   const mb = mbMonitor();
   const s = bepaalSignalen({ ...mb, telling: mb.telling });
-  assert.deepEqual(s.map((x) => x.id).sort(), ["afzuig_conflict", "hangrail", "inductie"]);
+  assert.deepEqual(s.map((x) => x.id).sort(), ["afzuig_conflict", "inductie"]);
+  assert.equal(hangrailInfo(mb.artikelen, mb.telling.bovenkasten), "Ophangrail 6 m voor 2 bovenkast(en): 3 m per bovenkast.");
   const ei = eilandOntwerp();
   assert.equal(ei.telling.eiland, 1);
   assert.equal(ei.verankeringsframe, true);

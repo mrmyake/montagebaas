@@ -25,8 +25,6 @@ export interface Signaal {
   tekst: string;
 }
 
-/** Ophangrail in meters per bovenkast; daarbuiten is er mogelijk iets mis met de bestelling. */
-export const HANGRAIL_RATIO = { min: 0.8, max: 1.2 } as const;
 const RAIL_STANDAARD_CM = 200;
 
 /** Meters ophangrail uit de artikellijst ("ophangrail, verzinkt, 200 cm" × aantal). */
@@ -39,6 +37,19 @@ export function hangrailMeter(artikelen: Artikel[]): number {
   return Math.round(cm) / 100;
 }
 
+/**
+ * Ophangrail per bovenkast, als informatieregel: geen signaal. IKEA zet ook
+ * rails bij onder- en hoge kasten, dus een afwijkende ratio is geen bestelfout.
+ */
+export function hangrailInfo(artikelen: Artikel[], bovenkasten: number): string | null {
+  const m = hangrailMeter(artikelen);
+  if (!artikelen.length || (!m && !bovenkasten)) return null;
+  const nl = (n: number) => n.toLocaleString("nl-NL", { maximumFractionDigits: 2 });
+  return bovenkasten
+    ? `Ophangrail ${nl(m)} m voor ${bovenkasten} bovenkast(en): ${nl(m / bovenkasten)} m per bovenkast.`
+    : `Ophangrail ${nl(m)} m, geen bovenkasten.`;
+}
+
 const aantalSoort = (artikelen: Artikel[], re: RegExp) =>
   artikelen.filter((a) => re.test(a.soort)).reduce((s, a) => s + a.aantal, 0);
 
@@ -47,20 +58,7 @@ export function bepaalSignalen(i: SignaalInvoer): Signaal[] {
   const uit: Signaal[] = [];
   const voeg = (id: string, niveau: SignaalNiveau, tekst: string) => uit.push({ id, niveau, tekst });
 
-  // ---- Bestelling ----
-  if (artikelen.length && t.bovenkasten > 0) {
-    const m = hangrailMeter(artikelen);
-    const ratio = m / t.bovenkasten;
-    if (ratio < HANGRAIL_RATIO.min - 1e-9 || ratio > HANGRAIL_RATIO.max + 1e-9) {
-      voeg(
-        "hangrail",
-        "bestelfout",
-        `Ophangrail ${m.toLocaleString("nl-NL")} m voor ${t.bovenkasten} bovenkast(en) = ${ratio.toLocaleString("nl-NL", { maximumFractionDigits: 2 })} m per bovenkast ` +
-          `(verwacht 0,8–1,2): mogelijke bestelfout. Let op: IKEA zet ook rails bij onder- en hoge kasten.`
-      );
-    }
-  }
-
+  // ---- Bestelling (ophangrail: alleen informatie, zie hangrailInfo) ----
   if (t.eiland > 0 && !i.verankeringsframe && artikelen.length) {
     voeg("eiland_zonder_frame", "bestelfout", "Eiland zonder verankeringsframe voor kookeiland: controleren of dat nodig is.");
   }
