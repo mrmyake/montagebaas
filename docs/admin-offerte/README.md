@@ -1,6 +1,8 @@
 # /admin/offerte
 
-Interne offerte-tool: planner-link (of PDF) → telling, signalen, prijzen → twee mailvarianten → Gmail-draft in ilja@dekeukenheld.nl. Nooit automatisch versturen.
+Interne offerte-tool: planner-link (of PDF) → telling, signalen, prijzen → twee mailvarianten → Gmail-draft in de mailbox ilja@montagebaas.com met afzender ilja@dekeukenheld.nl. Nooit automatisch versturen.
+
+dekeukenheld.nl is een aliasdomein in de montagebaas.com-Workspace. Koppelen gebeurt met **ilja@montagebaas.com** (dat account staat in `integraties`). Bij het koppelen én bij elke draft controleert de tool via `users.settings.sendAs.list` of ilja@dekeukenheld.nl als verzendadres bestaat; zo niet, dan een melding en geen draft.
 
 ## Code
 
@@ -17,10 +19,11 @@ Interne offerte-tool: planner-link (of PDF) → telling, signalen, prijzen → t
 
 | Naam | Waarde |
 |---|---|
-| `GMAIL_CLIENT_ID` | OAuth-client (web) uit Google Cloud, project onder dekeukenheld.nl |
+| `GMAIL_CLIENT_ID` | OAuth-client (web) uit Google Cloud, project onder de montagebaas.com-Workspace (consent screen Intern) |
 | `GMAIL_CLIENT_SECRET` | idem |
 | `INTEGRATIES_SLEUTEL` | `openssl rand -base64 32`; versleutelt de refresh-token in `montagebaas.integraties` |
-| `GMAIL_ACCOUNT` | optioneel, standaard `ilja@dekeukenheld.nl` |
+| `GMAIL_ACCOUNT` | optioneel: de mailbox, standaard `ilja@montagebaas.com` |
+| `GMAIL_AFZENDER` | optioneel: From-adres (sendAs-alias), standaard `ilja@dekeukenheld.nl` |
 
 Redirect-URI = `<domein waarop je de tool opent>/admin/offerte/gmail/callback`. Google kent geen wildcards: alleen productie en de vaste branch-preview werken.
 

@@ -222,7 +222,7 @@ export function OfferteTool({ gmail, melding }: { gmail: KoppelStatus; melding: 
     <div className="space-y-6">
       {melding && (
         <p className={`rounded border px-3 py-2 text-sm ${melding.status === "gekoppeld" ? "border-green-300 bg-green-50 text-green-800" : "border-red-300 bg-red-50 text-red-800"}`}>
-          {melding.status === "gekoppeld" ? `Gmail gekoppeld (${gmail.account}).` : `Gmail koppelen mislukt: ${melding.reden ?? "onbekend"}`}
+          {melding.status === "gekoppeld" ? `Gmail gekoppeld (mailbox ${gmail.account}).` : `Gmail koppelen mislukt: ${melding.reden ?? "onbekend"}`}
         </p>
       )}
 
@@ -472,7 +472,8 @@ export function OfferteTool({ gmail, melding }: { gmail: KoppelStatus; melding: 
                     {gmail.gekoppeld ? "De Gmail-koppeling is verlopen of ingetrokken." : "Gmail is nog niet gekoppeld."} De tekst blijft kopieerbaar.{" "}
                     <a className={KNOP2} href="/admin/offerte/gmail/connect">
                       {gmail.gekoppeld ? "Opnieuw koppelen" : "Koppel Gmail"}
-                    </a>
+                    </a>{" "}
+                    <span className="text-xs text-[var(--color-muted)]">Kies bij Google het account {gmail.account}.</span>
                   </p>
                 )}
                 {drafts.map((d, i) =>

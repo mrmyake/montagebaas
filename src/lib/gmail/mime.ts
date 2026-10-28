@@ -80,6 +80,25 @@ export function replyReferences(references: string | null, messageId: string | n
   return delen.length ? delen.join(" ") : null;
 }
 
+export interface SendAs {
+  sendAsEmail?: string;
+  isPrimary?: boolean;
+  verificationStatus?: string; // "accepted" | "pending"; ontbreekt bij het hoofdadres
+}
+
+/**
+ * Mag de mailbox als `adres` versturen? Het adres moet in sendAs staan en (als
+ * het geen hoofdadres is) geverifieerd zijn.
+ */
+export function heeftSendAs(lijst: SendAs[] | undefined, adres: string): boolean {
+  const a = adres.trim().toLowerCase();
+  return (lijst ?? []).some(
+    (s) =>
+      s.sendAsEmail?.trim().toLowerCase() === a &&
+      (s.isPrimary || s.verificationStatus === undefined || s.verificationStatus === "accepted")
+  );
+}
+
 /** Link naar de draft in Gmail, in de mailbox van `account`. */
 export const draftLink = (account: string, messageId: string) =>
   `https://mail.google.com/mail/u/${encodeURIComponent(account)}/#drafts?compose=${messageId}`;

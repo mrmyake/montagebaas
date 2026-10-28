@@ -1,22 +1,35 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
 import { leesSleutel, ontsleutel, versleutel } from "@/lib/versleuteling";
-import { GMAIL_SCOPES, bouwMime, draftLink, ontbrekendeScopes, replyReferences, type DraftBericht } from "./mime";
+import { GMAIL_SCOPES, bouwMime, draftLink, heeftSendAs, ontbrekendeScopes, replyReferences, type DraftBericht, type SendAs } from "./mime";
 
 /**
  * Gmail-koppeling voor /admin/offerte: OAuth (gmail.compose + gmail.readonly) op
  * één mailbox, refresh-token versleuteld in montagebaas.integraties. Alleen
  * drafts aanmaken en threads zoeken; nooit versturen.
  *
- * Env: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, INTEGRATIES_SLEUTEL, GMAIL_ACCOUNT
- * (standaard ilja@dekeukenheld.nl).
+ * dekeukenheld.nl is een aliasdomein in de montagebaas.com-Workspace: de mailbox
+ * (en dus de koppeling) is ilja@montagebaas.com, de afzender ilja@dekeukenheld.nl.
+ * Die afzender moet als sendAs in de mailbox staan; anders geen koppeling en geen
+ * draft (nooit met een ander From-adres).
+ *
+ * Env: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, INTEGRATIES_SLEUTEL, en optioneel
+ * GMAIL_ACCOUNT (mailbox, standaard ilja@montagebaas.com) en GMAIL_AFZENDER
+ * (From, standaard ilja@dekeukenheld.nl).
  */
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const API = "https://gmail.googleapis.com/gmail/v1/users/me";
 const PROVIDER = "gmail";
 
-export const gmailAccount = () => (process.env.GMAIL_ACCOUNT ?? "ilja@dekeukenheld.nl").trim().toLowerCase();
+/** De mailbox waarmee gekoppeld wordt en die in integraties staat. */
+export const gmailAccount = () => (process.env.GMAIL_ACCOUNT ?? "ilja@montagebaas.com").trim().toLowerCase();
+/** From-adres van elke draft: een sendAs-alias van de mailbox. */
+export const gmailAfzender = () => (process.env.GMAIL_AFZENDER ?? "ilja@dekeukenheld.nl").trim().toLowerCase();
+
+const geenSendAs = () =>
+  `${gmailAfzender()} staat niet als geverifieerd verzendadres (sendAs) in de mailbox ${gmailAccount()}. ` +
+  `Voeg het toe in Gmail → Instellingen → Accounts → "Mail verzenden als", of controleer de alias in de Workspace-admin. Er is geen draft gemaakt.`;
 
 /** Koppeling ontbreekt, is verlopen of ingetrokken: Ilja moet opnieuw koppelen. */
 export class GmailKoppelingFout extends Error {
@@ -73,7 +86,11 @@ export async function koppelMetCode(code: string, redirectUri: string): Promise<
 
   const profiel = await gmailFetch(r.json.access_token, "/profile");
   const adres = String((profiel as { emailAddress?: unknown }).emailAddress ?? "").toLowerCase();
-  if (adres !== gmailAccount()) throw new Error(`Gekoppeld met ${adres || "onbekend account"}, verwacht ${gmailAccount()}.`);
+  if (adres !== gmailAccount()) {
+    throw new Error(`Gekoppeld met ${adres || "onbekend account"}, verwacht ${gmailAccount()}. Kies bij Google het account ${gmailAccount()}.`);
+  }
+  const sendAs = (await gmailFetch(r.json.access_token, "/settings/sendAs")) as { sendAs?: SendAs[] };
+  if (!heeftSendAs(sendAs.sendAs, gmailAfzender())) throw new Error(geenSendAs());
 
   const { error } = await supabaseAdmin()
     .from("integraties")
@@ -213,13 +230,23 @@ export interface GemaakteDraft {
   link: string;
 }
 
+/** Verzendadres kwijt (alias weggehaald na het koppelen)? Melding op het scherm, geen draft. */
+export class GmailAfzenderFout extends Error {
+  constructor() {
+    super(geenSendAs());
+    this.name = "GmailAfzenderFout";
+  }
+}
+
 export async function maakDraft(
   b: Omit<DraftBericht, "van" | "inReplyTo" | "references">,
   reply: GevondenThread | null
 ): Promise<GemaakteDraft> {
+  const sendAs = (await api("/settings/sendAs")) as { sendAs?: SendAs[] };
+  if (!heeftSendAs(sendAs.sendAs, gmailAfzender())) throw new GmailAfzenderFout();
   const raw = bouwMime({
     ...b,
-    van: gmailAccount(),
+    van: gmailAfzender(),
     inReplyTo: reply?.messageId ?? null,
     references: reply ? replyReferences(reply.references, reply.messageId) : null,
   });
