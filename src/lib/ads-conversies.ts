@@ -62,6 +62,8 @@ export interface TeVersturenRij {
   consent_bron: "banner" | "formulier" | null;
   /** Alleen bij aanvraag_ontvangen: id van een eerdere aanvraag (≤ 7 dagen) met hetzelfde e-mailadres of telefoonnummer (0011). */
   duplicaat_van: string | null;
+  /** Route van de aanvraag (0020). 'admin_link' = door Ilja zelf aangemaakt in /admin/offerte. */
+  invoermethode?: string | null;
 }
 
 /**
@@ -322,6 +324,12 @@ export function beslis(
   // nooit naar Google, ook niet als iemand ze met een ander adres invult.
   if (KLIK_ID_VOLGORDE.some((t) => rij[t]?.toUpperCase().startsWith("TEST_"))) {
     return met({ soort: "overslaan", reden: "testinzending (klik-ID begint met TEST_)", klikType });
+  }
+
+  // Zelf aangemaakt in /admin/offerte: geen binnengekomen lead, dus nooit
+  // aanvraag_ontvangen. De view (0020) laat ze al weg; dit is de tweede grendel.
+  if (rij.conversie_actie === "aanvraag_ontvangen" && rij.invoermethode === "admin_link") {
+    return met({ soort: "overslaan", reden: "aangemaakt in /admin/offerte (geen binnengekomen aanvraag)", klikType });
   }
 
   // Opdracht gewonnen: alleen als de lead nú nog gewonnen/uitgevoerd is én dat al

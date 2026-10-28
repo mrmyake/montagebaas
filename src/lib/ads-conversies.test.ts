@@ -376,3 +376,15 @@ test("uitsluiting: de testlead-adressen van de redesign (Fase 4) vallen eronder,
     assert.equal(valtOnderUitsluiting(e, r), false, String(e));
   }
 });
+
+test("admin_link (/admin/offerte): nooit aanvraag_ontvangen, opdracht_gewonnen wel na de wachttijd", () => {
+  const admin = { ...basis, invoermethode: "admin_link", email: "klant@example.nl" };
+  const opties = { consentOnbekend: "unspecified" as const, nu: new Date("2026-10-03T10:00:00Z") };
+  const ontvangen = beslis({ ...admin, conversie_actie: "aanvraag_ontvangen", waarde: null }, opties);
+  assert.equal(ontvangen.soort, "overslaan");
+  assert.match((ontvangen as { reden: string }).reden, /admin\/offerte/);
+  assert.equal(beslis(admin, opties).soort, "versturen"); // opdracht_gewonnen, 48 uur na gewonnen
+  assert.equal(beslis({ ...admin, event_tijdstip: "2026-10-03T00:00:00Z" }, opties).soort, "wachten"); // pas 10 uur
+  // Een website-aanvraag krijgt aanvraag_ontvangen gewoon.
+  assert.equal(beslis({ ...basis, invoermethode: "link", conversie_actie: "aanvraag_ontvangen", waarde: null }, opties).soort, "versturen");
+});
