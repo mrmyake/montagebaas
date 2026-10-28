@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
-import { GMAIL_SCOPES, bouwMime, draftLink, headerWaarde, oauthUrl, ontbrekendeScopes, replyReferences } from "./mime.ts";
+import { GMAIL_SCOPES, bouwMime, draftLink, headerWaarde, heeftSendAs, oauthUrl, ontbrekendeScopes, replyReferences } from "./mime.ts";
 import { leesSleutel, ontsleutel, versleutel } from "../versleuteling.ts";
 
 test("OAuth-URL: precies compose + readonly, offline, altijd consent, login_hint", () => {
@@ -66,4 +66,23 @@ test("versleuteling: heen en terug, andere iv per keer, manipulatie en verkeerde
   assert.throws(() => ontsleutel(delen.join(":"), sleutel));
   assert.throws(() => ontsleutel(a, leesSleutel(randomBytes(32).toString("base64"))));
   assert.throws(() => leesSleutel("te-kort"), /32 bytes/);
+});
+
+test("sendAs: alias van het Workspace-aliasdomein moet bestaan en geverifieerd zijn", () => {
+  const lijst = [
+    { sendAsEmail: "ilja@montagebaas.com", isPrimary: true },
+    { sendAsEmail: "Ilja@DeKeukenheld.nl", verificationStatus: "accepted" },
+  ];
+  assert.equal(heeftSendAs(lijst, "ilja@dekeukenheld.nl"), true); // hoofdletters maken niet uit
+  assert.equal(heeftSendAs(lijst, "ilja@montagebaas.com"), true);
+  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl" }], "ilja@dekeukenheld.nl"), true); // Workspace-alias zonder status
+  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl", verificationStatus: "pending" }], "ilja@dekeukenheld.nl"), false);
+  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@montagebaas.com", isPrimary: true }], "ilja@dekeukenheld.nl"), false);
+  assert.equal(heeftSendAs(undefined, "ilja@dekeukenheld.nl"), false);
+});
+
+test("MIME: From is de alias, ook al is de mailbox ilja@montagebaas.com", () => {
+  const mime = Buffer.from(bouwMime({ van: "ilja@dekeukenheld.nl", aan: "me+test@ilja.com", onderwerp: "X", tekst: "t", html: "h" }), "base64url").toString("utf8");
+  assert.match(mime, /^From: ilja@dekeukenheld\.nl\r\n/);
+  assert.equal(draftLink("ilja@montagebaas.com", "18f"), "https://mail.google.com/mail/u/ilja%40montagebaas.com/#drafts?compose=18f");
 });
