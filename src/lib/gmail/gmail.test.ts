@@ -68,21 +68,22 @@ test("versleuteling: heen en terug, andere iv per keer, manipulatie en verkeerde
   assert.throws(() => leesSleutel("te-kort"), /32 bytes/);
 });
 
-test("sendAs: alias van het Workspace-aliasdomein moet bestaan en geverifieerd zijn", () => {
-  const lijst = [
-    { sendAsEmail: "ilja@montagebaas.com", isPrimary: true },
-    { sendAsEmail: "Ilja@DeKeukenheld.nl", verificationStatus: "accepted" },
-  ];
-  assert.equal(heeftSendAs(lijst, "ilja@dekeukenheld.nl"), true); // hoofdletters maken niet uit
-  assert.equal(heeftSendAs(lijst, "ilja@montagebaas.com"), true);
-  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl" }], "ilja@dekeukenheld.nl"), true); // Workspace-alias zonder status
+test("sendAs: hoofdadres geldig zonder verificationStatus, andere adressen alleen met accepted", () => {
+  // Zo geeft users.settings.sendAs.list het primaire adres terug: isPrimary, geen verificationStatus.
+  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl", isPrimary: true }], "ilja@dekeukenheld.nl"), true);
+  assert.equal(heeftSendAs([{ sendAsEmail: "Ilja@DeKeukenheld.nl", isPrimary: true }], "ilja@dekeukenheld.nl"), true); // hoofdletters
+  // Niet-primair: alleen met accepted.
+  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl", verificationStatus: "accepted" }], "ilja@dekeukenheld.nl"), true);
+  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl" }], "ilja@dekeukenheld.nl"), false);
   assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl", verificationStatus: "pending" }], "ilja@dekeukenheld.nl"), false);
+  assert.equal(heeftSendAs([{ sendAsEmail: "ilja@dekeukenheld.nl", isPrimary: false, verificationStatus: "pending" }], "ilja@dekeukenheld.nl"), false);
+  // Ander adres in de lijst telt niet.
   assert.equal(heeftSendAs([{ sendAsEmail: "ilja@montagebaas.com", isPrimary: true }], "ilja@dekeukenheld.nl"), false);
   assert.equal(heeftSendAs(undefined, "ilja@dekeukenheld.nl"), false);
 });
 
-test("MIME: From is de alias, ook al is de mailbox ilja@montagebaas.com", () => {
+test("MIME: From en draftlink in de mailbox ilja@dekeukenheld.nl", () => {
   const mime = Buffer.from(bouwMime({ van: "ilja@dekeukenheld.nl", aan: "me+test@ilja.com", onderwerp: "X", tekst: "t", html: "h" }), "base64url").toString("utf8");
   assert.match(mime, /^From: ilja@dekeukenheld\.nl\r\n/);
-  assert.equal(draftLink("ilja@montagebaas.com", "18f"), "https://mail.google.com/mail/u/ilja%40montagebaas.com/#drafts?compose=18f");
+  assert.equal(draftLink("ilja@dekeukenheld.nl", "18f"), "https://mail.google.com/mail/u/ilja%40dekeukenheld.nl/#drafts?compose=18f");
 });

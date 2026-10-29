@@ -8,13 +8,15 @@ import { GMAIL_SCOPES, bouwMime, draftLink, heeftSendAs, ontbrekendeScopes, repl
  * één mailbox, refresh-token versleuteld in montagebaas.integraties. Alleen
  * drafts aanmaken en threads zoeken; nooit versturen.
  *
- * dekeukenheld.nl is een aliasdomein in de montagebaas.com-Workspace: de mailbox
- * (en dus de koppeling) is ilja@montagebaas.com, de afzender ilja@dekeukenheld.nl.
- * Die afzender moet als sendAs in de mailbox staan; anders geen koppeling en geen
+ * dekeukenheld.nl is het primaire domein van de Workspace (montagebaas.com is
+ * alias): mailbox, koppeling en afzender zijn ilja@dekeukenheld.nl. Threads
+ * worden alleen in die mailbox gezocht; oudere threads in de vroegere
+ * montagebaas-mailbox tellen niet mee (geen fallback, dan een nieuwe draft).
+ * De afzender moet als sendAs in de mailbox staan; anders geen koppeling en geen
  * draft (nooit met een ander From-adres).
  *
  * Env: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, INTEGRATIES_SLEUTEL, en optioneel
- * GMAIL_ACCOUNT (mailbox, standaard ilja@montagebaas.com) en GMAIL_AFZENDER
+ * GMAIL_ACCOUNT (mailbox, standaard ilja@dekeukenheld.nl) en GMAIL_AFZENDER
  * (From, standaard ilja@dekeukenheld.nl).
  */
 
@@ -23,13 +25,13 @@ const API = "https://gmail.googleapis.com/gmail/v1/users/me";
 const PROVIDER = "gmail";
 
 /** De mailbox waarmee gekoppeld wordt en die in integraties staat. */
-export const gmailAccount = () => (process.env.GMAIL_ACCOUNT ?? "ilja@montagebaas.com").trim().toLowerCase();
-/** From-adres van elke draft: een sendAs-alias van de mailbox. */
+export const gmailAccount = () => (process.env.GMAIL_ACCOUNT ?? "ilja@dekeukenheld.nl").trim().toLowerCase();
+/** From-adres van elke draft: het hoofdadres of een geverifieerde sendAs van de mailbox. */
 export const gmailAfzender = () => (process.env.GMAIL_AFZENDER ?? "ilja@dekeukenheld.nl").trim().toLowerCase();
 
 const geenSendAs = () =>
   `${gmailAfzender()} staat niet als geverifieerd verzendadres (sendAs) in de mailbox ${gmailAccount()}. ` +
-  `Voeg het toe in Gmail → Instellingen → Accounts → "Mail verzenden als", of controleer de alias in de Workspace-admin. Er is geen draft gemaakt.`;
+  `Controleer in de Workspace-admin of ${gmailAccount()} de juiste mailbox is, of voeg het adres toe in Gmail → Instellingen → Accounts → "Mail verzenden als". Er is geen draft gemaakt.`;
 
 /** Koppeling ontbreekt, is verlopen of ingetrokken: Ilja moet opnieuw koppelen. */
 export class GmailKoppelingFout extends Error {
@@ -230,7 +232,7 @@ export interface GemaakteDraft {
   link: string;
 }
 
-/** Verzendadres kwijt (alias weggehaald na het koppelen)? Melding op het scherm, geen draft. */
+/** Verzendadres kwijt (na het koppelen gewijzigd)? Melding op het scherm, geen draft. */
 export class GmailAfzenderFout extends Error {
   constructor() {
     super(geenSendAs());
