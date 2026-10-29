@@ -1,8 +1,10 @@
 # /admin/offerte
 
-Interne offerte-tool: planner-link (of PDF) → telling, signalen, prijzen → twee mailvarianten → Gmail-draft in de mailbox ilja@montagebaas.com met afzender ilja@dekeukenheld.nl. Nooit automatisch versturen.
+Interne offerte-tool: planner-link (of PDF) → telling, signalen, prijzen → twee mailvarianten → Gmail-draft in de mailbox ilja@dekeukenheld.nl, met die mailbox als afzender. Nooit automatisch versturen.
 
-dekeukenheld.nl is een aliasdomein in de montagebaas.com-Workspace. Koppelen gebeurt met **ilja@montagebaas.com** (dat account staat in `integraties`). Bij het koppelen én bij elke draft controleert de tool via `users.settings.sendAs.list` of ilja@dekeukenheld.nl als verzendadres bestaat; zo niet, dan een melding en geen draft.
+dekeukenheld.nl is het primaire domein van de Workspace; montagebaas.com is alias. Koppelen gebeurt met **ilja@dekeukenheld.nl** (dat account staat in `integraties`). Bij het koppelen én bij elke draft controleert de tool via `users.settings.sendAs.list` of de afzender mag: het hoofdadres (`isPrimary`) altijd, een ander adres alleen met `verificationStatus: accepted`. Zo niet, dan een melding en geen draft.
+
+Een reply zoekt alleen in deze mailbox. Oudere klantthreads in de vroegere montagebaas-mailbox tellen niet mee; zonder treffer wordt het een nieuwe draft.
 
 ## Code
 
@@ -19,11 +21,11 @@ dekeukenheld.nl is een aliasdomein in de montagebaas.com-Workspace. Koppelen geb
 
 | Naam | Waarde |
 |---|---|
-| `GMAIL_CLIENT_ID` | OAuth-client (web) uit Google Cloud, project onder de montagebaas.com-Workspace (consent screen Intern) |
+| `GMAIL_CLIENT_ID` | OAuth-client (web) uit Google Cloud, project onder de Workspace van dekeukenheld.nl (consent screen Intern) |
 | `GMAIL_CLIENT_SECRET` | idem |
 | `INTEGRATIES_SLEUTEL` | `openssl rand -base64 32`; versleutelt de refresh-token in `montagebaas.integraties` |
-| `GMAIL_ACCOUNT` | optioneel: de mailbox, standaard `ilja@montagebaas.com` |
-| `GMAIL_AFZENDER` | optioneel: From-adres (sendAs-alias), standaard `ilja@dekeukenheld.nl` |
+| `GMAIL_ACCOUNT` | optioneel: de mailbox, standaard `ilja@dekeukenheld.nl` |
+| `GMAIL_AFZENDER` | optioneel: From-adres, standaard `ilja@dekeukenheld.nl` |
 
 Redirect-URI = `<domein waarop je de tool opent>/admin/offerte/gmail/callback`. Google kent geen wildcards: alleen productie en de vaste branch-preview werken.
 

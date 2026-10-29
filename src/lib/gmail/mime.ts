@@ -87,15 +87,16 @@ export interface SendAs {
 }
 
 /**
- * Mag de mailbox als `adres` versturen? Het adres moet in sendAs staan en (als
- * het geen hoofdadres is) geverifieerd zijn.
+ * Mag de mailbox als `adres` versturen? Het hoofdadres (isPrimary, meestal zonder
+ * verificationStatus) is altijd geldig; een andere sendAs alleen met
+ * verificationStatus "accepted".
  */
 export function heeftSendAs(lijst: SendAs[] | undefined, adres: string): boolean {
   const a = adres.trim().toLowerCase();
   return (lijst ?? []).some(
     (s) =>
       s.sendAsEmail?.trim().toLowerCase() === a &&
-      (s.isPrimary || s.verificationStatus === undefined || s.verificationStatus === "accepted")
+      (s.isPrimary === true || s.verificationStatus === "accepted")
   );
 }
 
