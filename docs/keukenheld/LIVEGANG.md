@@ -52,7 +52,7 @@ Overstappen = `MERK=keukenheld` + Resend-paar + domeinen. Terugdraaien = dezelfd
    - `ADS_UITSLUITEN`: `@dekeukenheld.nl` toevoegen. De standaardlijst in de code heeft hem
      al, maar de env vervangt die lijst.
 
-   `LEAD_NOTIFY_TO` blijft staan: daar gaan de meldingen aan Ilja heen.
+   `LEAD_NOTIFY_TO` en `PLANNER_MONITOR_TO` op `ilja@dekeukenheld.nl` zetten: daar gaan de meldingen aan Ilja heen (aparte mailbox, geen alias van montagebaas).
 5. **Domeinen** (Settings → Domains), zie REDIRECTS.md:
    - dekeukenheld.nl: redirect naar montagebaas.com weghalen, wordt het **primaire domein**
    - www.dekeukenheld.nl → `https://dekeukenheld.nl`, **308** (staat nu op 307)

@@ -810,7 +810,7 @@ export async function stuurPlannerMonitorAlarm(input: {
   problemen: string[];
   details: Record<string, unknown>;
 }): Promise<void> {
-  const to = process.env.PLANNER_MONITOR_TO || "ilja@montagebaas.com";
+  const to = process.env.PLANNER_MONITOR_TO || process.env.LEAD_NOTIFY_TO || "ilja@dekeukenheld.nl";
   const from = afzender();
   if (!process.env.RESEND_API_KEY || !from) {
     console.error("[planner-monitor] Geen alarm-mail mogelijk (RESEND_API_KEY/RESEND_FROM_EMAIL ontbreekt):", input.problemen);

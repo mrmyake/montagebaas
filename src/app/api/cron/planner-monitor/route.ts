@@ -9,7 +9,7 @@ import verwacht from "@/lib/ikea-planner/__fixtures__/verwacht.json";
 /**
  * Dagelijkse controle van de planner-link-keten (zie vercel.json). Leest een
  * vast eigen testontwerp (env PLANNER_MONITOR_UUID) uit, precies zoals bij een
- * lead, en mailt (PLANNER_MONITOR_TO, standaard ilja@montagebaas.com) als:
+ * lead, en mailt (PLANNER_MONITOR_TO, anders LEAD_NOTIFY_TO, standaard ilja@dekeukenheld.nl) als:
  *  - ophalen faalt (token-keten, 404, timeout, …),
  *  - de structuur niet meer klopt of de telling onvolledig is,
  *  - de prijscontrole van de BOM niet sluit, of productgegevens ontbreken,
