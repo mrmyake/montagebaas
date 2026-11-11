@@ -1,4 +1,4 @@
-// Vult montagebaas.steden in de gedeelde Supabase met de statische stedendata.
+// Vult montagebaas.steden in het Supabase-project van Montagebaas met de statische stedendata.
 // De website zelf draait op src/lib/steden.ts (SSG); dit is voor par/toekomstig gebruik.
 // Gebruik: node scripts/seed-steden.mjs
 import { readFileSync } from "node:fs";

@@ -3,11 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 /**
  * Supabase-clients.
  *
- * We delen één Supabase-project met de andere sites (tvmuur, klimaatbaas, …) en isoleren
- * data via een eigen Postgres-schema: `montagebaas` (instelbaar via DB_SCHEMA).
+ * Montagebaas heeft sinds 2026-09-27 een eigen Supabase-project (organisatie Montagebaas).
+ * De data staat in het Postgres-schema `montagebaas` (instelbaar via DB_SCHEMA); dat is zo
+ * gebleven bij de verhuizing uit het vroegere gedeelde project, zodat de code en de
+ * migraties ongewijzigd konden blijven.
  *
  * ⚠️ EIGENAAR: het schema moet in Supabase onder Settings → API → "Exposed schemas"
- * worden toegevoegd, anders weigert PostgREST de queries.
+ * staan, anders weigert PostgREST de queries met "Invalid schema".
  *
  * - `supabasePublic`: anon-key, alleen voor publieke leesdata (steden). RLS staat dit toe.
  * - `supabaseAdmin()`: service-role key, ALLEEN server-side voor het wegschrijven van leads.

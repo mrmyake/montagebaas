@@ -3,15 +3,17 @@
 Korte handleiding om de site live te krijgen. De code is af (Fase 0–5); dit zijn de
 acties die de eigenaar nog moet doen.
 
-## 1. Supabase (gedeeld project, schema `montagebaas`)
+## 1. Supabase (eigen project, schema `montagebaas`)
 
-De database draait in het gedeelde Supabase-project, geïsoleerd in schema `montagebaas`.
-De migratie is al uitgevoerd en de `steden`-tabel is gevuld (16 steden).
+De database draait sinds 2026-09-27 in een eigen Supabase-project (organisatie Montagebaas),
+verhuisd uit het vroegere gedeelde project. De data staat in schema `montagebaas`; de
+migraties `supabase/migrations/0001` t/m `0006` zijn in het nieuwe project als toegepast
+geregistreerd, dus een toekomstige `supabase db push` speelt niets opnieuw af.
 
-**Nog te doen — verplicht voor het opslaan van leads:**
-1. Ga in Supabase naar **Settings → API → Exposed schemas** en voeg **`montagebaas`** toe
-   (naast `public`, `tvmuur`, …). Zonder deze stap weigert de app met `Invalid schema`.
-2. Verifieer daarna lokaal: `node scripts/verify-db.mjs` — de `[supabase-js]`-regel moet nu `ok` zijn.
+**Vereist in het Supabase-dashboard van dit project:**
+1. **Settings → API → Exposed schemas** moet `montagebaas` bevatten (naast `public`).
+   Zonder deze instelling weigert de app met `Invalid schema`.
+2. Verifieer daarna lokaal met `node scripts/verify-db.mjs`: de `[supabase-js]`-regel moet `ok` zijn.
 
 Handige scripts (gebruiken `DATABASE_URL` uit `.env.local`):
 - `node scripts/run-migration.mjs supabase/migrations/0001_init.sql` — (her)maak schema/tabellen
@@ -20,7 +22,8 @@ Handige scripts (gebruiken `DATABASE_URL` uit `.env.local`):
 
 ## 2. Omgevingsvariabelen
 
-`.env.local` staat lokaal klaar met de gedeelde Supabase-keys. Zet dezelfde variabelen in
+`.env.local` bevat de Supabase-URL en keys van het eigen project (`NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DB_SCHEMA=montagebaas`). Zet dezelfde variabelen in
 **Vercel** (Project Settings → Environment Variables). Zie `.env.local.example` voor de volledige lijst.
 
 Nog in te vullen:
