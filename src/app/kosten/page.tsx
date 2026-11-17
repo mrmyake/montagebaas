@@ -20,8 +20,8 @@ const openingszinVoor = (b: ReturnType<typeof tekstBedragen>) =>
 export async function generateMetadata(): Promise<Metadata> {
   const b = tekstBedragen(await laadPrijsbron());
   return {
-    title: "Wat kost een IKEA-keuken plaatsen? Prijzen 2026",
-    description: `${openingszinVoor(b)} Bekijk de prijzen per keukengrootte en per losse klus, en wat wel en niet is inbegrepen.`,
+    title: "Kosten IKEA-keuken plaatsen: prijzen 2026",
+    description: `Complete IKEA-keukenmontage kost bij ${site.naam} ongeveer ${b.laagsteBand} tot ${b.hoogsteBand}, incl. btw en reiskosten. Prijzen per keukengrootte en klus.`,
     alternates: { canonical: "/kosten" },
   };
 }

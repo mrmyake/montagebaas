@@ -17,9 +17,9 @@ export const revalidate = 3600;
 export function generateMetadata(): Metadata {
   if (siteVersie() === "v2") {
     return {
-      title: { absolute: `IKEA-keuken laten plaatsen voor een vaste prijs | ${site.naam}` },
+      title: { absolute: `IKEA-keuken laten plaatsen, vaste prijs vooraf | ${site.korteNaam}` },
       description:
-        "Plak de link naar je IKEA Keukenplanner-ontwerp en zie direct wat montage kost. Vaste prijs binnen 24 uur. Ilja plaatst je keuken zelf, tot 75 km rond Loosdrecht.",
+        "Plak de link naar je IKEA-ontwerp en zie direct wat montage kost. Vaste prijs binnen 24 uur. Ilja plaatst je keuken zelf, tot 75 km rond Loosdrecht.",
       alternates: { canonical: "/" },
     };
   }

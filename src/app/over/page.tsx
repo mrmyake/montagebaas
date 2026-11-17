@@ -6,9 +6,9 @@ import { SlotCta } from "@/components/sections/SlotCta";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `Over ${site.naam}: Ilja Goossens, keukenmonteur uit Loosdrecht`,
+  title: "Over ons: Ilja Goossens, keukenmonteur",
   description:
-    `${site.naam} is de eenmanszaak van Ilja Goossens uit Loosdrecht. Ilja plaatst je IKEA-keuken zelf, netjes en compleet, en is je aanspreekpunt van offerte tot oplevering. Werkgebied tot ongeveer 75 km rond Loosdrecht.`,
+    `${site.naam} is de eenmanszaak van Ilja Goossens uit Loosdrecht. Ilja plaatst je IKEA-keuken zelf en is je aanspreekpunt van offerte tot oplevering.`,
   alternates: { canonical: "/over" },
 };
 

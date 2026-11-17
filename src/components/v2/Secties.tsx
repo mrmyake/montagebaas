@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Merk } from "@/lib/merk";
 import { reviewSamenvatting } from "@/lib/merk";
 import { kostenKaarten, tekstBedragen, type Prijsbron } from "@/lib/prijs-weergave";
-import { stedenBinnenStraal, stedenBuitenStraal } from "@/lib/steden";
+import { stedenBinnenStraal } from "@/lib/steden";
 
 /** Gedeelde sectiebreedte en -padding uit de mockup. */
 const binnen = "mx-auto max-w-[1240px] px-4 sm:px-[clamp(16px,4vw,40px)]";
@@ -202,7 +202,6 @@ export function Werkgebied({ merk }: { merk: Merk }) {
   const w = merk.werkgebied;
   // Alle stadspagina's, uit dezelfde bron als de sitemap en /werkgebied.
   const binnenStraal = [...stedenBinnenStraal].sort(opNaam);
-  const buitenStraal = [...stedenBuitenStraal].sort(opNaam);
   const stadLink = "inline-flex min-h-10 items-center text-v2-ink";
   return (
     <section id="werkgebied" className={`${binnen} ${ruimte} flex flex-wrap gap-x-14 gap-y-6`}>
@@ -223,16 +222,6 @@ export function Werkgebied({ merk }: { merk: Merk }) {
         <h3 className="m-0 text-[15px] font-bold text-v2-muted">Keukenmonteur in</h3>
         <ul className="mt-1 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-x-4 gap-y-0.5 p-0 font-medium">
           {binnenStraal.map((s) => (
-            <li key={s.slug} className="list-none">
-              <Link href={`/keukenmonteur/${s.slug}`} className={stadLink}>
-                {s.naam}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <h3 className="mt-5 text-[15px] font-bold text-v2-muted">Verder weg (bel of app eerst)</h3>
-        <ul className="mt-1 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-x-4 gap-y-0.5 p-0 font-medium">
-          {buitenStraal.map((s) => (
             <li key={s.slug} className="list-none">
               <Link href={`/keukenmonteur/${s.slug}`} className={stadLink}>
                 {s.naam}

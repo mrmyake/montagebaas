@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/lib/site";
-import { steden } from "@/lib/steden";
+import { stedenBinnenStraal } from "@/lib/steden";
 
 const siteUrl = site.url;
 
@@ -10,11 +10,11 @@ const siteUrl = site.url;
  * Zet de datum op de dag dat de tekst van die pagina(s) echt veranderde.
  */
 const LASTMOD = {
-  home: "2026-10-25",
+  home: "2026-11-17",
   offerte: "2026-10-25",
   kosten: "2026-10-25",
   werkwijze: "2026-10-25",
-  werkgebied: "2026-10-25",
+  werkgebied: "2026-11-17",
   vragen: "2026-10-25",
   reviews: "2026-10-25",
   over: "2026-10-25",
@@ -35,7 +35,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { pad: "/privacy", lastModified: LASTMOD.privacy, priority: 0.2, changeFrequency: "yearly" },
   ];
 
-  const stadPaginas = steden.map((s) => ({
+  // Plaatsen buiten het werkgebied staan op noindex en horen dus niet in de sitemap.
+  const stadPaginas = stedenBinnenStraal.map((s) => ({
     pad: `/keukenmonteur/${s.slug}`,
     lastModified: LASTMOD.steden,
     priority: 0.7,
