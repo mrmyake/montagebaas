@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CookieInstellingenLink } from "@/components/analytics/CookieInstellingenLink";
 import { huidigMerk } from "@/lib/merk";
+import { stedenBinnenStraal } from "@/lib/steden";
 
 const LINKS = [
   { label: "Kosten", href: "/kosten" },
@@ -61,6 +62,23 @@ export function FooterV2() {
           <CookieInstellingenLink className="inline-flex min-h-9 cursor-pointer items-center border-0 bg-transparent p-0 font-[inherit] text-v2-ink hover:underline" />
         </nav>
       </div>
+      <nav
+        aria-label="Werkgebied"
+        className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-4 gap-y-0.5 border-t border-v2-line px-[clamp(16px,4vw,40px)] py-4 text-[14px]"
+      >
+        <span className="text-v2-footer-ink">Keukenmonteur in</span>
+        {[...stedenBinnenStraal]
+          .sort((a, b) => a.naam.localeCompare(b.naam, "nl"))
+          .map((s) => (
+            <Link
+              key={s.slug}
+              href={`/keukenmonteur/${s.slug}`}
+              className="inline-flex min-h-9 items-center text-v2-ink no-underline hover:underline"
+            >
+              {s.naam}
+            </Link>
+          ))}
+      </nav>
     </footer>
   );
 }

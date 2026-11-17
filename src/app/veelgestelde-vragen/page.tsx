@@ -14,7 +14,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Veelgestelde vragen over keuken laten plaatsen",
   description:
-    "Antwoorden op de meestgestelde vragen over het laten plaatsen van een IKEA-keuken: kosten, snelheid, werkgebied, demontage, apparaten aansluiten en wie de montage uitvoert.",
+    "Antwoorden op veelgestelde vragen over een IKEA-keuken laten plaatsen: kosten, snelheid, werkgebied, demontage en apparaten aansluiten.",
   alternates: { canonical: "/veelgestelde-vragen" },
 };
 

@@ -10,6 +10,8 @@ const merk = huidigMerk();
 
 export const site = {
   naam: merk.naam,
+  /** Zonder lidwoord ("De Keukenheld" -> "Keukenheld"): korte suffix voor paginatitels. */
+  korteNaam: merk.naam.replace(/^De\s+/, ""),
   domein: merk.domein,
   url: siteUrl(merk),
 

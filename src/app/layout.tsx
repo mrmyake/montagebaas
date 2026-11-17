@@ -60,7 +60,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: `${site.naam} — ${site.tagline}`,
-    template: `%s | ${site.naam}`,
+    template: `%s | ${site.korteNaam}`,
   },
   description: site.belofte,
   // favicon.ico zelf: rewrite in next.config.ts naar het bestand van het merk.

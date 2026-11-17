@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Merk } from "@/lib/merk";
 import { reviewSamenvatting } from "@/lib/merk";
 import { kostenKaarten, tekstBedragen, type Prijsbron } from "@/lib/prijs-weergave";
+import { stedenBinnenStraal } from "@/lib/steden";
 
 /** Gedeelde sectiebreedte en -padding uit de mockup. */
 const binnen = "mx-auto max-w-[1240px] px-4 sm:px-[clamp(16px,4vw,40px)]";
@@ -195,8 +196,13 @@ export function Reviews({ merk }: { merk: Merk }) {
   );
 }
 
+const opNaam = (a: { naam: string }, b: { naam: string }) => a.naam.localeCompare(b.naam, "nl");
+
 export function Werkgebied({ merk }: { merk: Merk }) {
   const w = merk.werkgebied;
+  // Alle stadspagina's, uit dezelfde bron als de sitemap en /werkgebied.
+  const binnenStraal = [...stedenBinnenStraal].sort(opNaam);
+  const stadLink = "inline-flex min-h-10 items-center text-v2-ink";
   return (
     <section id="werkgebied" className={`${binnen} ${ruimte} flex flex-wrap gap-x-14 gap-y-6`}>
       <div className="min-w-0 flex-[1_1_320px]">
@@ -212,20 +218,23 @@ export function Werkgebied({ merk }: { merk: Merk }) {
           , dan kijken we of het past.
         </p>
       </div>
-      <ul className="grid min-w-0 flex-[2_1_520px] grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-x-4 gap-y-0.5 p-0 font-medium">
-        {w.steden.map((s) => (
-          <li key={s.slug} className="list-none">
-            <Link href={`/keukenmonteur/${s.slug}`} className="inline-flex min-h-10 items-center text-v2-ink">
-              {s.naam}
+      <div className="min-w-0 flex-[2_1_520px]">
+        <h3 className="m-0 text-[15px] font-bold text-v2-muted">Keukenmonteur in</h3>
+        <ul className="mt-1 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-x-4 gap-y-0.5 p-0 font-medium">
+          {binnenStraal.map((s) => (
+            <li key={s.slug} className="list-none">
+              <Link href={`/keukenmonteur/${s.slug}`} className={stadLink}>
+                {s.naam}
+              </Link>
+            </li>
+          ))}
+          <li className="list-none">
+            <Link href="/werkgebied" className={`${stadLink} font-bold`}>
+              Alle plaatsen
             </Link>
           </li>
-        ))}
-        <li className="list-none">
-          <Link href="/werkgebied" className="inline-flex min-h-10 items-center font-bold text-v2-ink">
-            Alle plaatsen
-          </Link>
-        </li>
-      </ul>
+        </ul>
+      </div>
     </section>
   );
 }

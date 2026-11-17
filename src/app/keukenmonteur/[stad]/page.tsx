@@ -34,14 +34,16 @@ export async function generateMetadata({
   if (!data) return {};
   if (!data.binnenStraal) {
     return {
-      title: `Keukenmonteur ${data.naam}? Ons werkgebied is rond Loosdrecht`,
-      description: `${data.naam} ligt buiten ons vaste werkgebied. Ilja van ${site.naam} plaatst IKEA-keukens zelf, tot ongeveer 75 km rond Loosdrecht. Woon je in ${data.naam}? Bel of app even, dan kijken we of het past.`,
+      title: `Keukenmonteur ${data.naam}? Eerst even bellen`,
+      description: `${data.naam} ligt buiten ons vaste werkgebied (tot 75 km rond Loosdrecht). Woon je in ${data.naam}? Bel of app even, dan kijken we of het past.`,
       alternates: { canonical: `/keukenmonteur/${data.slug}` },
+      // Buiten het werkgebied: bereikbaar voor bezoekers, niet bedoeld voor de index.
+      robots: { index: false, follow: true },
     };
   }
   return {
-    title: `Keukenmonteur ${data.naam}: IKEA keuken laten plaatsen`,
-    description: `IKEA-keuken laten plaatsen in ${data.naam}? Ilja plaatst je keuken zelf, netjes en compleet. Vaste prijs vooraf en offerte binnen 24 uur. Bereken je prijs in 1 minuut.`,
+    title: `Keukenmonteur ${data.naam}: IKEA-keuken plaatsen`,
+    description: `IKEA-keuken laten plaatsen in ${data.naam}? Ilja plaatst je keuken zelf, netjes en compleet. Vaste prijs vooraf, offerte binnen 24 uur.`,
     alternates: { canonical: `/keukenmonteur/${data.slug}` },
   };
 }

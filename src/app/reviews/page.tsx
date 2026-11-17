@@ -22,7 +22,7 @@ import {
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `Reviews: ${REVIEW_SAMENVATTING}`,
+  title: REVIEW_SAMENVATTING,
   description: `${REVIEW_SAMENVATTING}. Echte reviews over het werk van Ilja Goossens (${site.naam}, Loosdrecht), letterlijk overgenomen.`,
   alternates: { canonical: "/reviews" },
   openGraph: {
