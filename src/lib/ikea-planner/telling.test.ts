@@ -554,3 +554,152 @@ test("spike 62ED0CF3 (geen eiland, wel frame): te veel besteld?", { skip: !spike
   assert.equal(t.eiland, 0);
   assert.deepEqual(eilandAannames(t.aannames), [FRAME_ZONDER_EILAND]);
 });
+
+// ---------------------------------------------------------------------------
+// BOM zonder prijzen (IKEA levert tijdelijk geen prijzen): tellen op dbID + quantity
+// ---------------------------------------------------------------------------
+
+test("BOM zonder prijzen: telt op artikelnummer, aanname, vertrouwen hoog", () => {
+  const nr = (n: string) => `ART-${n}-NL`;
+  const regel = (n: string, quantity: number) => ({ dbID: nr(n), quantity });
+  const bom = {
+    products: [
+      { dbID: "ASL-1-NL", children: [regel("10000001", 4), regel("10000002", 2), regel("10000003", 1)] },
+      { dbID: "ASL-2-NL", children: [regel("10000004", 9), regel("10000005", 20)] },
+      // hoekkasten en afzuigkast tellen als frame; EXT-frame zonder prijs op stuks, plank negeren
+      { dbID: "ASL-3-NL", children: [regel("10000006", 1), regel("10000007", 1), regel("10000008", 2), regel("10000009", 2)] },
+      { dbID: "ASL-4-NL", children: [{ dbID: "EXT-20000001-NL" }, { dbID: "EXT-20000001-NL" }, { dbID: "EXT-20000002-NL", front: true, linear: 2.4 }] },
+    ],
+  };
+  const info = (n: string, omschrijving: string): ProductInfo => ({
+    dbId: nr(n), artikelnummer: null, referentie: null, naam: "METOD", omschrijving, maat: null,
+    breedte: null, diepte: null, hoogte: null, leverbaar: true, eindDatum: null,
+  });
+  const prod: Record<string, ProductInfo> = {
+    [nr("10000001")]: info("10000001", "onderkast, zwartgrijs"),
+    [nr("10000002")]: info("10000002", "bovenkast, zwartgrijs"),
+    [nr("10000003")]: info("10000003", "hoge kast, zwartgrijs"),
+    [nr("10000004")]: info("10000004", "lade, zwartgrijs"),
+    [nr("10000005")]: info("10000005", "scharnier"),
+    [nr("10000006")]: info("10000006", "bovenhoekkast, wit"),
+    [nr("10000007")]: info("10000007", "wandkast voor ingebouwde afzuigkap, wit"),
+    [nr("10000008")]: info("10000008", "bovenkast, wit"),
+    [nr("10000009")]: info("10000009", "plank bovenhoekkastelement, wit"),
+    "EXT-20000001-NL": {
+      ...info("20000001", "frame voor onderhoekkast, zwartgrijs"),
+      dbId: "EXT-20000001-NL",
+      referentie: nr("10000010"),
+    },
+    [nr("10000010")]: info("10000010", "hoekonderkast, zwartgrijs"),
+  };
+  const { bom: gelezen } = leesBom({ appData: { bom: JSON.stringify(bom) } });
+  const { telling, prijscontrole } = bomNaarTelling(gelezen, prod);
+  assert.equal(telling.onderkasten, 6);
+  assert.equal(telling.bovenkasten, 6);
+  assert.equal(telling.hoge_kasten, 1);
+  assert.equal(telling.lade_elementen, 9);
+  assert.equal(telling.vertrouwen, "hoog");
+  assert.ok(telling.aannames.includes("IKEA-prijzen niet beschikbaar voor 11 artikelregel(s), telling op artikelnummers"));
+  assert.equal(prijscontrole.verschil, null);
+  assert.ok(!telling.aannames.some((a) => /Prijscontrole/.test(a)));
+  assert.equal(valideerTelling(telling).ok, true);
+
+  // Onbekend montagewerk-artikel zonder prijzen: vertrouwen zakt.
+  const onbekend = { ...prod, [nr("10000005")]: info("10000005", "mysterieuze kastmodule") };
+  assert.equal(bomNaarTelling(gelezen, onbekend).telling.vertrouwen, "gemiddeld");
+});
+
+test("gemengde BOM: regel zonder prijs telt mee, één aanname, prijscontrole verschil null", () => {
+  const info = (id: string, omschrijving: string): ProductInfo => ({
+    dbId: id, artikelnummer: null, referentie: null, naam: "METOD", omschrijving, maat: null,
+    breedte: null, diepte: null, hoogte: null, leverbaar: true, eindDatum: null,
+  });
+  const prijs = { current: { value: 10 } };
+  const bom = {
+    products: [
+      { dbID: "ASL-1-NL", children: [
+        { dbID: "ART-10000001-NL", quantity: 3, price: prijs },
+        { dbID: "ART-10000002-NL", quantity: 2 }, // zonder prijs: telt mee
+        { dbID: "EXT-20000001-NL", quantity: 1 }, // EXT op stuks zonder prijs: telt mee
+        { dbID: "EXT-20000002-NL", front: true, linear: 2.4 }, // ongeprijsde voorkantrand: niet
+      ] },
+    ],
+    totalPrice: { current: 30 },
+  };
+  const prod: Record<string, ProductInfo> = {
+    "ART-10000001-NL": info("ART-10000001-NL", "onderkast, zwartgrijs"),
+    "ART-10000002-NL": info("ART-10000002-NL", "bovenkast, wit"),
+    "EXT-20000001-NL": { ...info("EXT-20000001-NL", "frame voor onderhoekkast"), referentie: "ART-10000003-NL" },
+    "ART-10000003-NL": info("ART-10000003-NL", "hoekonderkast, zwartgrijs"),
+  };
+  const { bom: gelezen } = leesBom({ appData: { bom: JSON.stringify(bom) } });
+  const { telling, prijscontrole } = bomNaarTelling(gelezen, prod);
+  assert.equal(telling.onderkasten, 4);
+  assert.equal(telling.bovenkasten, 2);
+  assert.equal(prijscontrole.verschil, null);
+  const prijsAannames = telling.aannames.filter((a) => /IKEA-prijzen/.test(a));
+  assert.deepEqual(prijsAannames, ["IKEA-prijzen niet beschikbaar voor 2 artikelregel(s), telling op artikelnummers"]);
+  assert.ok(!telling.aannames.some((a) => /Prijscontrole/.test(a)));
+});
+
+test("ongeprijsd EXT-frame: echte structuur van een onderhoekkast (alleen de relevante regels uit een echt ontwerp, geen klantgegevens)", () => {
+  // Positie "Onderhoekkast met uittrekbare inrichting" zoals IKEA hem levert zonder prijzen:
+  // kaal EXT-frame (geen quantity, geen price) en kale ART-inrichting in geneste ASM's.
+  const bom = {
+    locale: "nl-NL",
+    products: [
+      {
+        dbID: "ASL-42468424-NL",
+        packs: [{ dbID: "ART-80607373-NL", quantity: 1 }],
+        children: [
+          { dbID: "ASM-42468379-NL", children: [{ dbID: "EXT-42468339-NL" }, { dbID: "ASM-42460598-NL" }] },
+          { dbID: "ASM-42468386-NL", children: [{ dbID: "ART-40596791-NL" }] },
+        ],
+      },
+      // tweede identieke positie: aantal 2
+      {
+        dbID: "ASL-42468424-NL",
+        packs: [{ dbID: "ART-80607373-NL", quantity: 1 }],
+        children: [
+          { dbID: "ASM-42468379-NL", children: [{ dbID: "EXT-42468339-NL" }] },
+          { dbID: "ASM-42468386-NL", children: [{ dbID: "ART-40596791-NL" }] },
+          { dbID: "ART-90213573-AE" }, // ander land dan nl-NL: overslaan
+        ],
+      },
+    ],
+  };
+  const pi = (dbId: string, omschrijving: string, extra: Partial<ProductInfo> = {}): ProductInfo => ({
+    dbId, artikelnummer: null, referentie: null, naam: "METOD", omschrijving, maat: null,
+    breedte: null, diepte: null, hoogte: null, leverbaar: true, eindDatum: null, ...extra,
+  });
+  const prod: Record<string, ProductInfo> = {
+    "EXT-42468339-NL": pi("EXT-42468339-NL", "frame voor onderhoekkast, zwartgrijs", { referentie: "ART-30591685-NL", maat: "128x68x80 cm" }),
+    "ART-30591685-NL": pi("ART-30591685-NL", "hoekonderkast, zwartgrijs", { referentie: "ART-30591685-NL", maat: "128x60x80 cm" }),
+    "ART-40596791-NL": pi("ART-40596791-NL", "inrichting onderhoekkast, uittrekb, grijs", { naam: "UTRUSTA" }),
+    "ART-80607373-NL": pi("ART-80607373-NL", "scharnier voor keukenhoekkast, met ingebouwde demper", { naam: "UTRUSTA" }),
+  };
+  const { bom: gelezen, overgeslagen } = leesBom({ appData: { bom: JSON.stringify(bom) } });
+  const { telling } = bomNaarTelling(gelezen, prod);
+  assert.equal(telling.onderkasten, 2); // 2 EXT-frames, het ART-frame bestaat niet los: niet dubbel
+  assert.equal(telling.binneninrichting, 2);
+  assert.equal(telling.vertrouwen, "hoog");
+  assert.deepEqual(overgeslagen, [{ dbID: "ART-90213573-AE", reden: "ander land: AE, BOM is NL" }]);
+  assert.equal(telling.aannames.filter((a) => /IKEA-prijzen/.test(a)).length, 1);
+});
+
+test("vertrouwen zakt alleen als hetzelfde artikel ongeprijsd én niet herkend is", () => {
+  const pi = (dbId: string, omschrijving: string): ProductInfo => ({
+    dbId, artikelnummer: null, referentie: null, naam: "X", omschrijving, maat: null,
+    breedte: null, diepte: null, hoogte: null, leverbaar: true, eindDatum: null,
+  });
+  const maak = (ongeprijsdeOmschr: string, geprijsdeOmschr: string) => {
+    const bom = { locale: "nl-NL", products: [{ dbID: "ASL-1-NL", children: [
+      { dbID: "ART-10000001-NL", quantity: 1, price: { current: { value: 10 } } },
+      { dbID: "ART-10000002-NL", quantity: 1 },
+    ] }], totalPrice: { current: 10 } };
+    const prod = { "ART-10000001-NL": pi("ART-10000001-NL", geprijsdeOmschr), "ART-10000002-NL": pi("ART-10000002-NL", ongeprijsdeOmschr) };
+    return bomNaarTelling(leesBom({ appData: { bom: JSON.stringify(bom) } }).bom, prod).telling.vertrouwen;
+  };
+  assert.equal(maak("onderkast, wit", "mysterieuze kastmodule"), "hoog"); // niet-herkend artikel is wél geprijsd
+  assert.equal(maak("mysterieuze kastmodule", "onderkast, wit"), "gemiddeld"); // ongeprijsd én niet herkend
+});

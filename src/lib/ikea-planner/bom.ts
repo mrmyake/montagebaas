@@ -31,7 +31,7 @@ const SECTIES = ["products", "linears", "packs", "decos"] as const;
  * Gooit `onverwachte_structuur` als de vorm niet meer klopt — dat is het signaal
  * dat IKEA iets veranderd heeft en de mapping niet meer te vertrouwen is.
  */
-export function leesBom(metadata: unknown): { bom: BomNode; bomRuw: string } {
+export function leesBom(metadata: unknown): { bom: BomNode; bomRuw: string; overgeslagen: Overgeslagen[] } {
   const appData = (metadata as BomNode)?.appData;
   const bomRuw = appData?.bom;
   if (typeof bomRuw !== "string") {
@@ -46,10 +46,16 @@ export function leesBom(metadata: unknown): { bom: BomNode; bomRuw: string } {
   if (!bom || typeof bom !== "object" || !Array.isArray(bom.products)) {
     throw new PlannerFout("onverwachte_structuur", "appData.bom heeft geen products[]");
   }
-  if (!bomRegels(bom).some((r) => r.dbId.startsWith("ART-") && r.prijs !== null)) {
-    throw new PlannerFout("onverwachte_structuur", "appData.bom bevat geen geprijsde ART-regels");
+  // Prijs is optioneel (IKEA levert soms tijdelijk geen prijzen): alleen helemaal
+  // geen ART-regels is een onverwachte structuur.
+  if (!bomRegels(bom).some((r) => r.dbId.startsWith("ART-"))) {
+    throw new PlannerFout("onverwachte_structuur", "appData.bom bevat geen ART-regels");
   }
-  return { bom, bomRuw };
+  const overgeslagen = overgeslagenRegels(bom);
+  if (overgeslagen.length) {
+    console.warn(`[planner] ${overgeslagen.length} ongeprijsde regel(s) overgeslagen: ${overgeslagen.map((o) => `${o.dbID} (${o.reden})`).join("; ")}`);
+  }
+  return { bom, bomRuw, overgeslagen };
 }
 
 /** Alle ART-/EXT-regels uit de BOM, geprijsd of niet. */
@@ -80,8 +86,58 @@ export function bomRegels(bom: BomNode): BomRegel[] {
   return regels;
 }
 
-/** De regels die op de IKEA-artikellijst staan: alleen geprijsde. */
-export const geprijsdeRegels = (bom: BomNode) => bomRegels(bom).filter((r) => r.prijs !== null);
+/** Regel die op stuks telt (quantity), niet op meters/m²/voorkantrand. */
+const opStuks = (r: BomRegel) => r.node.linear === undefined && r.node.square === undefined && !r.node.front;
+
+/** Landsuffix van een id: 'ART-90213573-NL' → 'NL'. */
+const landVanId = (dbId: string) => /-([A-Z]{2})$/.exec(dbId)?.[1] ?? null;
+
+/** Land van de BOM uit `locale` ('nl-NL' → 'NL'). Zonder bruikbare locale: NL, de enige markt van deze site. */
+export const landVanBom = (bom: BomNode): string => {
+  const land = typeof bom?.locale === "string" ? /[-_]([A-Za-z]{2})$/.exec(bom.locale)?.[1] : undefined;
+  return land ? land.toUpperCase() : "NL";
+};
+
+/** Waarom een ongeprijsde regel niet meetelt (null = hij telt wel mee). */
+function overslaanReden(r: BomRegel, land: string): string | null {
+  if (r.prijs !== null) return null;
+  if (r.dbId.startsWith("ART-") || (r.dbId.startsWith("EXT-") && opStuks(r))) {
+    const l = landVanId(r.dbId);
+    return l === land ? null : `ander land: ${l ?? "geen landsuffix"}, BOM is ${land}`;
+  }
+  return "ongeprijsd maatwerk (m/m²/voorkantrand): aantal niet te bepalen";
+}
+
+/**
+ * De regels die op de IKEA-artikellijst staan. Prijs is optioneel (IKEA levert
+ * soms tijdelijk geen prijzen): een geprijsde regel telt altijd mee; een
+ * ongeprijsde ART-regel, of EXT-regel op stuks, telt mee op dbID en quantity
+ * als zijn landsuffix bij het land van de BOM past. De rest valt af en staat in
+ * `overgeslagenRegels`.
+ */
+export const geprijsdeRegels = (bom: BomNode) => {
+  const land = landVanBom(bom);
+  return bomRegels(bom).filter((r) => overslaanReden(r, land) === null);
+};
+
+export interface Overgeslagen {
+  dbID: string;
+  reden: string;
+}
+
+/** Ongeprijsde regels die niet meetellen, met reden, per id+reden één keer. Voor log en snapshot. */
+export function overgeslagenRegels(bom: BomNode): Overgeslagen[] {
+  const land = landVanBom(bom);
+  const uit = new Map<string, Overgeslagen>();
+  for (const r of bomRegels(bom)) {
+    const reden = overslaanReden(r, land);
+    if (reden) uit.set(`${r.dbId}|${reden}`, { dbID: r.dbId, reden });
+  }
+  return [...uit.values()];
+}
+
+/** Aantal meetellende regels zonder prijs; > 0 = telling (deels) op artikelnummers. */
+export const regelsZonderPrijs = (bom: BomNode) => geprijsdeRegels(bom).filter((r) => r.prijs === null).length;
 
 /** Ids waarvoor we productgegevens nodig hebben (stap 1: alles wat in de BOM staat). */
 export const bomIds = (bom: BomNode) => [...new Set(geprijsdeRegels(bom).map((r) => r.dbId))];
@@ -104,10 +160,12 @@ export interface Prijscontrole {
 /** Som van prijs × aantal tegen `totalPrice.current`. In de spike 10/10 exact. */
 export function prijscontrole(bom: BomNode): Prijscontrole {
   let som = 0;
-  for (const r of geprijsdeRegels(bom)) som += (r.prijs as number) * r.aantal;
+  for (const r of geprijsdeRegels(bom)) som += (r.prijs ?? 0) * r.aantal;
   som = Math.round(som * 100) / 100;
   const totaal = typeof bom?.totalPrice?.current === "number" ? bom.totalPrice.current : null;
-  return { som, totaal, verschil: totaal === null ? null : Math.round((som - totaal) * 100) / 100 };
+  // Met regels zonder prijs klopt de som niet en valt er niets te vergelijken.
+  const volledig = regelsZonderPrijs(bom) === 0;
+  return { som, totaal, verschil: totaal === null || !volledig ? null : Math.round((som - totaal) * 100) / 100 };
 }
 
 export interface Artikel {
@@ -181,7 +239,7 @@ export function posities(bom: BomNode, producten: Record<string, ProductInfo>): 
     .filter((p: BomNode) => typeof p?.dbID === "string" && p.dbID.startsWith("ASL-"))
     .map((p: BomNode) => {
       const soorten = new Set<string>();
-      for (const r of bomRegels({ products: [p] }).filter((x) => x.prijs !== null)) {
+      for (const r of geprijsdeRegels({ products: [p] })) {
         const ext = r.dbId.startsWith("EXT-") ? producten[r.dbId] : undefined;
         const id = ext?.referentie ?? r.dbId;
         const info = producten[id]?.naam ? producten[id] : (ext ?? producten[id]);
