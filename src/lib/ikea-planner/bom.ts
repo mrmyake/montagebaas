@@ -136,6 +136,18 @@ export function overgeslagenRegels(bom: BomNode): Overgeslagen[] {
   return [...uit.values()];
 }
 
+/**
+ * Ongeprijsd EXT-maatwerk op linear/square met het landsuffix van de BOM: aantal
+ * regels dat niet meetelt. Voorkantranden (`front`) horen er bij IKEA altijd
+ * ongeprijsd bij en blijven stil (wel in `overgeslagenRegels`).
+ */
+export const maatwerkZonderPrijs = (bom: BomNode) => {
+  const land = landVanBom(bom);
+  return bomRegels(bom).filter(
+    (r) => r.prijs === null && r.dbId.startsWith("EXT-") && !opStuks(r) && !r.node.front && landVanId(r.dbId) === land
+  ).length;
+};
+
 /** Aantal meetellende regels zonder prijs; > 0 = telling (deels) op artikelnummers. */
 export const regelsZonderPrijs = (bom: BomNode) => geprijsdeRegels(bom).filter((r) => r.prijs === null).length;
 
