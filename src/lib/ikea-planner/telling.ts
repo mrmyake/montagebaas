@@ -11,7 +11,7 @@
  * vaatwasserpositie heeft geen METOD-frame en telt dus vanzelf niet als onderkast.
  */
 import { STEENBLAD_AANNAME, type KeukenTelling } from "../rekenen.ts";
-import { artikelenUitBom, geprijsdeRegels, regelsZonderPrijs, posities, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
+import { artikelenUitBom, geprijsdeRegels, maatwerkZonderPrijs, regelsZonderPrijs, posities, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
 import type { ProductInfo } from "./product.ts";
 import { eilandPosities, type Opstelling } from "./opstelling.ts";
 
@@ -246,6 +246,11 @@ export function bomNaarTelling(
   const zonderPrijzen = zonderPrijs > 0;
   if (zonderPrijzen) {
     aannames.push(`IKEA-prijzen niet beschikbaar voor ${zonderPrijs} artikelregel(s), telling op artikelnummers`);
+  }
+  const maatwerk = maatwerkZonderPrijs(bom);
+  if (maatwerk) {
+    aannames.push(`Maatwerk zonder prijs niet meegeteld (${maatwerk} regels), werkblad en maatwerk controleren`);
+    telling.vertrouwen = "gemiddeld";
   }
   if (pc.verschil !== null && pc.verschil !== 0) {
     aannames.push(`Prijscontrole BOM wijkt af: som €${pc.som} vs. totaal €${pc.totaal} (verschil €${pc.verschil})`);

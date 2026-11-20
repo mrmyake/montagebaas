@@ -703,3 +703,43 @@ test("vertrouwen zakt alleen als hetzelfde artikel ongeprijsd én niet herkend i
   assert.equal(maak("onderkast, wit", "mysterieuze kastmodule"), "hoog"); // niet-herkend artikel is wél geprijsd
   assert.equal(maak("mysterieuze kastmodule", "onderkast, wit"), "gemiddeld"); // ongeprijsd én niet herkend
 });
+
+test("ongeprijsd EXT-maatwerk (linear/square) met eigen landsuffix: één aanname en vertrouwen gemiddeld; front en ander land niet", () => {
+  const pi = (dbId: string, omschrijving: string): ProductInfo => ({
+    dbId, artikelnummer: null, referentie: null, naam: "METOD", omschrijving, maat: null,
+    breedte: null, diepte: null, hoogte: null, leverbaar: true, eindDatum: null,
+  });
+  const prod = { "ART-10000001-NL": pi("ART-10000001-NL", "onderkast, wit") };
+  // zonder prijzen: ook de kast is ongeprijsd
+  const maak = (extra: unknown[], prijs = false) => {
+    const kast = prijs ? { dbID: "ART-10000001-NL", quantity: 1, price: { current: { value: 10 } } } : { dbID: "ART-10000001-NL", quantity: 1 };
+    const bom = { locale: "nl-NL", products: [{ dbID: "ASL-1-NL", children: [kast] }], linears: extra };
+    const { bom: b, overgeslagen } = leesBom({ appData: { bom: JSON.stringify(bom) } });
+    return { telling: bomNaarTelling(b, prod).telling, overgeslagen };
+  };
+  const aanname = (t: { aannames: string[] }) => t.aannames.filter((a) => /^Maatwerk zonder prijs/.test(a));
+
+  const t = maak([
+    { dbID: "EXT-30000002-NL", linear: 1.2 },
+    { dbID: "EXT-30000003-NL", square: 0.5 },
+    { dbID: "EXT-30000001-NL", front: true, linear: 2.4 }, // voorkantrand: telt niet mee in N
+  ]);
+  assert.deepEqual(aanname(t.telling), ["Maatwerk zonder prijs niet meegeteld (2 regels), werkblad en maatwerk controleren"]);
+  assert.equal(t.telling.vertrouwen, "gemiddeld");
+  assert.equal(t.overgeslagen.length, 3); // alle drie blijven vastgelegd
+
+  // alleen een voorkantrand (zonder prijzen): stil, vertrouwen hoog
+  const alleenFront = maak([{ dbID: "EXT-30000001-NL", front: true, linear: 2.4 }]);
+  assert.deepEqual(aanname(alleenFront.telling), []);
+  assert.equal(alleenFront.telling.vertrouwen, "hoog");
+  assert.equal(alleenFront.overgeslagen.length, 1);
+
+  // normaal geprijsd ontwerp met voorkantrand: stil
+  assert.equal(maak([{ dbID: "EXT-30000001-NL", front: true, linear: 2.4 }], true).telling.vertrouwen, "hoog");
+
+  // ander landsuffix: geen aanname, wel vastgelegd
+  const ander = maak([{ dbID: "EXT-30000009-DE", linear: 2.4 }]);
+  assert.deepEqual(aanname(ander.telling), []);
+  assert.equal(ander.telling.vertrouwen, "hoog");
+  assert.equal(ander.overgeslagen.length, 1);
+});
