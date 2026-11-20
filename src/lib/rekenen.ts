@@ -41,6 +41,8 @@ export interface KeukenTelling {
 
   aannames: string[]; // elk twijfelpunt letterlijk
   vertrouwen: "hoog" | "gemiddeld" | "laag"; // stuurt mens-in-de-lus
+  // Alleen planner-link: ongeprijsde BOM-regels die niet meetelden (voor de snapshot, geen prijsinvloed).
+  overgeslagen?: { dbID: string; reden: string }[];
 }
 
 /** De 27 numerieke telvelden (de _meter-velden mogen 1 decimaal hebben). */

@@ -11,7 +11,7 @@
  * vaatwasserpositie heeft geen METOD-frame en telt dus vanzelf niet als onderkast.
  */
 import { STEENBLAD_AANNAME, type KeukenTelling } from "../rekenen.ts";
-import { artikelenUitBom, geprijsdeRegels, posities, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
+import { artikelenUitBom, geprijsdeRegels, regelsZonderPrijs, posities, prijscontrole, type Artikel, type BomNode } from "./bom.ts";
 import type { ProductInfo } from "./product.ts";
 import { eilandPosities, type Opstelling } from "./opstelling.ts";
 
@@ -61,7 +61,7 @@ const BEKEND_GENEGEERD = new Set([
   "handgreep", "drukbeslag", "verbindingsrail voor fronten", "verbindingsrail v kast/dekpaneel",
   "steunbeslag voor werkblad", "boormal", "inzet ladezijkant", "console voor oven",
   // planken
-  "plank", "vaste geventileerde plank", "plank onderhoekkast",
+  "plank", "vaste geventileerde plank", "plank onderhoekkast", "plank bovenhoekkastelement",
   // toebehoren
   "sifon/bodemventiel 1 bak", "sifon/bodemventiel 2 bakken", "extra aansluiting sifon", "deksel",
   "ton met deksel", "koolstoffilter", "flexibele afvoerpijp voor afzuigkap", "scheiding voor kookplaat",
@@ -122,7 +122,7 @@ export function bomNaarTelling(
   // ---- Kasten (frames) ----
   const onderkasten = som(soortIs("onderkast", "hoekonderkast", "onderkast v inbouwapp/spoelbak"));
   const opzet = som(soortIs("bovenkast met ventilatie"));
-  const bovenkasten = rond2(som(soortIs("bovenkast")) + opzet);
+  const bovenkasten = rond2(som(soortIs("bovenkast", "bovenhoekkast", "wandkast voor ingebouwde afzuigkap")) + opzet);
   if (opzet) aannames.push(`${opzet} bovenkast(en) met ventilatie (opzetkast op hoge kast/koelkast) geteld als bovenkast`);
   const hoge_kasten = som(soortIs("hoge kast", "hoge kast voor inbouwapparatuur"));
 
@@ -236,6 +236,17 @@ export function bomNaarTelling(
     aannames.push(`Niet meer leverbaar: ${a.artikelnummer} ${a.naam} ${a.omschrijving} (${a.aantal}×)`);
   }
   const pc = prijscontrole(bom);
+  const zonderPrijs = regelsZonderPrijs(bom);
+  // ART-ids die (deels) zonder prijs geteld zijn; alleen daarvoor kost "niet herkend" vertrouwen.
+  const ongeprijsd = new Set(
+    geprijsdeRegels(bom)
+      .filter((r) => r.prijs === null)
+      .map((r) => (r.dbId.startsWith("EXT-") ? producten[r.dbId]?.referentie : r.dbId) ?? r.dbId)
+  );
+  const zonderPrijzen = zonderPrijs > 0;
+  if (zonderPrijzen) {
+    aannames.push(`IKEA-prijzen niet beschikbaar voor ${zonderPrijs} artikelregel(s), telling op artikelnummers`);
+  }
   if (pc.verschil !== null && pc.verschil !== 0) {
     aannames.push(`Prijscontrole BOM wijkt af: som €${pc.som} vs. totaal €${pc.totaal} (verschil €${pc.verschil})`);
   }
@@ -299,6 +310,8 @@ export function bomNaarTelling(
   for (const a of artikelen) {
     if (geteld.has(a.dbId) || BEKEND_GENEGEERD.has(a.soort) || !VANGNET.test(a.soort)) continue;
     aannames.push(`Niet herkend, controleren: ${a.soort} (${a.artikelnummer})`);
+    // Zonder prijs is er geen prijscontrole als vangnet: dan kost een onbekend artikel vertrouwen.
+    if (ongeprijsd.has(a.dbId)) telling.vertrouwen = "gemiddeld";
   }
 
   aannames.push("Lichtlijst, sloop, scheve muren, kraanboring en afvoer/leidingwerk: niet af te leiden uit de planner, op 0");

@@ -45,9 +45,15 @@ test("leesBom: geen products[] → onverwachte_structuur", () => {
   verwachtStructuurFout(() => leesBom(metadata({ items: [] })));
 });
 
-test("leesBom: geen geprijsde ART-regels → onverwachte_structuur", () => {
+test("leesBom: geen ART-regels → onverwachte_structuur", () => {
   verwachtStructuurFout(() => leesBom(metadata({ products: [] })));
-  verwachtStructuurFout(() => leesBom(metadata({ products: [{ dbID: "ASL-1-NL" }, art("12345678", { price: {} })] })));
+  verwachtStructuurFout(() => leesBom(metadata({ products: [{ dbID: "ASL-1-NL" }, { dbID: "EXT-1-NL" }] })));
+});
+
+test("leesBom: ART-regels zonder prijs zijn geldig, prijs is optioneel", () => {
+  const { bom } = leesBom(metadata({ products: [{ dbID: "ASL-1-NL" }, art("12345678", { price: {}, quantity: 4 })] }));
+  assert.deepEqual(bomIds(bom), ["ART-12345678-NL"]);
+  assert.deepEqual(prijscontrole(bom), { som: 0, totaal: null, verschil: null });
 });
 
 // ---- bomRegels / prijscontrole ----
@@ -191,4 +197,18 @@ test("naarPlannerFout: laat PlannerFout staan, rest wordt ikea_fout", () => {
   assert.equal(naarPlannerFout(f), f);
   assert.equal(naarPlannerFout(new Error("boem")).categorie, "ikea_fout");
   assert.equal(naarPlannerFout("tekst").message, "tekst");
+});
+
+test("leesBom: landsuffix volgt de locale; andere landen en ongeprijsd maatwerk worden vastgelegd", () => {
+  const bom = {
+    locale: "nl-NL",
+    products: [art("11111111", { price: {} }), { dbID: "ART-22222222-AE" }, { dbID: "ART-33333333-NL" }],
+    linears: [{ dbID: "EXT-44444444-NL", front: true, linear: 2.4 }],
+  };
+  const { bom: b, overgeslagen } = leesBom(metadata(bom));
+  assert.deepEqual(bomIds(b), ["ART-11111111-NL", "ART-33333333-NL"]);
+  assert.deepEqual(overgeslagen.map((o) => o.dbID), ["ART-22222222-AE", "EXT-44444444-NL"]);
+  // andere locale: ander land telt mee, NL niet
+  const de = leesBom(metadata({ ...bom, locale: "en-AE" })).bom;
+  assert.deepEqual(bomIds(de), ["ART-22222222-AE"]);
 });

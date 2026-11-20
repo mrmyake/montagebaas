@@ -19,7 +19,7 @@ export interface GelezenOntwerp {
 
 export async function leesOntwerp(uuid: string): Promise<GelezenOntwerp> {
   const ontwerp = await haalOntwerp(uuid);
-  const { bom } = leesBom(ontwerp.metadata);
+  const { bom, overgeslagen } = leesBom(ontwerp.metadata);
 
   // Sequentieel: eerst alles uit de BOM (plus de ASL-posities, voor de naam van
   // elke positie), dan de ART-nummers waar maatwerk (EXT) naar verwijst.
@@ -34,6 +34,8 @@ export async function leesOntwerp(uuid: string): Promise<GelezenOntwerp> {
     datumOpgeslagen: ontwerp.datumOpgeslagen,
     opstelling: leesOpstelling(ontwerp.metadata),
   });
+  // Voor de snapshot (jsonb `telling`): terug te vinden welke ongeprijsde regels niet meetelden.
+  if (overgeslagen.length) resultaat.telling.overgeslagen = overgeslagen;
   if (zonderProductgegevens.length) {
     resultaat.telling.aannames.push(
       `Geen productgegevens voor ${zonderProductgegevens.length} artikel(en) (${zonderProductgegevens.slice(0, 5).join(", ")}): niet meegeteld, telling mogelijk te laag`
